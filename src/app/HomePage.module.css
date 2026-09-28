@@ -1,0 +1,60 @@
+/* Keep the desktop hero cinematic; on small screens show the full team photo
+   above the copy so the image is not cropped down to a narrow strip. */
+@media (max-width: 680px) {
+  .homeHero {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+  }
+
+  .homeHero :global(.hero-photo) {
+    position: relative;
+    inset: auto;
+    flex: none;
+    width: 100%;
+    aspect-ratio: 2048 / 1366;
+    background: var(--ink);
+  }
+
+  .homeHero :global(.hero-photo img) {
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .homeHero :global(.hero-shade) {
+    inset: 0 0 auto;
+    height: calc(100vw * 1366 / 2048);
+    background: linear-gradient(180deg, rgba(5, 6, 7, 0.48), transparent 42%);
+    pointer-events: none;
+  }
+
+  .homeHero :global(.hero-content) {
+    position: relative;
+    inset: auto;
+    height: auto;
+    min-height: 0;
+    padding: 24px 0 28px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 16px;
+  }
+
+  .homeHero :global(.hero-copy h1) {
+    font-size: clamp(29px, 8vw, 38px);
+    line-height: 0.95;
+    white-space: normal;
+  }
+
+  .homeHero :global(.hero-copy .hero-lede) {
+    font-size: clamp(12px, 3.5vw, 14px);
+    line-height: 1.45;
+    margin-top: 8px;
+  }
+
+  .homeHero :global(.hero-actions) {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
