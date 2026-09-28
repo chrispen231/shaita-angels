@@ -10,6 +10,8 @@ export function getSiteUrl() {
   const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (configuredUrl) return configuredUrl.replace(/\/$/, "");
 
+  if (process.env.VERCEL_ENV === "production") return "https://shaita-angels.vercel.app";
+
   const vercelUrl = process.env.VERCEL_URL?.trim();
   if (vercelUrl) return `https://${vercelUrl.replace(/^https?:\/\//, "")}`;
 
