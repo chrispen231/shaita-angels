@@ -6,21 +6,63 @@ import { getAdminContext } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { FixtureActionState } from "@/types/fixtures";
 
-export async function requestAdminLink(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
+export async function signInAdmin(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !password) return { status: "error", message: "Enter your email and password." };
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { status: "error", message: "Email or password is incorrect, or this account is not authorized." };
+    const context = await getAdminContext();
+    if (!context) {
+      await supabase.auth.signOut();
+      return { status: "error", message: "Email or password is incorrect, or this account is not authorized." };
+    }
+  } catch (error) {
+    console.error("Admin password sign-in is unavailable", error);
+    return { status: "error", message: "Sign-in is not configured yet. Please try again later." };
+  }
+  redirect("/admin");
+}
+
+export async function requestPasswordReset(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { status: "error", message: "Enter a valid email address." };
   try {
     const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false, emailRedirectTo: `${getSiteUrl()}/auth/callback?next=/admin` },
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${getSiteUrl()}/auth/callback?next=/admin/password`,
     });
-    if (error) console.error("Admin sign-in link request failed", error.message);
+    if (error) console.error("Admin password reset request failed", error.message);
   } catch (error) {
-    console.error("Admin sign-in is unavailable", error);
-    return { status: "error", message: "Sign-in is not configured yet. Please try again later." };
+    console.error("Admin password reset is unavailable", error);
+    return { status: "error", message: "Password reset is unavailable right now. Please try again later." };
   }
-  return { status: "success", message: "If this address is authorized, a secure sign-in link will arrive shortly." };
+  return { status: "success", message: "If an account exists for that address, a password reset link will arrive shortly." };
+}
+
+export async function updateAdminPassword(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
+  const password = String(formData.get("password") ?? "");
+  const confirmation = String(formData.get("confirm_password") ?? "");
+  if (password.length < 12) return { status: "error", message: "Use a password with at least 12 characters." };
+  if (password !== confirmation) return { status: "error", message: "The passwords do not match." };
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return { status: "error", message: "Your password reset session is invalid or has expired. Request a new reset link." };
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) return { status: "error", message: "We couldn’t update your password. Use a longer password and try again." };
+    const context = await getAdminContext();
+    if (!context) {
+      await supabase.auth.signOut();
+      return { status: "error", message: "This account is not authorized to access club administration." };
+    }
+  } catch (error) {
+    console.error("Admin password update failed", error);
+    return { status: "error", message: "Password update is unavailable right now. Please try again later." };
+  }
+  redirect("/admin");
 }
 
 function field(formData: FormData, key: string) {

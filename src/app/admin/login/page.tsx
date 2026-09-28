@@ -14,8 +14,8 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
   return <main className={styles.shell}>
     <section className={styles.loginCard}>
       <p className={styles.kicker}>SHAITA ANGELS FC · CLUB ADMIN</p>
-      <h1>Sign in securely.</h1>
-      <p className={styles.muted}>Request a one-time sign-in link. Only an authorized club administrator can manage published fixtures and results.</p>
+      <h1>Admin sign in.</h1>
+      <p className={styles.muted}>Sign in with your email and password. Only an authorized club administrator can manage published fixtures and results.</p>
       {!config ? <div className={styles.notice} role="status">Supabase is not configured. Add the required environment variables to enable admin sign-in.</div> : <AdminLoginForm callbackError={error === "callback"} />}
       <Link className={styles.backLink} href="/matches">← Back to matches</Link>
     </section>
