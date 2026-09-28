@@ -2,9 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { articles, honors } from "@/data/site";
 import styles from "./HomePage.module.css";
+import { getPublishedFixtures } from "@/lib/fixtures";
+import { formatMatchDate } from "@/lib/fixtures";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
   const lead = articles[0];
+  const fixtures = await getPublishedFixtures();
+  const latestResult = fixtures?.filter((fixture) => fixture.status === "played").sort((a, b) => b.match_date.localeCompare(a.match_date))[0];
   return <>
     <style>{`.site-header{position:relative;z-index:20;margin-bottom:-86px;background:linear-gradient(180deg,rgba(5,6,7,.68),rgba(5,6,7,0));border-bottom:0;color:white}.site-header .brand-copy strong,.site-header .desktop-nav>a:not(.nav-cta){color:white}.site-header .brand-copy small{color:var(--gold);text-transform:uppercase;text-align:justify;text-align-last:justify}.site-header .mobile-nav summary span{background:white}.site-header .mobile-menu{color:var(--ink)}.hero-content{position:absolute;inset:auto 0 72px;height:auto;padding-bottom:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:16px}.hero-copy .eyebrow{font-size:9px;line-height:1.4;margin:0 0 6px}.hero-copy h1{font-size:clamp(32px,4vw,54px);line-height:.9;letter-spacing:-.02em;max-width:none;margin:0;white-space:nowrap}.hero-copy .hero-lede{font-size:12px;line-height:1.4;margin:8px 0 0}.hero-actions{gap:16px}@media(max-width:680px){.site-header{height:72px;margin-bottom:-72px}.hero-content{inset:auto 0 56px;grid-template-columns:1fr;gap:10px}.hero-copy h1{font-size:clamp(29px,8vw,38px);white-space:normal}.hero-copy .hero-lede{font-size:11px;margin-top:6px}.hero-actions{gap:14px}}`}</style>
     <section className={`hero ${styles.homeHero}`}>
@@ -15,7 +21,9 @@ export default function HomePage() {
     <div className="champion-bar"><span className="champion-star" aria-hidden="true">✳</span><span>2026 WOMEN’S ORANGE CUP CHAMPIONS</span><span className="champion-separator">·</span><span>CAREYSBURG, LIBERIA</span></div>
 
     <section className="match-feature" aria-labelledby="latest-result-title">
-      <div className="wrap match-wrap"><div className="match-heading"><p className="eyebrow eyebrow-light">Latest result</p><h2 id="latest-result-title">The cup is coming home.</h2></div><div className="match-scoreline"><div className="match-side"><span className="team-crest"><Image src="/shaita-angels-logo.png" alt="" width={56} height={56} /></span><span>SHAITA<br />ANGELS</span></div><div className="score">2 <i>–</i> 1</div><div className="match-side opponent"><span className="team-crest team-crest-light">WG</span><span>WORLD<br />GIRLS</span></div></div><div className="match-details"><span>2026 WOMEN’S ORANGE CUP · FINAL</span><span>14 JULY 2026</span><Link href="/matches">Match centre <span aria-hidden="true">↗</span></Link></div></div>
+      <div className="wrap match-wrap"><div className="match-heading"><p className="eyebrow eyebrow-light">Latest result</p><h2 id="latest-result-title">{fixtures === null ? "The cup is coming home." : latestResult ? `Shaita Angels vs ${latestResult.opponent}.` : "Matchday is coming."}</h2></div>
+        {fixtures === null ? <><div className="match-scoreline"><div className="match-side"><span className="team-crest"><Image src="/shaita-angels-logo.png" alt="" width={56} height={56} /></span><span>SHAITA<br />ANGELS</span></div><div className="score">2 <i>–</i> 1</div><div className="match-side opponent"><span className="team-crest team-crest-light">WG</span><span>WORLD<br />GIRLS</span></div></div><div className="match-details"><span>2026 WOMEN’S ORANGE CUP · FINAL</span><span>14 JULY 2026</span><Link href="/matches">Match centre <span aria-hidden="true">↗</span></Link></div></> : latestResult ? <><div className="match-scoreline"><div className="match-side"><span className="team-crest"><Image src="/shaita-angels-logo.png" alt="" width={56} height={56} /></span><span>SHAITA<br />ANGELS</span></div><div className="score">{latestResult.shaita_goals} <i>–</i> {latestResult.opponent_goals}</div><div className="match-side opponent"><span className="team-crest team-crest-light">{latestResult.opponent.trim().split(/\s+/).map((word) => word[0]).join("").slice(0, 2).toUpperCase()}</span><span>{latestResult.opponent.toUpperCase()}</span></div></div><div className="match-details"><span>{latestResult.competition.toUpperCase()}</span><span>{formatMatchDate(latestResult.match_date).toUpperCase()}</span><Link href="/matches">Match centre <span aria-hidden="true">↗</span></Link></div></> : <div className="match-details"><span>No results published yet</span><Link href="/matches">Match centre <span aria-hidden="true">↗</span></Link></div>}
+      </div>
     </section>
 
     <section className="section wrap latest-section">

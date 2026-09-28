@@ -3,11 +3,16 @@ import Link from "next/link";
 import newsStyles from "./SectionPage.module.css";
 import { articles, gallery, honors, sections } from "@/data/site";
 import SquadGrid from "@/components/SquadGrid";
+import FixtureCenter from "@/components/FixtureCenter";
+import { getPublishedFixtures } from "@/lib/fixtures";
+import { formatMatchDate } from "@/lib/fixtures";
 
 type SectionKey = keyof typeof sections;
 
-export default function SectionPage({ section }: { section: SectionKey }) {
+export default async function SectionPage({ section }: { section: SectionKey }) {
   const content = sections[section];
+  const fixtures = section === "matches" ? await getPublishedFixtures() : null;
+  const latestResult = fixtures?.filter((fixture) => fixture.status === "played").sort((a, b) => b.match_date.localeCompare(a.match_date))[0];
   return (
     <>
       {section === "team" ? <>
@@ -22,9 +27,14 @@ export default function SectionPage({ section }: { section: SectionKey }) {
         {section === "team" && <SquadGrid />}
 
         {section === "matches" && <>
-          <div className="content-heading"><div><p className="eyebrow">Latest result</p><h2>Orange Cup final</h2></div><span className="data-note">14 July 2026</span></div>
-          <div className="result-card"><div className="result-team"><span className="mini-crest"><Image src="/shaita-angels-logo.png" alt="" width={52} height={52} /></span><strong>Shaita Angels</strong></div><div className="result-score"><span>2</span><i>–</i><span>1</span><small>FULL TIME</small></div><div className="result-team away"><span className="opponent-mark">WG</span><strong>World Girls</strong></div><div className="result-meta"><span>2026 Women’s Orange Cup · Final</span><span>Samuel Kanyon Doe Sports Complex · Paynesville</span></div></div>
-          <div className="note-panel"><strong>Next season</strong><p>2026–27 fixtures and ticket details will be added after official release. No dates are listed until confirmed.</p></div>
+          {fixtures === null ? <>
+            <div className="content-heading"><div><p className="eyebrow">Latest result</p><h2>Orange Cup final</h2></div><span className="data-note">14 July 2026</span></div>
+            <div className="result-card"><div className="result-team"><span className="mini-crest"><Image src="/shaita-angels-logo.png" alt="" width={52} height={52} /></span><strong>Shaita Angels</strong></div><div className="result-score"><span>2</span><i>–</i><span>1</span><small>FULL TIME</small></div><div className="result-team away"><span className="opponent-mark">WG</span><strong>World Girls</strong></div><div className="result-meta"><span>2026 Women’s Orange Cup · Final</span><span>Samuel Kanyon Doe Sports Complex · Paynesville</span></div></div>
+            <div className="note-panel"><strong>Next season</strong><p>2026–27 fixtures and ticket details will be added after official release. No dates are listed until confirmed.</p></div>
+          </> : <>
+            {latestResult && <div className="data-note matches-latest">Latest result: {latestResult.opponent} · {latestResult.shaita_goals}–{latestResult.opponent_goals} · {formatMatchDate(latestResult.match_date)}</div>}
+            <FixtureCenter fixtures={fixtures} />
+          </>}
           <div className="content-heading compact-heading"><div><p className="eyebrow">Recent milestones</p><h2>Seasons to remember</h2></div></div>
           <div className="season-list"><article><span>2025–26</span><strong>Upper Women’s League</strong><em>Runners-up · 57 points</em></article><article><span>2025–26</span><strong>Women’s Orange Cup</strong><em>Champions · 2–1 vs World Girls</em></article><article><span>2024–25</span><strong>LFA Women’s Super Cup</strong><em>Champions · 4–3 on penalties</em></article></div>
         </>}

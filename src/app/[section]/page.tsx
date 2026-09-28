@@ -6,6 +6,8 @@ import { sections } from "@/data/site";
 type SectionKey = keyof typeof sections;
 const sectionKeys = Object.keys(sections) as SectionKey[];
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   return sectionKeys.map((section) => ({ section }));
 }
