@@ -1,37 +1,14 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
-import Navbar from '@/components/layout/Navbar'
-import Footer from '@/components/layout/Footer'
-
-const inter = Inter({ subsets: ['latin'] })
+import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Shaita Angels FC | Liberia Women\'s Football',
-  description: 'Official website of Shaita Angels FC — LFA Super Cup Champions. Based in Careysburg, Liberia.',
-  keywords: 'Shaita Angels FC, Liberia women football, LFA, Careysburg',
-  openGraph: {
-    title: 'Shaita Angels FC',
-    description: 'Official website of Shaita Angels FC',
-    type: 'website',
-  },
-}
+  title: { default: "Shaita Angels FC | Careysburg, Liberia", template: "%s | Shaita Angels FC" },
+  description: "The home of Shaita Angels FC: women’s football, match stories, and the community of Careysburg, Liberia.",
+  openGraph: { title: "Shaita Angels FC", description: "From Careysburg. For the whole game.", type: "website" },
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="en">
-      <body className={`${inter.className} min-h-screen flex flex-col`}
-        style={{ background: '#0a0a0a', color: '#fff' }}>
-        <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
-      </body>
-    </html>
-  )
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="en"><body><a className="skip-link" href="#main-content">Skip to content</a><Navbar /><main id="main-content">{children}</main><Footer /></body></html>;
 }
