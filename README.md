@@ -26,6 +26,11 @@ Open [http://localhost:3000](http://localhost:3000).
 - The social preview card is generated at build time by `src/app/opengraph-image.tsx`. The crest is inlined from `src/app/og-crest.png`; regenerate that file with `node scripts/build-og-crest.mjs` after replacing the logo in `public/`.
 - `agentRules: false` in `next.config.ts` stops Next from generating `AGENTS.md` / `CLAUDE.md` on every `next dev`.
 - Responsive images are served as AVIF with a WebP fallback.
+- Responsive images are served as AVIF with a WebP fallback.
+- `npm run check` runs lint, type checking and the unit tests together. The suite
+  in `tests/` mirrors the CHECK constraints in the fixtures migration, so a
+  change to the admin form that drifts from the database schema fails the build.
+  CI runs the same gate on every push to `main`.
 
 ## Fixtures and results admin
 

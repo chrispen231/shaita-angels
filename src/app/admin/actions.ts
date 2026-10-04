@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getSiteUrl } from "@/lib/supabase/config";
 import { getAdminContext } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { validateFixture } from "@/lib/fixtures/validation";
 import type { FixtureActionState } from "@/types/fixtures";
 
 export async function signInAdmin(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
@@ -96,13 +97,25 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
 
   let shaitaGoals: number | null = null;
   let opponentGoals: number | null = null;
-  if (status === "played") {
-    if (!/^\d{1,2}$/.test(rawFor) || !/^\d{1,2}$/.test(rawAgainst)) return { status: "error", message: "Played matches need both scores (0–99)." };
+  if (status === "played" && /^\d{1,2}$/.test(rawFor) && /^\d{1,2}$/.test(rawAgainst)) {
     shaitaGoals = Number(rawFor);
     opponentGoals = Number(rawAgainst);
   }
-  if (venue.length > 160 || notes.length > 2000) return { status: "error", message: "Venue or notes exceed the allowed length." };
-  if (kickoff && !/^([01]\d|2[0-3]):[0-5]\d$/.test(kickoff)) return { status: "error", message: "Enter kickoff time in 24-hour HH:MM format." };
+
+  // Single source of truth, shared with tests/fixture-validation.test.ts so the
+  // form and the database CHECK constraints cannot drift apart silently.
+  const invalid = validateFixture({
+    opponent, competition, season,
+    match_date: matchDate,
+    kickoff_time: kickoff,
+    venue,
+    venue_type: venueType,
+    status,
+    shaita_goals: shaitaGoals,
+    opponent_goals: opponentGoals,
+    notes,
+  });
+  if (invalid) return { status: "error", message: invalid };
 
   const values = {
     opponent, competition, season, match_date: matchDate, kickoff_time: kickoff || null,
