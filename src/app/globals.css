@@ -118,3 +118,19 @@ body:has(.hero) .site-header{position:absolute;inset:0 0 auto;background:linear-
 .staff-empty-state .eyebrow{margin:0 0 9px}.staff-empty-state h2{font:900 clamp(30px,5vw,52px)/.9 var(--display);text-transform:uppercase;margin:0 0 13px}.staff-empty-state div>p:last-child{max-width:570px;font-size:13px;line-height:1.75;color:#69645f;margin:0}.staff-page-content>.text-link{display:inline-block;margin-top:22px}
 @media(max-width:1000px){.squad-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:680px){.team-subnav-inner{width:100%;padding-inline:18px;gap:20px;overflow-x:auto}.team-subnav-inner>span{font-size:8px}.team-subnav-inner>a{font-size:8px}.squad-page-heading{padding-top:40px}.squad-page-heading h1{font-size:clamp(58px,14vw,82px)}.squad-filter-bar{display:block;margin-bottom:17px}.squad-filters{gap:21px}.squad-filters button{min-height:48px;font-size:8px}.squad-count{display:block;padding:10px 0}.squad-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}.player-card-info{min-height:79px;padding-right:35px}.player-card-info h2{font-size:clamp(17px,5vw,22px)}.player-art-number{font-size:clamp(65px,18vw,92px)}.player-art-kicker{font-size:6px;left:9px;top:10px}.player-art-mark{font-size:5px;right:8px;bottom:9px}}
+
+/* Touch targets: inline text links and footer links measure well under the
+   44px minimum on phones. Padding keeps the visual weight identical while making
+   the hit area large enough to tap reliably. */
+@media(max-width:900px){
+  .footer-links{gap:2px}
+  .footer-links a{display:inline-flex;align-items:center;min-height:44px;padding-block:6px}
+  .text-link{display:inline-flex;align-items:center;min-height:44px;padding-bottom:0;border-bottom:0;position:relative}
+  .text-link::after{content:"";position:absolute;left:0;right:0;bottom:8px;border-bottom:1px solid currentColor}
+  .player-card-info .text-link,.story-copy .text-link,.origin-copy .text-link,.hero-actions .hero-text-link{min-height:44px}
+  .hero-actions .hero-text-link{display:inline-flex;align-items:center;min-height:44px}
+    .desktop-nav>a,.site-header .brand{min-height:44px}
+    .match-details a{display:inline-flex;align-items:center;min-height:44px}
+    .match-details a span{margin-left:6px}
+    .note-panel a{display:inline-flex;align-items:center;min-height:44px}
+  }

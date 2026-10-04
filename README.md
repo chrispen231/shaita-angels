@@ -4,6 +4,10 @@ The official website concept for Shaita Angels Football Club, based in Careysbur
 
 ## Run locally
 
+The site runs with Supabase disabled by default: `npm run dev` and every public
+page work, and `/matches` plus `/admin` show their "not configured" empty states
+instead of live data.
+
 Copy `.env.example` to `.env.local`, then add the Supabase publishable key from the project API settings. Keep secret/service-role keys out of all `NEXT_PUBLIC_*` variables and out of Git.
 
 ```bash
@@ -18,6 +22,10 @@ Open [http://localhost:3000](http://localhost:3000).
 - Club imagery in `public/` is retained from the original project; generic starter graphics and legacy demo pages have been removed.
 - The 2026 Orange Cup result and historical honors are based on published reporting. Names shown on the team page are references from recent coverage, not a confirmed current roster.
 - 2026–27 fixtures, official ticketing, and merchandise ordering should only be published once confirmed by the club.
+- `sitemap.xml` and `robots.txt` are generated from `src/app/sitemap.ts` and `src/app/robots.ts`; `/admin` and `/auth/` are disallowed from indexing.
+- The social preview card is generated at build time by `src/app/opengraph-image.tsx`. The crest is inlined from `src/app/og-crest.png`; regenerate that file with `node scripts/build-og-crest.mjs` after replacing the logo in `public/`.
+- `agentRules: false` in `next.config.ts` stops Next from generating `AGENTS.md` / `CLAUDE.md` on every `next dev`.
+- Responsive images are served as AVIF with a WebP fallback.
 
 ## Fixtures and results admin
 

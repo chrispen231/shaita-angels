@@ -120,7 +120,7 @@ export const gallery = [
   { src: "/gallery-1.jpg", alt: "Shaita Angels players in their green away kit", label: "The squad" },
   { src: "/gallery-2.jpg", alt: "A Shaita Angels player controls the ball", label: "On the pitch" },
   { src: "/gallery-3.jpg", alt: "Shaita Angels players line up before a match", label: "Match day" },
-  { src: "/hero.jpg", alt: "Shaita Angels team gathered on the pitch", label: "Careysburg" },
+  { src: "/news-featured.jpg", alt: "Shaita Angels posing with the 2024–25 LFA Women’s Super Cup trophy", label: "Super Cup" },
 ];
 
 export const sections = {
