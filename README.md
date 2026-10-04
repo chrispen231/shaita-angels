@@ -31,11 +31,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 The `/admin` area uses Supabase email-and-password sign-in and only grants access to emails present in the protected `site_admins` table. Admins can use the password-reset flow at `/admin/login` to set or recover a password. The fixtures table is protected by row-level security: the public can read published entries; authorized admins can manage entries. Unpublish a fixture to hide it from the public site without deleting its record.
 
-Before enabling admin management:
+Before using admin management:
 
-1. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_SITE_URL` in local `.env.local` and the Vercel project's Production/Preview/Development environments as appropriate. The publishable key is intended for browser use; never add a secret or `service_role` key to the application.
-2. Apply `supabase/migrations/20260928202929_fixtures_results.sql` to the Supabase project. It creates the protected admin-membership and fixtures tables and seeds the confirmed Orange Cup final.
+1. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_SITE_URL` in local `.env.local` and the Vercel project's Production/Preview environments as appropriate. The publishable key is intended for browser use; never add a secret or `service_role` key to the application.
+2. Migration `supabase/migrations/20260928202929_fixtures_results.sql` has already been applied to the live project. It created the protected admin-membership and fixtures tables and seeded the confirmed Orange Cup final. Check the current state any time with `supabase migration list`; local and remote should show the same revision and nothing pending.
 3. Add the authorized administrator to `public.site_admins` only after their Supabase Auth user exists. The admin signs in at `/admin/login`; first-time password setup and recovery use the email reset flow on that page.
 4. In Supabase Auth URL configuration, set the production Site URL and allow `http://localhost:3000/auth/callback` and `https://shaita-angels.vercel.app/auth/callback` as redirect URLs. Add any Vercel preview callback URL patterns you intend to use.
 
-The migration has not been applied automatically. Confirm before changing the connected Supabase project or inviting/granting an administrator.
+The Supabase project is `shaitaangels` (ref `ehbvaqykcgewqtmaxvze`, eu-west-1). Confirm before changing that project or inviting/granting an administrator.
