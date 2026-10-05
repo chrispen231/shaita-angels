@@ -1,16 +1,8 @@
-import { createClient } from "./server";
-
-export async function getAdminContext() {
-  const supabase = await createClient();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user?.email) return null;
-
-  const { data: membership, error: membershipError } = await supabase
-    .from("site_admins")
-    .select("email")
-    .eq("email", user.email.toLowerCase())
-    .maybeSingle();
-
-  if (membershipError || !membership) return null;
-  return { supabase, user };
-}
+/**
+ * Re-exported from lib/admin/roles so there is a single getAdminContext.
+ *
+ * The role-aware version lives in lib/admin/roles.ts; this module is kept as an
+ * import path for existing call sites so they pick up the same implementation
+ * rather than maintaining two.
+ */
+export { getAdminContext } from "@/lib/admin/roles";

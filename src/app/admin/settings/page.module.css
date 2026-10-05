@@ -1,0 +1,11 @@
+/* Settings screen wrapper. */
+
+.warning {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  background: rgba(200, 16, 46, 0.08);
+  border-left: 3px solid var(--red);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--red-deep);
+}

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import PasswordForm from "./PasswordForm";
-import styles from "../Admin.module.css";
+import styles from "../login/login.module.css";
 
 export const dynamic = "force-dynamic";
 

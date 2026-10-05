@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateAdminPassword } from "../actions";
+import { updateAdminPassword } from "@/app/admin/fixtures/actions";
 import type { FixtureActionState } from "@/types/fixtures";
-import styles from "../Admin.module.css";
+import styles from "../login/login.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
 

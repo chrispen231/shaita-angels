@@ -1,0 +1,20 @@
+/* Admin sign-in and password-reset screens.
+   Shares the admin palette with AdminShell but is a separate file so the
+   fixtures editor can change its own layout without affecting sign-in. */
+
+.shell{min-height:100vh;background:#f5f1e8;color:#171615;padding:clamp(24px,5vw,68px) max(20px,calc((100vw - 1120px)/2));}
+.kicker{font-size:10px;line-height:1.4;letter-spacing:.16em;font-weight:800;color:#b12632;text-transform:uppercase;margin:0 0 8px}
+.muted{color:#6c6861;font-size:14px;line-height:1.6}
+.loginCard{max-width:540px;margin:8vh auto 0;padding:clamp(24px,5vw,48px);background:white;border:1px solid #e4ded2;box-shadow:0 20px 60px #17161512}
+.backLink{display:inline-flex;margin-top:24px;color:#171615;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.feedback{padding:12px 14px;font-size:13px;line-height:1.5}
+.notice{background:#e8f2e8;color:#245a32}
+.error{background:#fff0ee;color:#9f2029}
+.feedback{background:#edf3f7;color:#184768}
+.form{display:grid;gap:12px}
+.form{padding:14px;border-top:1px solid #e4ded2}
+.shell{padding-top:28px}
+.muted{font-size:12px}
+.resetDetails{margin-top:22px;border-top:1px solid #e4ded2;padding-top:18px}
+.muted{margin:12px 0}
+.form{margin-top:14px}

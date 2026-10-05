@@ -1,0 +1,144 @@
+/* Admin dashboard: counts, tool tiles, role explainer. */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px;
+  margin-bottom: 30px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 16px 18px;
+  background: var(--white);
+}
+
+.statValue {
+  font: 800 30px / 1 var(--display);
+}
+
+.statLabel {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sectionTitle {
+  margin: 0 0 12px;
+  font: 800 15px / 1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 96px;
+  padding: 15px 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.tile:hover {
+  border-color: var(--red);
+  transform: translateY(-2px);
+}
+
+.tileLabel {
+  font: 800 14px / 1.2 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tileBlurb {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.roleSection {
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.roleName {
+  margin: 0 0 5px;
+  font: 800 17px / 1 var(--display);
+  text-transform: uppercase;
+}
+
+.roleBlurb {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--charcoal);
+}
+
+.roleNote {
+  max-width: 68ch;
+  margin: 0 0 14px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.matrix summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--red);
+  cursor: pointer;
+}
+
+.matrix table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 11px;
+}
+
+.matrix th,
+.matrix td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.matrix thead th {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.matrix tbody th {
+  font-weight: 700;
+}
+
+.matrix td {
+  color: var(--muted);
+}
