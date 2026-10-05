@@ -23,7 +23,7 @@ export default function FixtureCarousel({ fixtures }: { fixtures: Fixture[] }) {
     <section className={styles.section} aria-labelledby="fixture-rail-heading">
       <div className={`wrap ${styles.head}`}>
         <div>
-          <p className="eyebrow eyebrow-light">On the road &amp; at home</p>
+          <p className="eyebrow">On the road &amp; at home</p>
           <h2 id="fixture-rail-heading">Fixtures &amp; results</h2>
         </div>
         <Link className={styles.allLink} href="/matches">

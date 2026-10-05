@@ -1,11 +1,11 @@
-/* Homepage fixture carousel: a scroll-snap rail of match cards on the ink
-   background, so it reads as one band with the champion bar above it. */
+/* Homepage fixture carousel: a scroll-snap rail of match cards on the paper
+   background, sitting between the dark latest-result band and the newsroom. */
 
 .section {
-  background: var(--ink);
-  color: white;
+  background: var(--paper);
+  color: var(--charcoal);
   padding-block: 62px 66px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--line);
 }
 
 .head {
@@ -42,12 +42,12 @@
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+  scrollbar-color: rgba(11, 11, 12, 0.28) transparent;
   -webkit-overflow-scrolling: touch;
 }
 
 .railWrap:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--red);
   outline-offset: -2px;
 }
 
@@ -62,7 +62,7 @@
 }
 
 .rail:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--red);
   outline-offset: 4px;
 }
 
@@ -82,8 +82,9 @@
   flex-direction: column;
   gap: 16px;
   padding: 20px 18px 16px;
-  background: linear-gradient(180deg, #17171a 0%, #101013 100%);
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.04);
 }
 
 /* Competition watermark: context you can read at a glance behind the score. */
@@ -93,7 +94,7 @@
   inset: auto -4px 30px auto;
   font: 900 clamp(40px, 6vw, 72px) / 0.8 var(--display);
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.075);
+  color: rgba(11, 11, 12, 0.07);
   text-align: right;
   pointer-events: none;
   user-select: none;
@@ -107,12 +108,12 @@
   font-size: 9px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
 }
 
 .meta time {
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--charcoal);
   white-space: nowrap;
 }
 
@@ -121,25 +122,27 @@
   align-items: center;
   min-height: 22px;
   padding: 0 8px;
-  background: rgba(255, 255, 255, 0.1);
+  /* Upcoming carries the club red so the next match reads first in the rail. */
+  background: rgba(200, 16, 46, 0.1);
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--red-deep);
 }
 
 .tag.played {
-  background: rgba(214, 167, 74, 0.2);
-  color: var(--gold);
+  background: rgba(214, 167, 74, 0.22);
+  color: #7a5c14;
 }
 
 .tag.cancelled {
-  background: rgba(200, 16, 46, 0.28);
-  color: #ff8f9f;
+  background: rgba(200, 16, 46, 0.12);
+  color: var(--red-deep);
 }
 
 .tag.postponed {
-  background: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.9);
+  /* Neutral slate, so postponed never reads as the next match. */
+  background: rgba(11, 11, 12, 0.09);
+  color: #4a4744;
 }
 
 .teams {
@@ -200,20 +203,20 @@
 
 .score i {
   font-style: normal;
-  color: var(--gold);
+  color: var(--red);
   margin-inline: 3px;
 }
 
 .score small {
   font: 700 9px / 1.3 var(--body);
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--muted);
 }
 
 .vs {
   font-size: 15px;
   letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--muted);
 }
 
 .foot {
@@ -221,11 +224,11 @@
   flex-direction: column;
   gap: 3px;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--line);
   font-size: 8px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: #55514d;
   line-height: 1.5;
 }
 
@@ -237,7 +240,7 @@
 }
 
 .competition {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--charcoal);
   font-weight: 700;
 }
 
