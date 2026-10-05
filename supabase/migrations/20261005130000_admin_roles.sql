@@ -131,15 +131,19 @@ create policy "Super admins can insert site settings"
 -- =============================================================================
 -- site_admins: self-service read only
 -- =============================================================================
--- Read your own row so the admin UI can show your name and role. No insert,
--- update or delete policy exists: promoting, demoting and removing admins is
--- deliberately not something the application can do. That is a service-role or
--- dashboard operation, which is the strongest guarantee available here.
-create policy "Admins can read their own membership"
-  on public.site_admins
-  for select
-  to authenticated
-  using (email = lower((select auth.jwt() ->> 'email')));
+-- The SELECT policy already exists, created in 20260928202929 and unchanged. It
+-- is not recreated here: doing so raises 42710 and aborts the whole migration.
+--
+-- That existing policy is exactly what is wanted, so nothing else is needed for
+-- reads. No insert, update or delete policy exists on this table: promoting,
+-- demoting and removing admins is deliberately not something the application can
+-- do. That is a service-role or dashboard operation, which is the strongest
+-- guarantee available here.
+--
+-- Note the existing policy selects `email` only in spirit, not in definition: a
+-- SELECT policy does not restrict columns, so an admin can read the whole row
+-- including their own role. That is intended - the UI shows the role - and it is
+-- harmless because role can never be written from the client.
 
 -- =============================================================================
 -- Fixtures: role-aware reads
