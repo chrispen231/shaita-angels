@@ -25,6 +25,8 @@ const valid: FixtureInput = {
   shaita_goals: 2,
   opponent_goals: 1,
   notes: "",
+  opponent_logo_url: null,
+  opponent_logo_alt: null,
 };
 
 describe("opponent / competition / season", () => {
@@ -137,5 +139,53 @@ describe("free text limits", () => {
 
   it("rejects notes longer than 2000 characters", () => {
     expect(validateFixture({ ...valid, notes: "a".repeat(2001) })).toMatch(/venue or notes/i);
+  });
+});
+
+describe("opponent logo", () => {
+  const withLogo = (url: string | null, alt: string | null = null) => ({
+    ...valid,
+    opponent_logo_url: url,
+    opponent_logo_alt: alt,
+  });
+
+  it("accepts no logo", () => {
+    expect(validateFixture(withLogo(null))).toBeNull();
+  });
+
+  it("accepts an absolute https url", () => {
+    expect(
+      validateFixture(withLogo("https://abc.supabase.co/storage/v1/object/public/opponents/a.png")),
+    ).toBeNull();
+  });
+
+  it("accepts an absolute http url", () => {
+    expect(validateFixture(withLogo("http://example.com/a.png"))).toBeNull();
+  });
+
+  it("rejects a relative path", () => {
+    // It is rendered into an image src, so a bare path would resolve against the
+    // admin origin and 404 rather than show the crest.
+    expect(validateFixture(withLogo("/opponents/a.png"))).toMatch(/full http/);
+  });
+
+  it("rejects a script url", () => {
+    expect(validateFixture(withLogo("javascript:alert(1)"))).toMatch(/full http/);
+    expect(validateFixture(withLogo("data:image/png;base64,AAA"))).toMatch(/full http/);
+  });
+
+  it("rejects a url with whitespace", () => {
+    expect(validateFixture(withLogo("https://example.com/a b.png"))).toMatch(/full http/);
+  });
+
+  it("caps the description at 200 characters", () => {
+    expect(validateFixture(withLogo("https://example.com/a.png", "a".repeat(200)))).toBeNull();
+    expect(validateFixture(withLogo("https://example.com/a.png", "a".repeat(201)))).toMatch(
+      /under 200/,
+    );
+  });
+
+  it("rejects an over-long url", () => {
+    expect(validateFixture(withLogo(`https://example.com/${"a".repeat(600)}`))).toMatch(/too long/);
   });
 });

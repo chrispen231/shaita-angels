@@ -1,5 +1,3 @@
-import { COMPETITIONS } from "@/lib/fixtures";
-
 /**
  * Values the club already knows, offered as dropdowns instead of free text.
  *
@@ -29,12 +27,23 @@ export type Competition = {
 // Competitions
 // =============================================================================
 
+/*
+ * The built-in list, written out rather than imported from src/lib/fixtures.ts.
+ *
+ * That module reads fixtures from Supabase and so reaches next/headers, which a
+ * client component cannot pull in. These same three competitions are seeded into
+ * the competitions table by 20261005170000_media_and_reference_data.sql, and
+ * tests/reference-data.test.ts asserts the two lists stay identical - so the
+ * duplication is checked rather than merely noted.
+ */
+const BUILT_IN: Competition[] = [
+  { slug: "lfa-womens-first-division", name: "LFA Women\u2019s First Division", short: "First Division" },
+  { slug: "womens-orange-cup", name: "Women\u2019s Orange Cup", short: "Orange Cup" },
+  { slug: "club-friendlies", name: "Club Friendlies", short: "Friendlies" },
+];
+
 function fromCode(): Competition[] {
-  return COMPETITIONS.map((competition) => ({
-    slug: competition.slug,
-    name: competition.label,
-    short: competition.short,
-  }));
+  return BUILT_IN.map((competition) => ({ ...competition }));
 }
 
 /**

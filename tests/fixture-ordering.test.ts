@@ -19,6 +19,8 @@ function make(overrides: Partial<Fixture> & { id: string; match_date: string }):
     shaita_goals: null,
     opponent_goals: null,
     notes: null,
+    opponent_logo_url: null,
+    opponent_logo_alt: null,
     is_published: true,
     created_at: "2026-01-01",
     updated_at: "2026-01-01",

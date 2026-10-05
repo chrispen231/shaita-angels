@@ -1,4 +1,6 @@
 import { getAdminContext } from "@/lib/admin/roles";
+import { getCompetitionsForAdmin } from "@/lib/reference-data.server";
+import { FIXTURE_COLUMNS } from "@/lib/fixtures";
 import AdminShell, { requireScreen } from "@/app/admin/AdminShell";
 import FixtureManager from "./FixtureManager";
 import { signOutAction } from "./actions";
@@ -9,21 +11,19 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Fixtures" };
 
-const FIXTURE_COLUMNS =
-  "id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, is_published, created_at, updated_at";
-
 export default async function FixturesPage({
   searchParams,
 }: {
   searchParams: Promise<{ saved?: string }>;
 }) {
   const context = requireScreen(await getAdminContext(), "fixtures");
-  const [{ data, error }, { saved }] = await Promise.all([
+  const [{ data, error }, { saved }, competitions] = await Promise.all([
     context.supabase
       .from("fixtures")
       .select(FIXTURE_COLUMNS)
       .order("match_date", { ascending: false }),
     searchParams,
+    getCompetitionsForAdmin(),
   ]);
 
   const fixtures = (data ?? []) as Fixture[];
@@ -53,7 +53,7 @@ export default async function FixturesPage({
         </p>
       )}
 
-      <FixtureManager fixtures={fixtures} />
+      <FixtureManager fixtures={fixtures} competitions={competitions} />
     </AdminShell>
   );
 }

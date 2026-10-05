@@ -21,12 +21,19 @@ export type FixtureInput = {
   shaita_goals: number | null;
   opponent_goals: number | null;
   notes: string;
+  /** Public URL of the opponent crest. Optional; null falls back to initials. */
+  opponent_logo_url: string | null;
+  opponent_logo_alt: string | null;
 };
 
 const VENUE_TYPES = ["home", "away", "neutral"] as const;
 const STATUSES = ["scheduled", "played", "postponed", "cancelled"] as const;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+// A logo URL is rendered into an image src, so it must be an absolute http(s) URL.
+// A javascript: or data: value here would be stored and later rendered into that
+// src, so the scheme is checked rather than assumed.
+const HTTP_URL = /^https?:\/\/[^\s]+$/i;
 const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const SCORE = /^\d{1,2}$/;
 
@@ -74,6 +81,18 @@ export function validateFixture(input: FixtureInput): string | null {
 
   if (input.kickoff_time && !HH_MM.test(input.kickoff_time)) {
     return "Enter kickoff time in 24-hour HH:MM format.";
+  }
+
+  // An opponent logo is optional. When present it must be an absolute http(s) URL,
+  // because it is rendered straight into an image src.
+  if (input.opponent_logo_url !== null) {
+    if (!HTTP_URL.test(input.opponent_logo_url)) {
+      return "The opponent logo must be a full http:// or https:// address. Upload the image rather than pasting a link.";
+    }
+    if (input.opponent_logo_url.length > 500) return "That logo address is too long.";
+    if (input.opponent_logo_alt !== null && input.opponent_logo_alt.length > 200) {
+      return "Keep the logo description under 200 characters.";
+    }
   }
 
   return null;

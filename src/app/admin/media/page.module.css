@@ -1,0 +1,224 @@
+/* Media library: image grid plus the competition reference list. */
+
+.heading {
+  margin: 0 0 8px;
+  font: 800 15px / 1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hint {
+  margin: 0 0 14px;
+  font-size: 10px;
+  line-height: 1.65;
+  color: var(--muted);
+  max-width: 74ch;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+
+.thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  background: rgba(11, 11, 12, 0.04);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.thumb img {
+  object-fit: contain;
+}
+
+.filename {
+  font-size: 11px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.purpose {
+  align-self: flex-start;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  background: rgba(11, 11, 12, 0.08);
+  color: var(--charcoal);
+}
+
+.copyRow {
+  display: flex;
+  gap: 6px;
+}
+
+.competitions {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--line);
+  border: 1px solid var(--line);
+  max-width: 720px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--white);
+}
+
+.name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.short {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.slug {
+  font-size: 10px;
+  color: var(--muted);
+  background: rgba(11, 11, 12, 0.05);
+  padding: 2px 6px;
+}
+
+.note {
+  margin: 12px 0 0;
+  font-size: 10px;
+  color: var(--muted);
+  max-width: 74ch;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+
+/* Library filters and per-card controls. */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.filter,
+.filterActive {
+  min-height: 40px;
+  padding: 0 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.filterActive {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: white;
+}
+
+.copy,
+.remove {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.copy {
+  color: var(--charcoal);
+}
+
+.remove {
+  color: var(--red-deep);
+}
+
+.confirm {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(200, 16, 46, 0.06);
+  border-left: 3px solid var(--red);
+}
+
+.confirmText {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--red-deep);
+}
+
+.confirmButton {
+  min-height: 40px;
+  padding: 0 12px;
+  background: var(--red);
+  color: white;
+  border: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.formSuccess {
+  margin: 0 0 12px;
+  font-size: 11px;
+  color: #1c5c26;
+}
+
+.formError {
+  margin: 0 0 12px;
+  font-size: 11px;
+  color: var(--red-deep);
+}

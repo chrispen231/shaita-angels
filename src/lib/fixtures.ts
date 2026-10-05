@@ -10,7 +10,7 @@ export async function getPublishedFixtures(): Promise<Fixture[] | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fixtures")
-    .select("id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, is_published, created_at, updated_at")
+    .select(FIXTURE_COLUMNS)
     .eq("is_published", true)
     .order("match_date", { ascending: true });
 
@@ -68,6 +68,27 @@ export function monthLabel(key: string) {
  * (an existing row reads "Women's Orange Cup · Final"), so filtering matches on
  * a normalised pattern rather than on exact equality.
  */
+/**
+ * Every column the Fixture type declares.
+ *
+ * Three routes read fixtures - the match centre, the match page and the admin
+ * editor - and each carried its own hand-written select list. Adding
+ * opponent_logo_url to the type therefore left all three returning a row that did
+ * not match it, and the failure surfaced as a confusing type error in a test file
+ * rather than at the query. One list, imported everywhere.
+ */
+// One long line, and `as const` on it, are both load-bearing.
+//
+// `as const`: supabase-js infers the returned row type from the select argument,
+// and only a string *literal* type carries that inference. A plain `const` string
+// widens to `string`, the query degrades to a generic error-shaped row, and every
+// `as Fixture` cast below becomes a type error instead of a checked assertion.
+//
+// A single line: `as const` cannot be applied to a concatenation, so the column
+// list cannot be wrapped for readability. That is why this is one long line
+// rather than the tidier wrapped form.
+export const FIXTURE_COLUMNS = "id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, opponent_logo_url, opponent_logo_alt, is_published, created_at, updated_at" as const;
+
 export const COMPETITIONS = [
   { slug: "lfa-womens-first-division", label: "LFA Women’s First Division", short: "First Division" },
   { slug: "womens-orange-cup", label: "Women’s Orange Cup", short: "Orange Cup" },

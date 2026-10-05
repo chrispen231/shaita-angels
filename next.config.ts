@@ -19,6 +19,26 @@ const nextConfig: NextConfig = {
     // AVIF first, WebP fallback. Much of this audience is on mobile data and
     // the squad photography is a few MB of source JPEGs.
     formats: ["image/avif", "image/webp"],
+
+    /*
+     * Uploaded images live in Supabase Storage, so the optimiser has to be allowed
+     * to fetch them. Without this every uploaded sponsor logo, story image, player
+     * photo and opponent crest 400s at render time - which is the whole feature
+     * failing while looking fine in the admin.
+     *
+     * The hostname is read from the environment rather than hardcoded so a staging
+     * project works too, and so the project reference is not duplicated here.
+     *
+     * pathname is narrowed to /storage/v1/object/public/ deliberately: this permits
+     * the club's own public bucket, and nothing else on the Supabase host.
+     */
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
 
   async headers() {

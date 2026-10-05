@@ -18,9 +18,13 @@ import { COMPETITIONS } from "@/lib/fixtures";
 
 describe("competitions", () => {
   it("matches the fixture filter list exactly", () => {
-    // src/lib/fixtures.ts drives /matches?competition=... and the badge text. If
-    // these drift, a dropdown selection would produce a fixture whose competition
-    // matches no filter.
+    /*
+     * src/lib/fixtures.ts drives /matches?competition=... and the badge text. The
+     * two lists are deliberately duplicated - the reference list cannot import
+     * fixtures.ts, because that module reaches next/headers and this one is used by
+     * client components. That makes this assertion the thing that keeps the
+     * duplication honest: if either side gains or renames a competition, this fails.
+     */
     const fromReference = builtInCompetitions();
     expect(fromReference).toHaveLength(COMPETITIONS.length);
     fromReference.forEach((competition, index) => {
@@ -28,6 +32,17 @@ describe("competitions", () => {
       expect(competition.name).toBe(COMPETITIONS[index].label);
       expect(competition.short).toBe(COMPETITIONS[index].short);
     });
+  });
+
+  it("matches what the database migration seeded", () => {
+    // The same three rows are inserted by
+    // 20261005170000_media_and_reference_data.sql. If the seed and this list
+    // disagree, a configured build shows different options from an unconfigured one.
+    expect(builtInCompetitions().map((entry) => entry.slug)).toEqual([
+      "lfa-womens-first-division",
+      "womens-orange-cup",
+      "club-friendlies",
+    ]);
   });
 
   it("includes the three competitions the club plays in", () => {

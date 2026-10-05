@@ -66,6 +66,10 @@ export async function updateAdminPassword(_previous: FixtureActionState, formDat
   redirect("/admin");
 }
 
+function emptyToNull(value: string) {
+  return value.trim() === "" ? null : value.trim();
+}
+
 function field(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
@@ -106,6 +110,8 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
   // form and the database CHECK constraints cannot drift apart silently.
   const invalid = validateFixture({
     opponent, competition, season,
+    opponent_logo_url: emptyToNull(field(formData, "opponent_logo_url")),
+    opponent_logo_alt: emptyToNull(field(formData, "opponent_logo_alt")),
     match_date: matchDate,
     kickoff_time: kickoff,
     venue,
@@ -119,6 +125,8 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
 
   const values = {
     opponent, competition, season, match_date: matchDate, kickoff_time: kickoff || null,
+    opponent_logo_url: emptyToNull(field(formData, "opponent_logo_url")),
+    opponent_logo_alt: emptyToNull(field(formData, "opponent_logo_alt")),
     venue: venue || null, venue_type: venueType, status,
     shaita_goals: shaitaGoals, opponent_goals: opponentGoals, notes: notes || null,
     is_published: published, updated_at: new Date().toISOString(),

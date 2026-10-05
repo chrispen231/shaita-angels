@@ -3,7 +3,9 @@
 import { useActionState, useState } from "react";
 import { savePlayer, updatePlayer, togglePlayerPublished, removePlayer } from "./actions";
 import type { FixtureActionState } from "@/types/fixtures";
-import { FEET, POSITIONS, isMinorFromDob } from "@/lib/matches/validation";
+import { FEET, isMinorFromDob } from "@/lib/matches/validation";
+import { POSITIONS } from "@/lib/reference-data";
+import ImageField from "@/app/admin/ImageField";
 import styles from "./SquadManager.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
@@ -18,6 +20,7 @@ export type SquadRow = {
   weight_kg: number | null;
   shirt_number: number | null;
   bio: string | null;
+  photo_url: string | null;
   is_minor: boolean;
   is_published: boolean;
 };
@@ -271,6 +274,16 @@ function PlayerFields({
           name="weight_kg"
           inputMode="numeric"
           defaultValue={player?.weight_kg ?? ""}
+        />
+      </div>
+
+      <div className={styles.fieldWide}>
+        <ImageField
+          name="photo_url"
+          label="Photo"
+          purpose="player"
+          defaultValue={player?.photo_url ?? null}
+          hint="Optional. Without one, the card and profile use the shirt artwork."
         />
       </div>
 

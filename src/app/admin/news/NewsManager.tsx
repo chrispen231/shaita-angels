@@ -9,6 +9,8 @@ import {
 } from "./actions";
 import type { FixtureActionState } from "@/types/fixtures";
 import { slugify } from "@/lib/content-validation";
+import ImageField from "@/app/admin/ImageField";
+import { ARTICLE_CATEGORIES } from "@/lib/reference-data";
 import styles from "./NewsManager.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
@@ -257,14 +259,22 @@ function ArticleFields({
 
         <div className={styles.field}>
           <label htmlFor={id("category")}>Category</label>
+          {/* A datalist rather than a select: these are the categories the club uses,
+              and they can add another without a deploy. */}
           <input
             id={id("category")}
             name="category"
             required
             maxLength={60}
+            list="article-categories"
             defaultValue={article?.category ?? ""}
             placeholder="Match report"
           />
+          <datalist id="article-categories">
+            {ARTICLE_CATEGORIES.map((category) => (
+              <option key={category} value={category} />
+            ))}
+          </datalist>
         </div>
 
         <div className={styles.field}>
@@ -291,25 +301,16 @@ function ArticleFields({
           <p className={styles.fieldHint}>Shown on the newsroom card and used as the page summary.</p>
         </div>
 
-        <div className={styles.field}>
-          <label htmlFor={id("image")}>Image path</label>
-          <input
-            id={id("image")}
+        <div className={styles.fieldWide}>
+          <ImageField
             name="image_path"
-            defaultValue={article?.image_path ?? ""}
-            placeholder="/orange-cup-2026.jpg"
+            altName="image_alt"
+            label="Story image"
+            purpose="news"
+            defaultValue={article?.image_path ?? null}
+            defaultAlt={article?.image_alt ?? null}
+            hint="Optional. Without one, the card uses the club artwork."
           />
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor={id("alt")}>Image description</label>
-          <input
-            id={id("alt")}
-            name="image_alt"
-            maxLength={200}
-            defaultValue={article?.image_alt ?? ""}
-          />
-          <p className={styles.fieldHint}>Describe the photo for someone who cannot see it.</p>
         </div>
 
         <div className={`${styles.field} ${styles.fieldWide}`}>

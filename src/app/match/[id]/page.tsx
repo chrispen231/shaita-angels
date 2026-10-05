@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import type { Fixture } from "@/types/fixtures";
-import { formatMatchDateLong } from "@/lib/fixtures";
+import { formatMatchDateLong, FIXTURE_COLUMNS } from "@/lib/fixtures";
 import MatchView, { isMatchTab } from "./MatchView";
 import { getMatchContent } from "@/lib/matches/content";
 
@@ -14,7 +14,7 @@ async function getFixture(id: string): Promise<Fixture | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fixtures")
-    .select("id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, is_published, created_at, updated_at")
+    .select(FIXTURE_COLUMNS)
     .eq("id", id)
     .eq("is_published", true)
     .maybeSingle();

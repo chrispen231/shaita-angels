@@ -7,6 +7,7 @@ import type { FixtureActionState } from "@/types/fixtures";
 import type { Sponsor } from "@/types/sponsors";
 import { SPONSOR_TIER_LABELS } from "@/types/sponsors";
 import { resolveSponsorLogo } from "@/lib/sponsors/logo-url";
+import ImageField from "@/app/admin/ImageField";
 import styles from "./SponsorForm.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
@@ -21,13 +22,15 @@ export default function SponsorForm({ sponsor }: { sponsor: Sponsor | null }) {
   const [tier, setTier] = useState<number>(sponsor?.tier ?? 3);
   const [url, setUrl] = useState(sponsor?.url ?? "");
   const [altText, setAltText] = useState(sponsor?.alt_text ?? "");
-  const [logoPathValue, setLogoPathValue] = useState(sponsor?.logo_path ?? "");
-
-  // Preview the record as it currently stands, plus whatever the typed name
-  // would resolve to, so adding "NEEV Liberia" shows its artwork immediately.
-  const previewSrc = resolveSponsorLogo({
+  /*
+   * The header preview shows only what resolves from the sponsor's NAME, because the
+   * uploaded logo is previewed by ImageField further down. Passing logo_path here
+   * would need it lifted into state, and a controlled copy of a value the picker
+   * already owns is a second source of truth that can drift from the submitted one.
+   */
+  const bundledPreview = resolveSponsorLogo({
     name: name || sponsor?.name || "",
-    logo_path: logoPathValue,
+    logo_path: null,
   });
 
   return (
@@ -36,14 +39,23 @@ export default function SponsorForm({ sponsor }: { sponsor: Sponsor | null }) {
         {sponsor && <input type="hidden" name="id" value={sponsor.id} />}
 
         <div className={styles.preview}>
-          {previewSrc ? (
-            <Image src={previewSrc} alt="" width={160} height={92} className={styles.previewImage} />
+          {bundledPreview ? (
+            <Image
+              src={bundledPreview}
+              alt=""
+              width={160}
+              height={92}
+              className={styles.previewImage}
+              unoptimized
+            />
           ) : (
             <span className={styles.previewEmpty}>No logo yet</span>
           )}
           <p className={styles.previewNote}>
-            Shown at {tier === 1 ? "92" : "75"}px on the public band. Uploads are normalised to a single
-            ink tone so the band reads as one set.
+            {bundledPreview
+              ? "Artwork bundled with the site, matched on the sponsor's name. Upload a logo below to use your own file instead."
+              : "Upload a logo below, or leave it blank to show the sponsor's name as text."}{" "}
+            Shown at {tier === 1 ? "92" : "75"}px on the public band.
           </p>
         </div>
 
@@ -98,19 +110,15 @@ export default function SponsorForm({ sponsor }: { sponsor: Sponsor | null }) {
           <p className={styles.hint}>Defaults to the sponsor name. Read by screen readers.</p>
         </div>
 
-        <div className={styles.field}>
-          <label htmlFor="sponsor-logo">Logo path</label>
-          <input
-            id="sponsor-logo"
+        <div className={styles.fullWidth}>
+          <ImageField
             name="logo_path"
-            placeholder="bettomax.png"
-            value={logoPathValue}
-            onChange={(event) => setLogoPathValue(event.target.value)}
+            altName="alt_text"
+            label="Sponsor logo"
+            purpose="sponsor"
+            defaultValue={sponsor?.logo_path ?? null}
+            hint="Optional. Leave it blank and the artwork bundled with the site is matched on the sponsor's name instead."
           />
-          <p className={styles.hint}>
-            Optional. A file name such as <code>bettomax.png</code> uses the artwork bundled with the
-            site; leave it blank and the sponsor&apos;s own name is matched instead.
-          </p>
         </div>
 
         <div className={styles.row}>

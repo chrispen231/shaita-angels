@@ -48,6 +48,7 @@ function readInput(formData: FormData) {
     weight_kg: field(formData, "weight_kg"),
     shirt_number: field(formData, "shirt_number"),
     bio: String(formData.get("bio") ?? ""),
+    photo_url: field(formData, "photo_url"),
   };
 }
 
@@ -70,6 +71,7 @@ export async function savePlayer(
     weight_kg: toNumber(input.weight_kg),
     shirt_number: toNumber(input.shirt_number),
     bio: emptyToNull(input.bio),
+    photo_url: emptyToNull(input.photo_url),
     is_published: false,
   });
 
@@ -108,6 +110,7 @@ export async function updatePlayer(
       weight_kg: toNumber(input.weight_kg),
       shirt_number: toNumber(input.shirt_number),
       bio: emptyToNull(input.bio),
+      photo_url: emptyToNull(input.photo_url),
     })
     .eq("id", id);
 

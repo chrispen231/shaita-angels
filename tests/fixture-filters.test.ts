@@ -28,6 +28,8 @@ function make(overrides: Partial<Fixture> & { id: string }): Fixture {
     shaita_goals: null,
     opponent_goals: null,
     notes: null,
+    opponent_logo_url: null,
+    opponent_logo_alt: null,
     is_published: true,
     created_at: "",
     updated_at: "",
