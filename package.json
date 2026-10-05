@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run lint && tsc --noEmit && npm run test"
+    "check": "npm run lint && tsc --noEmit && npm run test",
+    "build:configured": "node scripts/build-configured.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

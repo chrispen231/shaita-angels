@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { pad, singular, type SquadPlayer } from "@/lib/content";
+import { pad, singular } from "@/lib/format";
+import type { SquadPlayer } from "@/lib/content";
 import { playerPhotos } from "@/data/site";
 
 /**

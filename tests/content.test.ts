@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { formatArticleDate, pad, singular, positionsInUse, POSITION_ORDER } from "@/lib/content";
+import { formatArticleDate, positionsInUse, POSITION_ORDER } from "@/lib/content";
+import { pad, singular } from "@/lib/format";
 
 /**
- * These are the pure helpers behind the migrated public pages. They live in
- * src/lib/content.ts rather than in a component because the player profile renders
- * on the server: a server component cannot call a function exported from a
- * "use client" module, which is a runtime error rather than a type error.
+ * These are the pure helpers behind the migrated public pages. pad and singular are
+ * tested from src/lib/format.ts because that module has no imports at all, which is
+ * what lets both a client component and a server component use it.
  */
 
 describe("formatArticleDate", () => {
