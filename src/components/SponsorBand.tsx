@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { SiteSettings, Sponsor } from "@/types/sponsors";
-import { sponsorLogoUrl } from "@/lib/sponsors/logo-url";
+import { resolveSponsorLogo } from "@/lib/sponsors/logo-url";
 import styles from "./SponsorBand.module.css";
 
 /**
@@ -23,13 +23,6 @@ import styles from "./SponsorBand.module.css";
 type Props = {
   sponsors: Sponsor[] | null;
   settings: SiteSettings | null;
-};
-
-/** Local artwork, used until a sponsor has a logo in storage. */
-const FALLBACK_LOGO: Record<string, string> = {
-  "BETTOMAX": "/sponsors/bettomax.png",
-  "NEEV Liberia": "/sponsors/neev.png",
-  Ambivert: "/sponsors/ambivert.png",
 };
 
 /** Platform icons are stored once and referenced by slug, never uploaded per entry. */
@@ -103,8 +96,7 @@ export default function SponsorBand({ sponsors, settings }: Props) {
 }
 
 function SponsorLogo({ sponsor }: { sponsor: Sponsor }) {
-  const stored = sponsorLogoUrl(sponsor.logo_path);
-  const src = stored ?? FALLBACK_LOGO[sponsor.name] ?? null;
+  const src = resolveSponsorLogo(sponsor);
   const label = sponsor.alt_text?.trim() || sponsor.name;
 
   const inner = src ? (

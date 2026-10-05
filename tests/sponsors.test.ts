@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { sponsorLogoUrl } from "@/lib/sponsors/logo-url";
+import { resolveSponsorLogo, hasSponsorLogo, sponsorLogoUrl } from "@/lib/sponsors/logo-url";
 import {
   SPONSOR_TIER_LABELS,
   SOCIAL_PLATFORMS,
@@ -43,10 +43,17 @@ describe("sponsorLogoUrl", () => {
     expect(sponsorLogoUrl("https://cdn.example.com/a.png")).toBe("https://cdn.example.com/a.png");
   });
 
-  it("builds a public storage url from a bucket path", () => {
+  it("prefers a bundled file over the storage bucket", () => {
+    // A bundled file name resolves locally rather than to storage, so an admin
+    // who types a bundled file name does not get a broken bucket link.
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://abc.supabase.co";
-    expect(sponsorLogoUrl("bettomax.png")).toBe(
-      "https://abc.supabase.co/storage/v1/object/public/sponsor-logos/bettomax.png",
+    expect(sponsorLogoUrl("bettomax.png")).toBe("/sponsors/bettomax.png");
+  });
+
+  it("builds a public storage url for an unknown file", () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://abc.supabase.co";
+    expect(sponsorLogoUrl("uploads/custom.png")).toBe(
+      "https://abc.supabase.co/storage/v1/object/public/sponsor-logos/uploads/custom.png",
     );
   });
 
@@ -64,9 +71,9 @@ describe("sponsorLogoUrl", () => {
     );
   });
 
-  it("returns null when Supabase is not configured", () => {
+  it("returns null for an unknown file when Supabase is not configured", () => {
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-    expect(sponsorLogoUrl("bettomax.png")).toBeNull();
+    expect(sponsorLogoUrl("uploads/custom.png")).toBeNull();
   });
 });
 
@@ -104,5 +111,55 @@ describe("social handles", () => {
     };
     expect(handle.platform).toBe("facebook");
     expect(handle.is_published).toBe(true);
+  });
+});
+describe("resolveSponsorLogo", () => {
+  const original = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  afterEach(() => {
+    if (original === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = original;
+  });
+
+  it("matches bundled artwork on the sponsor name when no path is set", () => {
+    expect(resolveSponsorLogo({ name: "BETTOMAX", logo_path: null })).toBe("/sponsors/bettomax.png");
+    expect(resolveSponsorLogo({ name: "NEEV Liberia", logo_path: null })).toBe("/sponsors/neev.png");
+    expect(resolveSponsorLogo({ name: "Ambivert", logo_path: null })).toBe("/sponsors/ambivert.png");
+  });
+
+  it("ignores case and extra spacing in the name", () => {
+    // This is the bug: an admin adding "AMBIVERT" got the text placeholder
+    // because the old lookup was keyed on an exact string.
+    expect(resolveSponsorLogo({ name: "AMBIVERT", logo_path: null })).toBe("/sponsors/ambivert.png");
+    expect(resolveSponsorLogo({ name: "  neev   liberia ", logo_path: null })).toBe("/sponsors/neev.png");
+  });
+
+  it("resolves a bundled file name from logo_path", () => {
+    expect(resolveSponsorLogo({ name: "Anything", logo_path: "bettomax.png" })).toBe("/sponsors/bettomax.png");
+    expect(resolveSponsorLogo({ name: "Anything", logo_path: "/logos/neev.png" })).toBe("/sponsors/neev.png");
+  });
+
+  it("passes an absolute url through unchanged", () => {
+    expect(resolveSponsorLogo({ name: "X", logo_path: "https://cdn.example.com/a.png" })).toBe(
+      "https://cdn.example.com/a.png",
+    );
+  });
+
+  it("falls back to storage for an unknown file", () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://abc.supabase.co";
+    expect(resolveSponsorLogo({ name: "X", logo_path: "uploads/custom.png" })).toBe(
+      "https://abc.supabase.co/storage/v1/object/public/sponsor-logos/uploads/custom.png",
+    );
+  });
+
+  it("returns null for a sponsor with no artwork anywhere", () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://abc.supabase.co";
+    expect(resolveSponsorLogo({ name: "Unknown Brand", logo_path: null })).toBeNull();
+    expect(hasSponsorLogo({ name: "Unknown Brand", logo_path: null })).toBe(false);
+  });
+
+  it("reports artwork availability", () => {
+    expect(hasSponsorLogo({ name: "TLION ESTATE", logo_path: null })).toBe(true);
+    expect(hasSponsorLogo({ name: "BETTOMAX", logo_path: null })).toBe(true);
   });
 });

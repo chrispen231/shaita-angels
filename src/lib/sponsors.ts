@@ -2,7 +2,7 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import type { SiteSettings, SocialHandle, Sponsor } from "@/types/sponsors";
 
-export { sponsorLogoUrl } from "@/lib/sponsors/logo-url";
+export { resolveSponsorLogo, hasSponsorLogo, sponsorLogoUrl } from "@/lib/sponsors/logo-url";
 
 /**
  * Public reads for the sponsor band and social row.

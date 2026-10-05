@@ -6,21 +6,10 @@ import { saveSponsor, deleteSponsor, setSponsorPublished } from "./actions";
 import type { FixtureActionState } from "@/types/fixtures";
 import type { Sponsor } from "@/types/sponsors";
 import { SPONSOR_TIER_LABELS } from "@/types/sponsors";
-import { sponsorLogoUrl } from "@/lib/sponsors/logo-url";
+import { resolveSponsorLogo } from "@/lib/sponsors/logo-url";
 import styles from "./SponsorForm.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
-
-/**
- * Local artwork preview. Matches the fallback map the public band uses, so an
- * admin sees exactly what a visitor will see for a sponsor that has no file in
- * storage yet.
- */
-const FALLBACK_LOGO: Record<string, string> = {
-  BETTOMAX: "/sponsors/bettomax.png",
-  "NEEV Liberia": "/sponsors/neev.png",
-  Ambivert: "/sponsors/ambivert.png",
-};
 
 export default function SponsorForm({ sponsor }: { sponsor: Sponsor | null }) {
   const [state, action, pending] = useActionState(saveSponsor, initial);
@@ -32,9 +21,14 @@ export default function SponsorForm({ sponsor }: { sponsor: Sponsor | null }) {
   const [tier, setTier] = useState<number>(sponsor?.tier ?? 3);
   const [url, setUrl] = useState(sponsor?.url ?? "");
   const [altText, setAltText] = useState(sponsor?.alt_text ?? "");
+  const [logoPathValue, setLogoPathValue] = useState(sponsor?.logo_path ?? "");
 
-  const storedLogo = sponsor ? sponsorLogoUrl(sponsor.logo_path) : null;
-  const previewSrc = storedLogo ?? (name ? FALLBACK_LOGO[name] : null);
+  // Preview the record as it currently stands, plus whatever the typed name
+  // would resolve to, so adding "NEEV Liberia" shows its artwork immediately.
+  const previewSrc = resolveSponsorLogo({
+    name: name || sponsor?.name || "",
+    logo_path: logoPathValue,
+  });
 
   return (
     <div className={styles.wrap}>
@@ -110,10 +104,12 @@ export default function SponsorForm({ sponsor }: { sponsor: Sponsor | null }) {
             id="sponsor-logo"
             name="logo_path"
             placeholder="bettomax.png"
-            defaultValue={sponsor?.logo_path ?? ""}
+            value={logoPathValue}
+            onChange={(event) => setLogoPathValue(event.target.value)}
           />
           <p className={styles.hint}>
-            File name within the sponsor-logos bucket. Leave blank to use the bundled local artwork.
+            Optional. A file name such as <code>bettomax.png</code> uses the artwork bundled with the
+            site; leave it blank and the sponsor&apos;s own name is matched instead.
           </p>
         </div>
 

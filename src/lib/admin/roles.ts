@@ -1,33 +1,29 @@
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { isRole, type Role } from "@/lib/admin/role-constants";
 
 /**
- * Roles for the admin section.
+ * Server-side admin context.
  *
- * Mirrors the `role` CHECK constraint added in
- * supabase/migrations/20261005130000_admin_roles.sql.
+ * The role read here is for presentation: hiding nav links and choosing which
+ * screen to render. It is not the security boundary. The boundary is RLS plus the
+ * role-guarded policies in the migrations, because RLS cannot be bypassed from
+ * the browser and a client can always be made to call an endpoint by hand.
  *
- * The role read here is for *presentation*: hiding nav links, choosing which
- * screen to render. It is not the security boundary. The boundary is RLS plus
- * the column-level grants that withhold `role` from non-super admins, because
- * RLS cannot restrict which columns a caller updates and a client can always be
- * made to call an endpoint by hand.
+ * Role names and labels live in role-constants.ts so client components can use
+ * them without pulling in this module, which reaches `next/headers`.
  */
 
-export const ROLES = ["super_admin", "fixtures", "content"] as const;
-export type Role = (typeof ROLES)[number];
-
-export const ROLE_LABELS: Record<Role, string> = {
-  super_admin: "Super admin",
-  fixtures: "Fixtures",
-  content: "Content",
-};
-
-export const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  super_admin: "Everything, including sponsors, settings and other admins.",
-  fixtures: "Fixtures, matches, lineups, goals and cards.",
-  content: "News, squad, honours and the media library.",
-};
+export {
+  ROLES,
+  ROLE_LABELS,
+  ROLE_DESCRIPTIONS,
+  SCREEN_ACCESS,
+  canAccess,
+  isRole,
+  type Role,
+  type ScreenKey,
+} from "@/lib/admin/role-constants";
 
 export type AdminContext = {
   supabase: Awaited<ReturnType<typeof createClient>>;
@@ -37,7 +33,7 @@ export type AdminContext = {
 
 /** The role column is typed text in the database; validate before trusting it. */
 function toRole(value: unknown): Role {
-  return ROLES.includes(value as Role) ? (value as Role) : "content";
+  return isRole(value) ? value : "content";
 }
 
 /**
@@ -68,23 +64,4 @@ export async function getAdminContext(): Promise<AdminContext | null> {
     user: { id: user.id, email: user.email },
     role: toRole(membership.role),
   };
-}
-
-/** Screen access, matching the policies in the Phase 2 migration. */
-export const SCREEN_ACCESS = {
-  sponsors: ["super_admin"],
-  settings: ["super_admin"],
-  users: ["super_admin"],
-  fixtures: ["super_admin", "fixtures"],
-  matches: ["super_admin", "fixtures"],
-  news: ["super_admin", "content"],
-  squad: ["super_admin", "content"],
-  honors: ["super_admin", "content"],
-  media: ["super_admin", "fixtures", "content"],
-} as const satisfies Record<string, readonly Role[]>;
-
-export type ScreenKey = keyof typeof SCREEN_ACCESS;
-
-export function canAccess(role: Role, screen: ScreenKey): boolean {
-  return (SCREEN_ACCESS[screen] as readonly Role[]).includes(role);
 }
