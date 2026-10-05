@@ -1,0 +1,32 @@
+/* Summary strip above a content screen. */
+
+.summary {
+  display: flex;
+  gap: 1px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+  background: var(--line);
+  border: 1px solid var(--line);
+  width: fit-content;
+}
+
+.summary li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 20px;
+  background: var(--white);
+}
+
+.count {
+  font: 800 24px / 1 var(--display);
+}
+
+.label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

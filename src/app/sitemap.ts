@@ -1,12 +1,22 @@
 import type { MetadataRoute } from "next";
-import { articles } from "@/data/site";
+import { getArticles, getSquad } from "@/lib/content";
 
 const BASE_URL = "https://shaita-angels.vercel.app";
 
-export const dynamic = "force-static";
+// Reads the database, so it cannot be prerendered: a static build has no
+// Supabase credentials and would either fail or bake in an empty newsroom.
+export const dynamic = "force-dynamic";
+
+/**
+ * Dynamic rather than force-static.
+ *
+ * Articles and players live in the database and change without a deploy. A static
+ * sitemap would keep listing articles the club has unpublished and omit ones they
+ * have just published, which is worse than no sitemap at all.
+ */
 
 /** Public routes only. /admin, /admin/login and /admin/password are never listed. */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   type ChangeFrequency = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
@@ -30,12 +40,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route.priority,
   }));
 
+  const [articles, squad] = await Promise.all([getArticles(), getSquad()]);
+
   const articleRoutes: MetadataRoute.Sitemap = articles.map((article) => ({
     url: `${BASE_URL}/news/${article.slug}`,
-    lastModified: now,
+    lastModified: new Date(`${article.date}T00:00:00Z`),
     changeFrequency: "yearly",
     priority: 0.5,
   }));
 
-  return [...staticRoutes, ...articleRoutes];
+  // Player profiles are public pages and were previously absent from the sitemap
+  // entirely, because they were generated from a static list.
+  const playerRoutes: MetadataRoute.Sitemap = squad.map((player) => ({
+    url: `${BASE_URL}/team/player/${player.number}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.4,
+  }));
+
+  return [...staticRoutes, ...articleRoutes, ...playerRoutes];
 }

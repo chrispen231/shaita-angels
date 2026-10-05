@@ -1,0 +1,387 @@
+/* News manager: story list with inline edit, plus the write-a-story form.
+   Shares its visual language with SquadManager.module.css. */
+
+.wrap {
+  display: grid;
+  gap: 16px;
+  max-width: 900px;
+}
+
+.card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+
+.cardTitle {
+  margin: 0;
+  font: 800 15px / 1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hint {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.65;
+  color: var(--muted);
+  max-width: 74ch;
+}
+
+.list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--white);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.title {
+  font: 800 14px / 1.3 var(--display);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  font-size: 10px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.flags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.published,
+.draft,
+.featured {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  white-space: nowrap;
+}
+
+.published {
+  background: rgba(28, 92, 38, 0.12);
+  color: #1c5c26;
+}
+
+.draft {
+  background: rgba(11, 11, 12, 0.08);
+  color: var(--muted);
+}
+
+.featured {
+  background: rgba(214, 167, 74, 0.24);
+  color: #7a5c14;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rowActions button,
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--charcoal);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.removeButton {
+  color: var(--red-deep) !important;
+}
+
+.editForm {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 16px;
+  background: rgba(11, 11, 12, 0.03);
+  border-left: 3px solid var(--line);
+}
+
+.confirm {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: rgba(200, 16, 46, 0.06);
+  border-left: 3px solid var(--red);
+}
+
+.confirmText {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--red-deep);
+  max-width: 62ch;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 6px;
+}
+
+.confirmActions button {
+  min-height: 44px;
+  padding: 0 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.confirmActions .danger {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--charcoal);
+}
+
+.field input,
+.field textarea {
+  min-height: 44px;
+  padding: 0 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font: 400 13px var(--body);
+  color: var(--charcoal);
+}
+
+.field textarea {
+  padding: 10px;
+  line-height: 1.65;
+  resize: vertical;
+}
+
+.slugRow {
+  display: flex;
+  align-items: stretch;
+}
+
+.slugRow input {
+  flex: 1;
+  min-width: 0;
+  border-left: 0;
+}
+
+.slugPrefix {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  background: rgba(11, 11, 12, 0.05);
+  border: 1px solid var(--line);
+  font: 400 12px var(--body);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.fieldHint {
+  margin: 0;
+  font-size: 9px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--charcoal);
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--red);
+}
+
+.actions {
+  display: flex;
+}
+
+.actions button {
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--ink);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 0;
+  cursor: pointer;
+}
+
+.actions button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.secondary {
+  background: var(--white) !important;
+}
+
+.success {
+  margin: 0;
+  font-size: 11px;
+  color: #1c5c26;
+  min-height: 1em;
+}
+
+.error {
+  margin: 0;
+  font-size: 11px;
+  color: var(--red-deep);
+  min-height: 1em;
+}
+
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Reorder controls. Two stacked arrows rather than a drag handle: the list is
+   short, and a drag handle is unusable with a keyboard and awkward on a phone. */
+
+.order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 24px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--charcoal);
+  cursor: pointer;
+}
+
+.arrow:disabled {
+  color: var(--muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font: 800 14px / 1.3 var(--display);
+}
+
+.year {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.detail {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .rowActions {
+    grid-column: 1 / -1;
+  }
+}

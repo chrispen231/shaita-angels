@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import newsStyles from "./SectionPage.module.css";
-import { articles, gallery, honors, sections } from "@/data/site";
+import { gallery, sections } from "@/data/site";
+import { getArticles, getHonors, getSquad, positionsInUse , formatArticleDate } from "@/lib/content";
 import SquadGrid from "@/components/SquadGrid";
 import MatchCentre from "@/components/MatchCentre";
 import { getPublishedFixtures } from "@/lib/fixtures";
@@ -29,18 +30,24 @@ export default async function SectionPage({
   const content = sections[section];
   const fixtures = section === "matches" ? await getPublishedFixtures() : null;
   const matchFilters = parseMatchFilters(searchParams ?? {});
+
+  // Content now lives in the database. Only the sections that show it are read, so
+  // the club page does not pay for a squad query it never renders.
+  const squad = section === "team" ? await getSquad() : [];
+  const honors = section === "club" ? await getHonors() : [];
+  const articles = section === "news" ? await getArticles() : [];
   return (
     <>
       {section === "team" ? <>
         <nav className="team-subnav" aria-label="Women's team sections"><div className="wrap team-subnav-inner">
           <span>SHAITA ANGELS WOMEN</span><Link href="/team" aria-current="page">Squad</Link><Link href="/team/staff">Staff</Link><Link href="/matches">Matches</Link><Link href="/club#honours">Honours</Link>
         </div></nav>
-        <section className="squad-page-heading"><div className="wrap"><p className="eyebrow">First team · 24 players</p><h1>The squad</h1><p>Meet the Angels. One team, every number, all together.</p></div></section>
+        <section className="squad-page-heading"><div className="wrap"><p className="eyebrow">First team · {squad.length} players</p><h1>The squad</h1><p>Meet the Angels. One team, every number, all together.</p></div></section>
       </> : <section className={`inner-hero ${section === "news" ? "news-hero" : ""}`}>
         <div className="wrap inner-hero-content"><p className="eyebrow">{content.eyebrow}</p><h1>{content.title}</h1><p className="inner-intro">{content.intro}</p></div>
       </section>}
       <div className={`wrap page-content ${section === "team" ? "squad-page-content" : ""}`}>
-        {section === "team" && <SquadGrid />}
+        {section === "team" && <SquadGrid players={squad} positions={positionsInUse(squad)} />}
 
         {section === "matches" && <>
                   <MatchCentre fixtures={fixtures} filters={matchFilters} configured={Boolean(getSupabaseConfig())} />
@@ -51,18 +58,18 @@ export default async function SectionPage({
         {section === "club" && <>
           <div className="story-layout"><div className="story-image"><Image src="/gallery-1.jpg" alt="Shaita Angels players together in their green away kit in Careysburg" fill sizes="(max-width: 800px) 100vw, 50vw" /></div><div className="story-copy"><p className="eyebrow">Our beginning</p><h2>A different kind of first step.</h2><p>In 2019, a group of women in Careysburg made the move from kickball to football. That decision became Shaita Angels FC: a club rooted in its community and built around the ambition of women players.</p><p>The Angels won the Women’s Lower League in 2022–23 and were promoted to the LFA Women’s First Division, finishing second in 2023–24, then claiming the Orange Cup and Super Cup. In 2026 they added a second Orange Cup to the story.</p><Link className="text-link" href="/news">Read the latest stories <span aria-hidden="true">↗</span></Link></div></div>
           <div className="content-heading" id="honours"><div><p className="eyebrow">The honours</p><h2>Earned together.</h2></div></div>
-          <div className="honors-list">{honors.map((honor) => <article key={`${honor.year}-${honor.name}`}><span>{honor.year}</span><strong>{honor.name}</strong><small>{honor.detail}</small><b aria-hidden="true">✳</b></article>)}</div>
+          <div className="honors-list">{honors.map((honor) => <article key={`${honor.year}-${honor.name}`}><span>{honor.year}</span><strong>{honor.name}</strong><small>{honor.detail ?? ""}</small><b aria-hidden="true">✳</b></article>)}</div>
         </>}
 
         {section === "news" && <div className={newsStyles.newsroom}>
           <div className="newsroom-label"><span className="eyebrow">The latest</span><span>SHAITA ANGELS FC <i aria-hidden="true">/</i> NEWSROOM</span></div>
           {articles[0] && <Link className="news-card news-card-featured news-lead-story" href={`/news/${articles[0].slug}`}>
-            <div className="news-image"><Image src={articles[0].image} alt={articles[0].imageAlt} fill priority sizes="(max-width: 720px) 100vw, 60vw" /></div>
-            <div className="news-copy"><span className="news-featured-tag">FEATURE STORY</span><div className="news-meta"><span>{articles[0].category}</span><time>{articles[0].date}</time></div><h2>{articles[0].title}</h2><p>{articles[0].excerpt}</p><span className="text-link">Read the story <span aria-hidden="true">↗</span></span></div>
+            <div className="news-image"><Image src={articles[0].image ?? "/news-featured.jpg"} alt={articles[0].imageAlt ?? `Shaita Angels FC`} fill priority sizes="(max-width: 720px) 100vw, 60vw" /></div>
+            <div className="news-copy"><span className="news-featured-tag">FEATURE STORY</span><div className="news-meta"><span>{articles[0].category}</span><time>{formatArticleDate(articles[0].date)}</time></div><h2>{articles[0].title}</h2><p>{articles[0].excerpt}</p><span className="text-link">Read the story <span aria-hidden="true">↗</span></span></div>
           </Link>}
           <div className="content-heading news-archive-heading"><div><p className="eyebrow">From the archive</p><h2>More from the newsroom</h2></div><span className="data-note">Club stories · Match reports · History</span></div>
           <div className="news-grid news-archive-grid">{articles.slice(1).map((article) => <Link className="news-card" href={`/news/${article.slug}`} key={article.slug}>
-            <div className="news-image"><Image src={article.image} alt={article.imageAlt} fill sizes="(max-width: 720px) 100vw, 50vw" /></div><div className="news-copy"><div className="news-meta"><span>{article.category}</span><time>{article.date}</time></div><h3>{article.title}</h3><p>{article.excerpt}</p><span className="text-link">Read story <span aria-hidden="true">↗</span></span></div>
+            <div className="news-image"><Image src={article.image ?? "/news-featured.jpg"} alt={article.imageAlt ?? `Shaita Angels FC`} fill sizes="(max-width: 720px) 100vw, 50vw" /></div><div className="news-copy"><div className="news-meta"><span>{article.category}</span><time>{formatArticleDate(article.date)}</time></div><h3>{article.title}</h3><p>{article.excerpt}</p><span className="text-link">Read story <span aria-hidden="true">↗</span></span></div>
           </Link>)}</div>
           <p className="newsroom-note">Stories are published as club updates are confirmed. Check back for more from the Angels.</p>
         </div>}
