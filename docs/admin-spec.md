@@ -393,10 +393,39 @@ Two gaps to close before the band can ship:
    logos.
 2. **NEEV needs darker artwork**, for the contrast reasons measured above.
 
-Social handles: **none supplied yet.** The only link provided is Ambivert's
-Facebook page, which belongs on the Ambivert sponsor record rather than in the
-club's own social row. The club's own handles are still needed to seed
-`site_settings.social_handles`.
+Ambivert's Facebook page belongs on the Ambivert sponsor record rather than in
+the club's own social row.
+
+Social handles, supplied by the club:
+
+| Platform | URL | Logo |
+|---|---|---|
+| Facebook | facebook.com/shaitaangelsfc | Supplied, 350×350 |
+| Instagram | instagram.com/shaitaangelsfc | Supplied, 350×366 |
+| YouTube | youtube.com/@shaitaangelsfootballclub5487 | Supplied, 1600×838 |
+
+All three are transparent PNGs with transparent corners, and all clear AA against
+white (10.6:1, 21:1, 7.24:1). No social icon needs replacement.
+
+**The three icons are stylistically inconsistent.** Facebook and YouTube are
+solid filled plates (rounded square with the mark reversed out in white);
+Instagram is a thin outline. Set side by side at the same size they do not read as
+a set — Instagram appears far lighter than its neighbours.
+
+Three options, in order of preference:
+
+1. **Ask for a filled Instagram glyph.** Most icon sets ship both variants, so
+   this is a quick ask and the cleanest fix.
+2. **Render all three as filled** by supplying the filled Instagram mark.
+3. **Render all three as outlines.** Instagram is already correct, so this needs
+   outline versions of Facebook and YouTube.
+
+Whichever is chosen, all three must be the same variant. The admin's preview
+should show them adjacent at true size so the mismatch is visible before
+publishing — that is exactly the case a live preview exists for.
+
+Platform icons are stored once as assets and referenced by slug from
+`site_settings.social_handles`, not uploaded per entry.
 
 Tiering above is a proposal. The club knows the actual commercial hierarchy and
 should set it rather than inferring it from the logo filenames.
