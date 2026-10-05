@@ -2,7 +2,6 @@
 
 import { useActionState, useRef, useState } from "react";
 import Image from "next/image";
-import { useFormStatus } from "react-dom";
 import { uploadImage, type UploadState } from "@/app/admin/media/actions";
 import {
   allowedTypes,
@@ -133,9 +132,14 @@ export default function ImageField({
       {mode === "upload" ? (
         <div className={styles.uploadBox}>
           <label className={styles.dropzone}>
+            {/* This is the input that submits. The button above carries
+                formAction={uploadAction}, so the browser posts this form with the
+                file to the upload action rather than to the surrounding record's
+                own action. */}
             <input
               ref={fileInput}
               type="file"
+              name="file"
               accept={accept}
               className={styles.fileInput}
               onChange={onFileChosen}
@@ -158,19 +162,26 @@ export default function ImageField({
             </p>
           )}
 
-          <form action={uploadAction} className={styles.uploadForm}>
-            <input type="hidden" name="purpose" value={purpose} />
-            {/* The chosen file has to travel with the submit, so it is mirrored into
-                this form rather than read from the label's input. */}
-            <input
-              type="file"
-              name="file"
-              accept={accept}
-              className={styles.srOnly}
-              aria-label={`${label}: file to upload`}
-            />
-            <UploadButton purpose={purpose} />
-          </form>
+          {/*
+            No <form> here, deliberately.
+
+            ImageField is rendered INSIDE the sponsor, news, player and fixture
+            forms, and HTML forbids nesting forms: the browser silently discards the
+            inner one. That made the upload button submit the OUTER form, so the
+            upload action never ran and the file silently went nowhere.
+
+            useActionState's dispatch can be handed to formAction on any form, so the
+            upload uses the surrounding form with a formAction override instead. That
+            keeps it one request with its own server action, and no nesting.
+          */}
+          <button
+            type="submit"
+            formAction={uploadAction}
+            className={styles.uploadButton}
+            aria-label={`Upload ${PURPOSE_LABEL[purpose].toLowerCase()}`}
+          >
+            Upload {PURPOSE_LABEL[purpose].toLowerCase()}
+          </button>
 
           {state.message && (
             <p
@@ -254,15 +265,5 @@ export default function ImageField({
       {hint && <p className={styles.hint}>{hint}</p>}
       {svgWarning(purpose) && <p className={styles.hint}>{svgWarning(purpose)}</p>}
     </div>
-  );
-}
-
-/** Takes the purpose as a prop: useFormStatus exposes only its own form's state. */
-function UploadButton({ purpose }: { purpose: UploadPurpose }) {
-  const { pending } = useFormStatus();
-  return (
-    <button type="submit" className={styles.uploadButton} disabled={pending}>
-      {pending ? "Uploading…" : `Upload ${PURPOSE_LABEL[purpose].toLowerCase()}`}
-    </button>
   );
 }
