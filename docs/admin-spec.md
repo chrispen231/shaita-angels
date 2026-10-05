@@ -146,14 +146,12 @@ Sponsor logos go in **Supabase Storage**, not `public/`. This is the dependency
 that gets missed: once content is database-managed, images need their own RLS
 policies and an orphan story.
 
-- Bucket `sponsor-logos`, private.
-- Uploads go through a server action using the service-role key; the bucket is
-  never public.
-- Public rendering uses short-lived signed URLs, or the logos move to a public
-  bucket. **Decision deferred to implementation** — a public read bucket is
-  simpler and cached better; a private bucket is more correct if logos are ever
-  replaced mid-contract. Sponsors are public brand assets, so a public bucket is
-  likely the right answer.
+- Bucket `sponsor-logos`, **public read**, with writes restricted to authenticated
+  admins. Confirmed by the club: sponsors are public brand assets, and a public
+  bucket is simpler and caches far better than signed URLs.
+- Uploads still go through a server action; the bucket is never world-writable.
+- Files are normalised on upload: trimmed of empty margin, sized to the band's
+  display height, and re-encoded as PNG with transparency preserved.
 - Orphan handling: unpublishing a sponsor does not delete its file. A scheduled
   cleanup would be over-engineering at this scale; superseded logos are simply
   left in place.
@@ -167,6 +165,48 @@ partners. You will be uploading whatever a sponsor sends. So:
 - A live preview in the admin renders the logo exactly as the public band will.
 - Document the requirement in the upload panel, because a full-colour PNG
   flattened with `grayscale()` looks muddy and makes the band look broken.
+
+### Supplied logos, measured
+
+Three of the four sponsors supplied artwork, inspected on 2026-10-05. All are PNGs
+with a transparent background and transparent corners, which is exactly what the
+band needs. Contrast below is the darkest 2% of pixels against white, which is
+what actually reads as the logo's ink.
+
+| Sponsor | Source | Mean RGB on white | Ink contrast | Verdict |
+|---|---|---|---|---|
+| BETTOMAX | 992×992 | 251,251,251 | **7.21:1** | Passes AA |
+| Ambivert | 1000×733 | 172,169,165 | **14.65:1** | Passes AA comfortably |
+| NEEV Liberia | 820×754 | 229,228,232 | **2.51:1** | **Too low** |
+
+**NEEV needs a dark version.** The supplied artwork is pale lavender-grey, which
+on a white band is faint — 2.51:1, below the 3:1 minimum for graphics and well
+below AA. The brand name "NEEV" is still readable at full size, but the tagline
+beneath it ("NEW ENERGY ELECTRIC VEHICLES, LIBERIA") becomes difficult, and both
+will suffer when scaled to 75px.
+
+Three options, in order of preference:
+
+1. **Ask NEEV for the dark or reversed artwork.** Every brand has one; it is a
+   quick ask and the right fix.
+2. **Apply a CSS filter** (`brightness(0.4) saturate(0)`) to darken the artwork at
+   render time. Cheap, and safe for a monochrome mark, but it is a workaround
+   rather than the brand's real colour.
+3. **Place NEEV on a dark plate** inside the band. Changes the design language,
+   so it is a last resort.
+
+The admin's live preview exists precisely so this is caught before publishing
+rather than after.
+
+**Ambivert has no wordmark.** The supplied file is a symbol only — a dark
+rounded tile with a stepped "A" mark. In a sponsor band that reads as a logo, but
+the name is not visible, so the link needs an accessible name ("Ambivert") and the
+row benefits from the sponsor name being rendered as text beside it. Worth
+confirming with the sponsor whether a horizontal lockup exists.
+
+**BETTOMAX note:** the supplied mark has a star overlapping the middle of the
+wordmark, so the central letters are less distinct at small sizes. Legible at
+75px, but worth checking in the rendered band.
 
 ### Schema
 
@@ -335,12 +375,34 @@ pass at 1264px and 390px measuring overflow, tap targets and contrast ratios —
 the same checks used for the public site. Plus a live check that a non-super
 admin cannot reach a super-admin screen by typing its URL.
 
+## Seed data
+
+Four sponsors, as supplied by the club:
+
+| Sponsor | Website | Tier | Logo |
+|---|---|---|---|
+| BETTOMAX | bettomax-lbr.com | 1 | Supplied, passes AA |
+| NEEV Liberia | neevliberia.com | 1 | Supplied, **needs a dark version** |
+| TLION ESTATE | none supplied | 2 | **Missing** |
+| Ambivert | facebook.com/luxuryGraphiX | 2 | Supplied (symbol only) |
+
+Two gaps to close before the band can ship:
+
+1. **TLION ESTATE has no logo.** It cannot appear in the band without one. A
+   text-only fallback is possible but would look inconsistent beside three proper
+   logos.
+2. **NEEV needs darker artwork**, for the contrast reasons measured above.
+
+Social handles: **none supplied yet.** The only link provided is Ambivert's
+Facebook page, which belongs on the Ambivert sponsor record rather than in the
+club's own social row. The club's own handles are still needed to seed
+`site_settings.social_handles`.
+
+Tiering above is a proposal. The club knows the actual commercial hierarchy and
+should set it rather than inferring it from the logo filenames.
+
 ## Open questions
 
-1. **Sponsor logos: public or private bucket?** Spec currently leans public read
-   bucket, since sponsors are public brand assets.
-2. **First sponsors and social handles** — the actual list to seed. Needed before
-   Phase 1 can be verified end to end.
-3. **Does the fixtures editor need a delete path?** Currently there is none by
+1. **Does the fixtures editor need a delete path?** Currently there is none by
    design. If the club wants one, it needs an audit trail and your explicit
    approval.
