@@ -62,20 +62,23 @@ export default function MatchCard({
           </div>
 
           <div className={styles.score}>
-            {scored ? (
-              <>
-                <b>{fixture.shaita_goals}</b>
-                <i aria-hidden="true">–</i>
-                <b>{fixture.opponent_goals}</b>
-                <span className={styles.srOnly}>
-                  Shaita Angels {fixture.shaita_goals}, {fixture.opponent} {fixture.opponent_goals}
-                </span>
-              </>
-            ) : (
-              <>
+            <span className={styles.digits}>
+              {scored ? (
+                <>
+                  <b>{fixture.shaita_goals}</b>
+                  <i aria-hidden="true">–</i>
+                  <b>{fixture.opponent_goals}</b>
+                </>
+              ) : (
                 <span className={styles.vs}>VS</span>
-                {kickoff && <small>{kickoff}</small>}
-              </>
+              )}
+            </span>
+            {scored ? (
+              <span className={styles.srOnly}>
+                Shaita Angels {fixture.shaita_goals}, {fixture.opponent} {fixture.opponent_goals}
+              </span>
+            ) : (
+              kickoff && <small>{kickoff}</small>
             )}
           </div>
 

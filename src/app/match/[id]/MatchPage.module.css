@@ -111,15 +111,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  font: 800 clamp(44px, 8vw, 76px) / 1 var(--display);
+  gap: 4px;
   min-width: 130px;
 }
 
-.result i {
+/* Digits read horizontally: home score, dash, away score. */
+.digits {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 9px;
+  font: 800 clamp(44px, 8vw, 76px) / 1 var(--display);
+  white-space: nowrap;
+}
+
+.digits i {
   font-style: normal;
   color: var(--red);
-  margin-inline: 5px;
 }
 
 .result small {
@@ -316,7 +324,11 @@
 
   .result {
     min-width: 0;
+  }
+
+  .digits {
     font-size: 44px;
+    gap: 6px;
   }
 
   .vs {

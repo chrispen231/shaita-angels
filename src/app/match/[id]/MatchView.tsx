@@ -61,18 +61,23 @@ export default function MatchView({ fixture, tab }: { fixture: Fixture; tab: Mat
             <strong>Shaita Angels</strong>
           </div>
           <div className={styles.result}>
+            <span className={styles.digits}>
+              {scored ? (
+                <>
+                  <b>{fixture.shaita_goals}</b>
+                  <i aria-hidden="true">–</i>
+                  <b>{fixture.opponent_goals}</b>
+                </>
+              ) : (
+                <span className={styles.vs}>VS</span>
+              )}
+            </span>
             {scored ? (
-              <>
-                <b>{fixture.shaita_goals}</b>
-                <i aria-hidden="true">–</i>
-                <b>{fixture.opponent_goals}</b>
-                <span className={styles.srOnly}>
-                  Final score: Shaita Angels {fixture.shaita_goals}, {fixture.opponent} {fixture.opponent_goals}
-                </span>
-              </>
+              <span className={styles.srOnly}>
+                Final score: Shaita Angels {fixture.shaita_goals}, {fixture.opponent} {fixture.opponent_goals}
+              </span>
             ) : (
               <>
-                <span className={styles.vs}>VS</span>
                 {countdown !== null && <small>{countdown} {countdown === 1 ? "day" : "days"} to go</small>}
                 {!countdown && kickoff && <small>Kick-off {kickoff}</small>}
               </>

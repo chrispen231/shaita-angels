@@ -145,13 +145,21 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  font: 800 32px / 1 var(--display);
 }
 
-.score i {
+/* Digits read horizontally: home score, dash, away score. */
+.digits {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 5px;
+  font: 800 32px / 1 var(--display);
+  white-space: nowrap;
+}
+
+.digits i {
   font-style: normal;
   color: var(--red);
-  margin-inline: 3px;
 }
 
 .score small {
@@ -261,7 +269,11 @@
 
   .score {
     min-width: 0;
+  }
+
+  .digits {
     font-size: 27px;
+    gap: 4px;
   }
 
   .watermark {
