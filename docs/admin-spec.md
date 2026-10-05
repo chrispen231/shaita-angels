@@ -321,17 +321,42 @@ Fixtures editor additions over the current form: bulk paste from a text block,
 recurring fixtures, and duplicate detection (same opponent, competition and date
 within a window).
 
-## Phase 3 — Match editor
+## Phase 3 — Match editor — **DONE**
 
 One editor per match: lineups (starters + bench, shirt numbers, positions), goals
-with scorer and minute, cards, and the written match report. This is what turns
-the Lineups and Stats tabs on `/match/[id]` from honest placeholders into real
-content.
+with scorer and minute, cards, and the written match report. This turns the
+Lineups, Commentary and Stats tabs on `/match/[id]` into real content.
 
-**Lineup entry is where the age question lands.** The editor stores
-`date_of_birth`; the public profile renders age only. The admin shows a visible
-note that date of birth is club-confidential and never published, so a
-contributor understands it at the point of entry.
+Delivered in `20261005150000_match_content.sql` and commit `fa3a4ef`:
+
+- `/admin/matches` lists every fixture with its lineup and goal counts, linking to
+  a per-match editor. `/admin/squad` manages profiles.
+- Lineups, goals and cards save as a set rather than diffed row by row. That keeps
+  the per-match shirt-number uniqueness meaningful — a diff would let number 7 move
+  between players without ever conflicting — and makes a removal an explicit act.
+- Shirt numbers are unique per match, not per squad.
+- Stoppage time is entered as the running total minute (90+3 becomes 93) with a
+  flag, and the editor previews how it will read before saving.
+- Own goals count for the side they counted for and are excluded from a player's
+  scoring tally.
+- Stats derives goals by side, cards and goalscorers from recorded data only.
+  Possession, shots and pass accuracy are absent rather than invented.
+
+**The age question landed as enforcement, not documentation.** `date_of_birth` is
+withheld from `anon` and `authenticated` by column-level grant — RLS operates on
+rows and cannot restrict one column. Verified on the live database: reading the
+column as `anon` fails with `42501 permission denied for table squad`, while
+`full_name` and `is_minor` read fine. A public query that asked for it would error
+rather than leak a minor's birth date.
+
+`is_minor` is maintained by a trigger rather than a stored generated column,
+because a generated column must be IMMUTABLE and `current_date` is not — deriving
+"under 18 today" at write time would freeze the answer and be wrong every year
+after.
+
+**`requireScreen` now 404s rather than redirecting.** A signed-in admin without the
+role gets the same answer as a missing page. The old redirect confirmed the screen
+existed, which is exactly what someone probing the admin area wants to know.
 
 ## Phase 4 — News and squad
 
