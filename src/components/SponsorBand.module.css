@@ -11,6 +11,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  /* Logos vary from square (Bettomax) to 2.5:1 (a wordmark), so the column gap
+     is what actually holds the row together. */
   gap: 20px 48px;
 }
 
@@ -41,18 +43,29 @@
   transition: opacity 0.2s;
 }
 
+/* Every slot occupies the same width, so a wide wordmark cannot push the row out
+   of balance or dominate a square emblem beside it. The artwork sits inside the
+   column at its natural aspect ratio rather than being stretched to fill. */
+.tier > .slot {
+  flex: 0 0 auto;
+  width: clamp(112px, 22vw, 184px);
+}
+
 .slot:hover {
   opacity: 0.62;
 }
 
 .logo {
+  max-width: 100%;
   width: auto;
   height: 75px;
   object-fit: contain;
 }
 
+/* Tier 1 gets more height, capped against viewport width so the principals row
+   does not overpower the page on a wide screen. */
 .tier[data-tier="1"] .logo {
-  height: 92px;
+  height: min(92px, 15vw);
 }
 
 /* Fallback for a sponsor with no artwork supplied yet. */
@@ -124,6 +137,11 @@
 @media (max-width: 680px) {
   .band {
     padding-block: 40px 36px;
+  }
+
+  /* Two columns on a phone, and the slot width follows so the row stays even. */
+  .tier > .slot {
+    width: clamp(96px, 38vw, 150px);
   }
 
   .tier {
