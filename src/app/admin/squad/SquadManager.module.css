@@ -1,0 +1,299 @@
+/* Squad manager: confidentiality notice, player list with inline edit, add form. */
+
+.wrap {
+  display: grid;
+  gap: 16px;
+  max-width: 900px;
+}
+
+.notice {
+  padding: 16px 20px;
+  background: rgba(214, 167, 74, 0.14);
+  border-left: 3px solid var(--gold, #d6a74a);
+}
+
+.noticeTitle {
+  margin: 0 0 6px;
+  font: 800 12px / 1.3 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7a5c14;
+}
+
+.notice p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.7;
+  color: #5f4a1c;
+  max-width: 74ch;
+}
+
+.card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+
+.cardTitle {
+  margin: 0;
+  font: 800 15px / 1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hint {
+  margin: 0;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--white);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: 800 14px / 1.2 var(--display);
+  overflow-wrap: anywhere;
+}
+
+.shirt {
+  font: 700 11px var(--display);
+  color: var(--muted);
+}
+
+.meta {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.flags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.minor,
+.published,
+.draft {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  white-space: nowrap;
+}
+
+.minor {
+  background: rgba(200, 16, 46, 0.12);
+  color: var(--red-deep);
+}
+
+.published {
+  background: rgba(28, 92, 38, 0.12);
+  color: #1c5c26;
+}
+
+.draft {
+  background: rgba(11, 11, 12, 0.08);
+  color: var(--muted);
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rowActions button {
+  min-height: 44px;
+  padding: 0 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.removeButton {
+  color: var(--red-deep) !important;
+}
+
+.editForm,
+.confirm {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 14px;
+  background: rgba(11, 11, 12, 0.03);
+  border-left: 3px solid var(--line);
+}
+
+.confirm {
+  background: rgba(200, 16, 46, 0.06);
+  border-left-color: var(--red);
+}
+
+.confirmText {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--red-deep);
+}
+
+.confirmActions {
+  display: flex;
+  gap: 6px;
+}
+
+.confirmActions button {
+  min-height: 44px;
+  padding: 0 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.confirmActions .danger {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--charcoal);
+}
+
+.field input,
+.field select,
+.field textarea {
+  min-height: 44px;
+  padding: 0 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font: 400 13px var(--body);
+  color: var(--charcoal);
+}
+
+.field textarea {
+  padding: 10px;
+  line-height: 1.65;
+  resize: vertical;
+}
+
+.fieldHint {
+  margin: 0;
+  font-size: 9px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.minor {
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+}
+
+.actions button {
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--ink);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 0;
+  cursor: pointer;
+}
+
+.actions button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.secondary {
+  background: var(--white) !important;
+  color: var(--charcoal) !important;
+}
+
+.success {
+  margin: 0;
+  font-size: 11px;
+  color: #1c5c26;
+  min-height: 1em;
+}
+
+.error {
+  margin: 0;
+  font-size: 11px;
+  color: var(--red-deep);
+  min-height: 1em;
+}
+
+@media (max-width: 700px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .rowActions {
+    flex-wrap: wrap;
+  }
+}

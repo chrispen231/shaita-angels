@@ -1,0 +1,238 @@
+/* Match content editor: four stacked cards, each a list of editable rows. */
+
+.wrap {
+  display: grid;
+  gap: 16px;
+  max-width: 1000px;
+}
+
+.intro {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+
+.cardTitle {
+  margin: 0;
+  font: 800 15px / 1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hint {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.65;
+  color: var(--muted);
+  max-width: 72ch;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.rows {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--white);
+}
+
+.index {
+  width: 18px;
+  font: 700 10px var(--display);
+  color: var(--muted);
+  text-align: right;
+}
+
+.row input[type="text"],
+.row input:not([type]),
+.row input[type="number"],
+.row select {
+  min-height: 44px;
+  padding: 0 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font: 400 13px var(--body);
+  color: var(--charcoal);
+}
+
+.name {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.shirt,
+.minute {
+  flex: 0 0 64px;
+  width: 64px;
+}
+
+/* Shows the minute as it will be published, so 93 reads as 90+3' before saving. */
+.minutePreview {
+  flex: 0 0 52px;
+  font: 700 11px var(--display);
+  color: var(--muted);
+  text-align: center;
+}
+
+.note {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--red);
+}
+
+.removeRow {
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--red-deep);
+  cursor: pointer;
+}
+
+.removeRow:disabled {
+  color: var(--muted);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions button {
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--ink);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 0;
+  cursor: pointer;
+}
+
+.actions button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.secondary {
+  background: var(--white) !important;
+  color: var(--charcoal) !important;
+  border: 1px solid var(--line) !important;
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font: 400 13px / 1.7 var(--body);
+  color: var(--charcoal);
+  resize: vertical;
+}
+
+.success {
+  margin: 0;
+  font-size: 11px;
+  color: #1c5c26;
+  min-height: 1em;
+}
+
+.error {
+  margin: 0;
+  font-size: 11px;
+  color: var(--red-deep);
+  min-height: 1em;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  /* Rows stack rather than shrink: eight controls across a phone is unreadable. */
+  .row {
+    align-items: stretch;
+  }
+
+  .index {
+    display: none;
+  }
+
+  .name,
+  .note {
+    flex: 1 1 100%;
+  }
+
+  .shirt,
+  .minute {
+    flex: 1 1 calc(50% - 4px);
+    width: auto;
+  }
+
+  .removeRow {
+    margin-left: 0;
+    flex: 1 1 100%;
+  }
+}

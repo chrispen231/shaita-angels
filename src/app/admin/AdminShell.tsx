@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { AdminContext, ScreenKey } from "@/lib/admin/roles";
 import { ROLE_LABELS, SCREEN_ACCESS, canAccess } from "@/lib/admin/roles";
 import styles from "./AdminShell.module.css";
@@ -127,9 +127,22 @@ export default function AdminShell({
  * use this instead of checking `canAccess` inline, so a screen cannot forget the
  * check. This is a usability guard, not the security boundary.
  */
+/**
+ * Gate for an admin screen.
+ *
+ * A signed-in admin without the role gets a 404, not a redirect to the
+ * dashboard. docs/admin-spec.md requires this: a redirect confirms the screen
+ * exists and bounces the person somewhere harmless-looking, whereas a 404 is the
+ * same answer a genuinely missing page gives. The distinction matters when the
+ * question is "can this person see that this tool exists", which is the first
+ * question of anyone probing the admin area.
+ *
+ * RLS is the real boundary either way - requireScreen is presentation, not
+ * security. But a role check that leaks existence is still a leak.
+ */
 export function requireScreen(context: AdminContext | null, screen: ScreenKey): AdminContext {
   if (!context) redirect("/admin/login");
-  if (!canAccess(context.role, screen)) redirect("/admin");
+  if (!canAccess(context.role, screen)) notFound();
   return context;
 }
 

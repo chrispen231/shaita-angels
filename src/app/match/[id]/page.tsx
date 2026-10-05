@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Fixture } from "@/types/fixtures";
 import { formatMatchDateLong } from "@/lib/fixtures";
 import MatchView, { isMatchTab } from "./MatchView";
+import { getMatchContent } from "@/lib/matches/content";
 
 export const dynamic = "force-dynamic";
 
@@ -43,5 +44,16 @@ export default async function MatchPage({
   const fixture = await getFixture(id);
   if (!fixture) notFound();
 
-  return <MatchView fixture={fixture} tab={isMatchTab(tab) ? tab : "lineups"} />;
+  // Match content is public read: the policies gate it on the fixture being
+  // published, which getFixture has already established. No date_of_birth is
+  // involved anywhere in this path.
+  const content = await getMatchContent(id);
+
+  return (
+    <MatchView
+      fixture={fixture}
+      tab={isMatchTab(tab) ? tab : "lineups"}
+      content={content}
+    />
+  );
 }
