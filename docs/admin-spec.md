@@ -358,13 +358,53 @@ after.
 role gets the same answer as a missing page. The old redirect confirmed the screen
 existed, which is exactly what someone probing the admin area wants to know.
 
-## Phase 4 — News and squad
-
-Migration first, editors second. `articles`, `squad` and `honors` move out of
-`src/data/site.ts` into the database, then the editors are built against them.
+## Phase 4 — News and squad — **DONE**
 
 This is the largest single piece of work in the whole plan: it changes who can
 publish the site, not just how. After it, the club publishes without a developer.
+
+Delivered in `20261005160000_content.sql` and commits `d3ae6f8`–`857c068`:
+
+- `articles` and `honors` in the database, alongside the 24 confirmed players
+  seeded into the `squad` table Phase 3 created. Seeding the existing table rather
+  than adding a second one means a player added here is immediately available to
+  the match editor lineup.
+- `/news`, `/news/[slug]`, `/team`, `/team/player/[number]`, `/club`, the homepage
+  and the sitemap all read the database through `src/lib/content.ts`. Every reader
+  falls back to `site.ts` when Supabase is unconfigured, so the site still builds
+  without credentials and a database problem degrades to known-good content rather
+  than an empty newsroom.
+- `/admin/news` writes, edits, publishes and retracts. Retracting keeps the story
+  as a draft; no story is ever hard deleted, so a shared link stays meaningful.
+  `/admin/honours` allows removal, and says plainly that it deletes.
+- Content editors and super admins write content. A fixtures admin cannot publish
+  a story.
+
+### The client/server boundary rule this phase exposed
+
+`src/lib/format.ts` exists because two components on opposite sides of the client
+boundary need the same pure helpers: `SquadGrid` is `"use client"` (filter state)
+and the player profile renders on the server.
+
+Putting those helpers in `src/lib/content.ts` broke every player profile at
+runtime — *a server component cannot call a function exported from a client
+module* — and moving them into `content.ts` instead broke the production build,
+because `content.ts` imports `next/headers` and the client component then dragged
+that into the browser bundle.
+
+**The rule: a module imported from both a client component and a server component
+must have no server-only dependencies at all.**
+
+### `npm run build:configured`
+
+`npm run build` on a machine with no credentials takes the unconfigured branch of
+every data reader, so code that only runs when Supabase *is* configured is never
+compiled. Both failures above passed the local build and failed in production.
+
+`npm run build:configured` builds with placeholder credentials so that branch is
+compiled. No network call happens during a build and no real credential is
+involved. Verified by reintroducing the bad import: it reproduces the production
+failure, and passes once reverted.
 
 ## Phase 5 — Users, media, audit log
 
