@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getSquadPlayer } from "@/lib/content";
+import { getSquadPlayer, pad, singular } from "@/lib/content";
 import { playerPhotos } from "@/data/site";
-import { pad, singular } from "@/components/SquadGrid";
 
 export const dynamic = "force-dynamic";
 

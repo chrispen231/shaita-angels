@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { SquadPlayer } from "@/lib/content";
+import { pad, singular, type SquadPlayer } from "@/lib/content";
 import { playerPhotos } from "@/data/site";
 
 /**
@@ -117,13 +117,4 @@ export default function SquadGrid({
       </div>
     </>
   );
-}
-
-export function pad(number: number) {
-  return String(number).padStart(2, "0");
-}
-
-/** "Goalkeepers" reads as "Goalkeeper" on a card. */
-export function singular(position: string) {
-  return position.endsWith("s") && !position.endsWith("ss") ? position.slice(0, -1) : position;
 }

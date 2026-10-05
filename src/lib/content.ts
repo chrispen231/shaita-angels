@@ -215,6 +215,24 @@ export const getSquadPlayer = cache(async (number: number): Promise<SquadPlayer 
   return squad.find((player) => player.number === number) ?? null;
 });
 
+// =============================================================================
+// Presentation helpers
+// =============================================================================
+// These live here rather than in components/SquadGrid.tsx because that file is a
+// client component ("use client" for the filter state), and a server component
+// cannot call a function exported from one. The player profile renders on the
+// server and needs both, so they must live in a module with no client boundary.
+
+/** "9" becomes "09", matching the shirt treatment across the site. */
+export function pad(number: number): string {
+  return String(number).padStart(2, "0");
+}
+
+/** "Goalkeepers" reads as "Goalkeeper" on a card. */
+export function singular(position: string): string {
+  return position.endsWith("s") && !position.endsWith("ss") ? position.slice(0, -1) : position;
+}
+
 /** The distinct positions present, in the order the squad page shows them. */
 export const POSITION_ORDER = ["Goalkeeper", "Defender", "Midfielder", "Forward"] as const;
 
