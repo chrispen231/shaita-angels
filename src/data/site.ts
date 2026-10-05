@@ -28,12 +28,12 @@ export const articles = [
     date: "10 July 2026",
     title: "One point from history",
     excerpt:
-      "A final-day draw with Determine Girls left Shaita Angels just short of a first Upper Women’s League title.",
+      "A final-day draw with Determine Girls left Shaita Angels just short of a first LFA Women’s First Division title.",
     image: "/gallery-3.jpg",
     imageAlt: "Shaita Angels players ready for a match",
     body: [
-      "The 2025–26 Upper Women’s League came down to its final fixture. Shaita Angels and Determine Girls played out a 0–0 draw, allowing Determine Girls to retain the title by a single point.",
-      "Shaita entered the match knowing a win would deliver the club’s first top-flight league crown. The campaign still ended with a major achievement: a second-place league finish and, days later, the Orange Cup trophy.",
+      "The 2025–26 LFA Women’s First Division came down to its final fixture. Shaita Angels and Determine Girls played out a 0–0 draw, allowing Determine Girls to retain the title by a single point.",
+      "Shaita entered the match knowing a win would deliver the club’s first First Division title. The campaign still ended with a major achievement: a second-place league finish and, days later, the Orange Cup trophy.",
     ],
   },
   {
@@ -47,7 +47,7 @@ export const articles = [
     imageAlt: "Shaita Angels players celebrate together on the pitch",
     body: [
       "Shaita Angels won the 2024 Women’s Orange Cup after a goalless final against World Girls. The Angels converted four penalties to win the shootout 4–3 and secure the club’s first Orange Cup.",
-      "That cup run followed the club’s 2022–23 Women’s Lower League championship and promotion, then a runner-up finish in the 2023–24 top flight.",
+      "That cup run followed the club’s 2022–23 Women’s Lower League championship and promotion to the First Division, then a runner-up finish in the 2023–24 LFA Women’s First Division.",
     ],
   },
 ];
@@ -56,7 +56,7 @@ export const honors = [
   { year: "2026", name: "Orange Cup", detail: "Winners · beat World Girls 2–1" },
   { year: "2024", name: "Orange Cup", detail: "Winners · 4–3 on penalties" },
   { year: "2024–25", name: "LFA Women’s Super Cup", detail: "Winners · 1–1, won 4–3 on penalties" },
-  { year: "2022–23", name: "Women’s Lower League", detail: "Champions · promoted to the top flight" },
+  { year: "2022–23", name: "Women’s Lower League", detail: "Champions · promoted to the First Division" },
 ];
 
 export const squad = [
@@ -134,7 +134,7 @@ export const sections = {
     eyebrow: "Match centre",
     title: "Every match matters.",
     intro:
-      "The Angels finished the 2025–26 season with a league runners-up finish and an Orange Cup. New-season fixtures will appear here once announced.",
+      "The Angels finished the 2025–26 First Division as runners-up and won the Orange Cup. New-season fixtures will appear here once announced.",
   },
   club: {
     eyebrow: "Our story",

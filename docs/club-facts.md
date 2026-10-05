@@ -10,10 +10,10 @@ This rebuild uses confirmed historical details where available and labels missin
 
 ## Honours and recent results
 
-- 2022–23: Women’s Lower League champions and promoted; campaign record reported as 18 wins, 3 draws, 1 loss, 57 points.
-- 2023–24: top-flight runners-up; won the Women’s Orange Cup final against World Girls, 0–0 before winning 4–3 on penalties.
+- 2022–23: Women’s Lower League champions, promoted to the LFA Women’s First Division; campaign record reported as 18 wins, 3 draws, 1 loss, 57 points.
+- 2023–24: LFA Women’s First Division runners-up; won the Women’s Orange Cup final against World Girls, 0–0 before winning 4–3 on penalties.
 - 2024–25: won the LFA Women’s Super Cup against Determine Girls, 1–1 before a 4–3 penalty shootout.
-- 2025–26: Upper Women’s League runners-up after a final-day 0–0 draw with Determine Girls.
+- 2025–26: LFA Women’s First Division runners-up after a final-day 0–0 draw with Determine Girls.
 - July 2026: beat World Girls 2–1 in the Orange Cup final at the SKD Sports Complex Practice Pitch, winning the trophy for a second time.
 
 ## Player references
