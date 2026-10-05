@@ -3,16 +3,32 @@ import Link from "next/link";
 import newsStyles from "./SectionPage.module.css";
 import { articles, gallery, honors, sections } from "@/data/site";
 import SquadGrid from "@/components/SquadGrid";
-import FixtureCenter from "@/components/FixtureCenter";
+import MatchCentre from "@/components/MatchCentre";
 import { getPublishedFixtures } from "@/lib/fixtures";
-import { formatMatchDate } from "@/lib/fixtures";
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { isCompetitionSlug } from "@/lib/fixtures";
 
 type SectionKey = keyof typeof sections;
 
-export default async function SectionPage({ section }: { section: SectionKey }) {
+export type MatchFilters = { period: string | null; competition: string | null };
+
+/** Reads and validates the match centre filters from the URL. */
+export function parseMatchFilters(params: { period?: string; competition?: string }): MatchFilters {
+  const period = params.period && /^\d{4}-\d{2}$/.test(params.period) ? params.period : null;
+  const competition = params.competition && isCompetitionSlug(params.competition) ? params.competition : null;
+  return { period, competition };
+}
+
+export default async function SectionPage({
+  section,
+  searchParams,
+}: {
+  section: SectionKey;
+  searchParams?: { period?: string; competition?: string };
+}) {
   const content = sections[section];
   const fixtures = section === "matches" ? await getPublishedFixtures() : null;
-  const latestResult = fixtures?.filter((fixture) => fixture.status === "played").sort((a, b) => b.match_date.localeCompare(a.match_date))[0];
+  const matchFilters = parseMatchFilters(searchParams ?? {});
   return (
     <>
       {section === "team" ? <>
@@ -27,17 +43,10 @@ export default async function SectionPage({ section }: { section: SectionKey }) 
         {section === "team" && <SquadGrid />}
 
         {section === "matches" && <>
-          {fixtures === null ? <>
-            <div className="content-heading"><div><p className="eyebrow">Latest result</p><h2>Orange Cup final</h2></div><span className="data-note">14 July 2026</span></div>
-            <div className="result-card"><div className="result-team"><span className="mini-crest"><Image src="/shaita-angels-logo.png" alt="" width={52} height={52} /></span><strong>Shaita Angels</strong></div><div className="result-score"><span>2</span><i>–</i><span>1</span><small>FULL TIME</small></div><div className="result-team away"><span className="opponent-mark">WG</span><strong>World Girls</strong></div><div className="result-meta"><span>2026 Women’s Orange Cup · Final</span><span>Samuel Kanyon Doe Sports Complex · Paynesville</span></div></div>
-            <div className="note-panel"><strong>Next season</strong><p>2026–27 fixtures and ticket details will be added after official release. No dates are listed until confirmed.</p></div>
-          </> : <>
-            {latestResult && <div className="data-note matches-latest">Latest result: {latestResult.opponent} · {latestResult.shaita_goals}–{latestResult.opponent_goals} · {formatMatchDate(latestResult.match_date)}</div>}
-            <FixtureCenter fixtures={fixtures} />
-          </>}
-          <div className="content-heading compact-heading"><div><p className="eyebrow">Recent milestones</p><h2>Seasons to remember</h2></div></div>
-          <div className="season-list"><article><span>2025–26</span><strong>Upper Women’s League</strong><em>Runners-up · 57 points</em></article><article><span>2025–26</span><strong>Women’s Orange Cup</strong><em>Champions · 2–1 vs World Girls</em></article><article><span>2024–25</span><strong>LFA Women’s Super Cup</strong><em>Champions · 4–3 on penalties</em></article></div>
-        </>}
+                  <MatchCentre fixtures={fixtures} filters={matchFilters} configured={Boolean(getSupabaseConfig())} />
+                  <div className="content-heading compact-heading"><div><p className="eyebrow">Recent milestones</p><h2>Seasons to remember</h2></div></div>
+                  <div className="season-list"><article><span>2025–26</span><strong>Upper Women’s League</strong><em>Runners-up · 57 points</em></article><article><span>2025–26</span><strong>Women’s Orange Cup</strong><em>Champions · 2–1 vs World Girls</em></article><article><span>2024–25</span><strong>LFA Women’s Super Cup</strong><em>Champions · 4–3 on penalties</em></article></div>
+                </>}
 
         {section === "club" && <>
           <div className="story-layout"><div className="story-image"><Image src="/gallery-1.jpg" alt="Shaita Angels players together in their green away kit in Careysburg" fill sizes="(max-width: 800px) 100vw, 50vw" /></div><div className="story-copy"><p className="eyebrow">Our beginning</p><h2>A different kind of first step.</h2><p>In 2019, a group of women in Careysburg made the move from kickball to football. That decision became Shaita Angels FC: a club rooted in its community and built around the ambition of women players.</p><p>The Angels won the Women’s Lower League in 2022–23, returned to the top division, finished second in 2023–24, then claimed the Orange Cup and Super Cup. In 2026 they added a second Orange Cup to the story.</p><Link className="text-link" href="/news">Read the latest stories <span aria-hidden="true">↗</span></Link></div></div>

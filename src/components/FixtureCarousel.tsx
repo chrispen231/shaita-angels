@@ -1,7 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
+import MatchCard from "@/components/MatchCard";
 import type { Fixture } from "@/types/fixtures";
-import { formatKickoff, formatMatchDate } from "@/lib/fixtures";
 import styles from "./FixtureCarousel.module.css";
 
 /**
@@ -34,12 +33,14 @@ export default function FixtureCarousel({ fixtures }: { fixtures: Fixture[] }) {
       <div className={styles.railWrap}>
         <ul
           className={styles.rail}
-          // A named region lets keyboard and screen-reader users jump the list.
+          // A named region lets keyboard and screen-reader users scroll the list.
           aria-label="Recent and upcoming fixtures"
           tabIndex={0}
         >
           {rail.map((fixture) => (
-            <FixtureSlide fixture={fixture} key={fixture.id} />
+            <li className={styles.slide} key={fixture.id}>
+              <MatchCard fixture={fixture} headingLevel="h3" />
+            </li>
           ))}
         </ul>
       </div>
@@ -66,81 +67,4 @@ export function orderFixtures(fixtures: Fixture[]): Fixture[] {
     if (played[i]) mixed.push(played[i]);
   }
   return mixed;
-}
-
-const STATUS_LABEL: Record<Fixture["status"], string> = {
-  scheduled: "Upcoming",
-  played: "Full time",
-  postponed: "Postponed",
-  cancelled: "Cancelled",
-};
-
-function FixtureSlide({ fixture }: { fixture: Fixture }) {
-  const hasScore =
-    fixture.status === "played" &&
-    fixture.shaita_goals !== null &&
-    fixture.opponent_goals !== null;
-  const kickoff = formatKickoff(fixture.kickoff_time);
-  const opponentInitials =
-    fixture.opponent.trim().split(/\s+/).map((word) => word[0]).join("").slice(0, 2).toUpperCase() || "FC";
-
-  // The competition name doubles as the card's watermark, so a fan can read the
-  // context of a scoreline without a separate label.
-  const watermark = fixture.competition.replace(/[·–—]/g, " ").trim().split(/\s+/).slice(0, 3).join(" ");
-
-  return (
-    <li className={styles.slide}>
-      <article className={styles.card}>
-        <span className={styles.watermark} aria-hidden="true">
-          {watermark}
-        </span>
-
-        <div className={styles.meta}>
-          <span className={`${styles.tag} ${styles[fixture.status]}`}>{STATUS_LABEL[fixture.status]}</span>
-          <time dateTime={fixture.match_date}>{formatMatchDate(fixture.match_date)}</time>
-        </div>
-
-        <div className={styles.teams}>
-          <div className={styles.team}>
-            <span className={styles.crest}>
-              <Image src="/shaita-angels-logo.png" alt="" width={40} height={46} />
-            </span>
-            <strong>Shaita Angels</strong>
-          </div>
-
-          <div className={styles.score}>
-            {hasScore ? (
-              <>
-                <b>{fixture.shaita_goals}</b>
-                <i aria-hidden="true">–</i>
-                <b>{fixture.opponent_goals}</b>
-                <span className="sr-only">
-                  Shaita Angels {fixture.shaita_goals}, {fixture.opponent} {fixture.opponent_goals}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className={styles.vs}>VS</span>
-                {kickoff && <small>{kickoff}</small>}
-              </>
-            )}
-          </div>
-
-          <div className={`${styles.team} ${styles.opponent}`}>
-            <span className={styles.crest} data-opponent="true">
-              {opponentInitials}
-            </span>
-            <strong>{fixture.opponent}</strong>
-          </div>
-        </div>
-
-        <div className={styles.foot}>
-          <span className={styles.competition}>
-            {fixture.competition} · {fixture.season}
-          </span>
-          {fixture.venue && <span className={styles.venue}>{fixture.venue}</span>}
-        </div>
-      </article>
-    </li>
-  );
 }

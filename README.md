@@ -26,11 +26,29 @@ Open [http://localhost:3000](http://localhost:3000).
 - The social preview card is generated at build time by `src/app/opengraph-image.tsx`. The crest is inlined from `src/app/og-crest.png`; regenerate that file with `node scripts/build-og-crest.mjs` after replacing the logo in `public/`.
 - `agentRules: false` in `next.config.ts` stops Next from generating `AGENTS.md` / `CLAUDE.md` on every `next dev`.
 - Responsive images are served as AVIF with a WebP fallback.
+- `/match/[id]` is a match page with Lineups, Commentary and Stats tabs. The tabs
+  state plainly when club-supplied data is not yet available; no lineup or
+  commentary is generated. `/matches` filters by month and competition through the
+  URL (`?period=2026-10&competition=womens-orange-cup`), so a filtered view is
+  shareable and works without JavaScript.
+- Competitions are LFA Women's First Division, Women's Orange Cup and Club
+  Friendlies. The competition column is free text, so `matchCompetition` maps a
+  stored value onto one of those slugs and returns null for anything else rather
+  than hiding the fixture.
 - The homepage fixture rail (`src/components/FixtureCarousel.tsx`) is a
   scroll-snap carousel of published fixtures, ordered next-match-first and
   interleaved with recent results. It renders nothing when no fixtures are
   published, so the homepage never shows an empty rail.
 - Responsive images are served as AVIF with a WebP fallback.
+- `/match/[id]` is a match page with Lineups, Commentary and Stats tabs. The tabs
+  state plainly when club-supplied data is not yet available; no lineup or
+  commentary is generated. `/matches` filters by month and competition through the
+  URL (`?period=2026-10&competition=womens-orange-cup`), so a filtered view is
+  shareable and works without JavaScript.
+- Competitions are LFA Women's First Division, Women's Orange Cup and Club
+  Friendlies. The competition column is free text, so `matchCompetition` maps a
+  stored value onto one of those slugs and returns null for anything else rather
+  than hiding the fixture.
 - The homepage fixture rail (`src/components/FixtureCarousel.tsx`) is a
   scroll-snap carousel of published fixtures, ordered next-match-first and
   interleaved with recent results. It renders nothing when no fixtures are

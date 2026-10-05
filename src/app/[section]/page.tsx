@@ -18,8 +18,15 @@ export async function generateMetadata({ params }: { params: Promise<{ section: 
   return { title: sections[section as SectionKey].eyebrow };
 }
 
-export default async function SectionRoute({ params }: { params: Promise<{ section: string }> }) {
+export default async function SectionRoute({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ section: string }>;
+  searchParams: Promise<{ period?: string; competition?: string }>;
+}) {
   const { section } = await params;
   if (!sectionKeys.includes(section as SectionKey)) notFound();
-  return <SectionPage section={section as SectionKey} />;
+  const query = await searchParams;
+  return <SectionPage section={section as SectionKey} searchParams={query} />;
 }
