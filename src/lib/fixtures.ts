@@ -92,6 +92,7 @@ export const FIXTURE_COLUMNS = "id, opponent, competition, season, match_date, k
 export const COMPETITIONS = [
   { slug: "lfa-womens-first-division", label: "LFA Women’s First Division", short: "First Division" },
   { slug: "womens-orange-cup", label: "Women’s Orange Cup", short: "Orange Cup" },
+  { slug: "lfa-super-cup", label: "LFA Super Cup", short: "Super Cup" },
   { slug: "club-friendlies", label: "Club Friendlies", short: "Friendlies" },
 ] as const;
 

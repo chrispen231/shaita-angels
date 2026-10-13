@@ -37,8 +37,9 @@ export type Competition = {
  * duplication is checked rather than merely noted.
  */
 const BUILT_IN: Competition[] = [
-  { slug: "lfa-womens-first-division", name: "LFA Women\u2019s First Division", short: "First Division" },
-  { slug: "womens-orange-cup", name: "Women\u2019s Orange Cup", short: "Orange Cup" },
+  { slug: "lfa-womens-first-division", name: "LFA Women's First Division", short: "First Division" },
+  { slug: "womens-orange-cup", name: "Women's Orange Cup", short: "Orange Cup" },
+  { slug: "lfa-super-cup", name: "LFA Super Cup", short: "Super Cup" },
   { slug: "club-friendlies", name: "Club Friendlies", short: "Friendlies" },
 ];
 

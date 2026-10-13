@@ -35,20 +35,23 @@ describe("competitions", () => {
   });
 
   it("matches what the database migration seeded", () => {
-    // The same three rows are inserted by
-    // 20261005170000_media_and_reference_data.sql. If the seed and this list
-    // disagree, a configured build shows different options from an unconfigured one.
+    // The same four rows are inserted by
+    // 20261005170000_media_and_reference_data.sql and 20261005190000_super_cup.sql.
+    // If the seed and this list disagree, a configured build shows different
+    // options from an unconfigured one.
     expect(builtInCompetitions().map((entry) => entry.slug)).toEqual([
       "lfa-womens-first-division",
       "womens-orange-cup",
+      "lfa-super-cup",
       "club-friendlies",
     ]);
   });
 
-  it("includes the three competitions the club plays in", () => {
+  it("includes the four competitions the club plays in", () => {
     const names = builtInCompetitions().map((competition) => competition.name);
-    expect(names).toContain("LFA Women\u2019s First Division");
-    expect(names).toContain("Women\u2019s Orange Cup");
+    expect(names).toContain("LFA Women's First Division");
+    expect(names).toContain("Women's Orange Cup");
+    expect(names).toContain("LFA Super Cup");
     expect(names).toContain("Club Friendlies");
   });
 });
