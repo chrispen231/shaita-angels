@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getStaff } from "@/lib/content";
+import StaffGrid from "@/components/StaffGrid";
 
 export const metadata: Metadata = { title: "Staff" };
 
-export default function StaffPage() {
+export default async function StaffPage() {
+  const staff = await getStaff();
+
   return (
     <>
       <nav className="team-subnav" aria-label="Women's team sections">
@@ -23,14 +27,7 @@ export default function StaffPage() {
         </div>
       </section>
       <main className="wrap page-content staff-page-content">
-        <div className="staff-empty-state">
-          <span className="staff-empty-mark" aria-hidden="true">SA</span>
-          <div>
-            <p className="eyebrow">The team behind the team</p>
-            <h2>Staff profiles coming soon.</h2>
-            <p>We’re preparing the club’s staff listing. Names and roles will be published here once confirmed by Shaita Angels.</p>
-          </div>
-        </div>
+        <StaffGrid staff={staff} />
         <Link className="text-link" href="/team">Back to the squad <span aria-hidden="true">↗</span></Link>
       </main>
     </>

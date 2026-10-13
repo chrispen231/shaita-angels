@@ -29,6 +29,7 @@ const NAV: NavItem[] = [
   { screen: "matches", href: "/admin/matches", label: "Matches & lineups", group: "Matches" },
   { screen: "news", href: "/admin/news", label: "News", group: "Content" },
   { screen: "squad", href: "/admin/squad", label: "Squad", group: "Content" },
+  { screen: "staff", href: "/admin/staff", label: "Staff", group: "Content" },
   { screen: "honors", href: "/admin/honours", label: "Honours", group: "Content" },
   { screen: "media", href: "/admin/media", label: "Media library", group: "Content" },
   { screen: "sponsors", href: "/admin/sponsors", label: "Sponsors", group: "Site" },

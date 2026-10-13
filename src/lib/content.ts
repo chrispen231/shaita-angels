@@ -167,6 +167,53 @@ export const getHonors = cache(async (): Promise<Honor[]> => {
 });
 
 // =============================================================================
+// Staff
+// =============================================================================
+
+export type StaffMember = {
+  id: string;
+  name: string;
+  role: string;
+  bio: string | null;
+  photo: string | null;
+  photoAlt: string | null;
+};
+
+/**
+ * Published staff, ordered by sort_order then name.
+ *
+ * Only published records are returned. The public staff page mirrors the
+ * squad card layout, so every staff member must have a photo_url to render
+ * as a proper card. Members without a photo are still returned; the card
+ * component handles the fallback.
+ */
+export const getStaff = cache(async (): Promise<StaffMember[]> => {
+  if (!getSupabaseConfig()) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("staff")
+    .select("id, full_name, role, bio, photo_url, photo_url_alt")
+    .eq("is_published", true)
+    .order("sort_order", { ascending: true })
+    .order("full_name", { ascending: true });
+
+  if (error) {
+    console.error("Staff read failed", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: String(row.id),
+    name: String(row.full_name),
+    role: String(row.role),
+    bio: row.bio === null ? null : String(row.bio),
+    photo: row.photo_url === null ? null : String(row.photo_url),
+    photoAlt: row.photo_url_alt === null ? null : String(row.photo_url_alt),
+  }));
+});
+
+// =============================================================================
 // Squad
 // =============================================================================
 

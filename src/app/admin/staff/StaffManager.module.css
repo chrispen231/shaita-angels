@@ -1,0 +1,249 @@
+/* Staff manager, mirroring the squad manager layout. */
+
+.wrap {
+  display: grid;
+  gap: 22px;
+}
+
+.card {
+  padding: 22px 24px 24px;
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+
+.cardTitle {
+  margin: 0 0 14px;
+  font: 800 13px / 1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hint {
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--white);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.flags {
+  display: flex;
+  gap: 8px;
+}
+
+.published,
+.draft {
+  padding: 3px 8px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.published {
+  background: rgba(37, 211, 102, 0.15);
+  color: #1a7a3c;
+}
+
+.draft {
+  background: rgba(11, 11, 12, 0.07);
+  color: #4a4744;
+}
+
+.rowActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.secondary,
+.removeButton,
+.danger {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.secondary:hover,
+.removeButton:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.removeButton:hover,
+.danger {
+  border-color: #c8102e;
+  color: #c8102e;
+}
+
+.danger:hover {
+  background: #c8102e;
+  color: #fff;
+}
+
+.editForm,
+.confirm {
+  flex-basis: 100%;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field input,
+.field textarea {
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: 2px solid rgba(200, 16, 46, 0.35);
+  outline-offset: 0;
+  border-color: var(--red);
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.actions button {
+  min-height: 40px;
+  padding: 0 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+}
+
+.actions button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.confirmText {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #4a4744;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 10px;
+}
+
+.error,
+.success {
+  margin: 14px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.error {
+  color: #c8102e;
+}
+
+.success {
+  color: #1a7a3c;
+}
+
+.summary {
+  display: flex;
+  gap: 26px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.summary li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.count {
+  font: 800 26px / 1 var(--display);
+}
+
+.label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

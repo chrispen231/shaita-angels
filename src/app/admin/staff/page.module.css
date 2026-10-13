@@ -1,0 +1,25 @@
+.summary {
+  display: flex;
+  gap: 26px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.summary li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.count {
+  font: 800 26px / 1 var(--display);
+}
+
+.label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
