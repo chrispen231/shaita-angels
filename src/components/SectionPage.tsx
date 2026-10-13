@@ -11,13 +11,14 @@ import { isCompetitionSlug } from "@/lib/fixtures";
 
 type SectionKey = keyof typeof sections;
 
-export type MatchFilters = { period: string | null; competition: string | null };
+export type MatchFilters = { season: string | null; period: string | null; competition: string | null };
 
 /** Reads and validates the match centre filters from the URL. */
-export function parseMatchFilters(params: { period?: string; competition?: string }): MatchFilters {
+export function parseMatchFilters(params: { season?: string; period?: string; competition?: string }): MatchFilters {
+  const season = params.season && /^\d{4}-\d{2}$/.test(params.season) ? params.season : null;
   const period = params.period && /^\d{4}-\d{2}$/.test(params.period) ? params.period : null;
   const competition = params.competition && isCompetitionSlug(params.competition) ? params.competition : null;
-  return { period, competition };
+  return { season, period, competition };
 }
 
 export default async function SectionPage({

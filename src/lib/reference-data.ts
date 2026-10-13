@@ -37,8 +37,8 @@ export type Competition = {
  * duplication is checked rather than merely noted.
  */
 const BUILT_IN: Competition[] = [
-  { slug: "lfa-womens-first-division", name: "LFA Women's First Division", short: "First Division" },
-  { slug: "womens-orange-cup", name: "Women's Orange Cup", short: "Orange Cup" },
+  { slug: "lfa-womens-first-division", name: "LFA Women\u2019s First Division", short: "First Division" },
+  { slug: "womens-orange-cup", name: "Women\u2019s Orange Cup", short: "Orange Cup" },
   { slug: "lfa-super-cup", name: "LFA Super Cup", short: "Super Cup" },
   { slug: "club-friendlies", name: "Club Friendlies", short: "Friendlies" },
 ];
@@ -71,17 +71,21 @@ export function matchCompetition(
 ): Competition | null {
   if (!stored) return null;
 
-  const exact = competitions.find((competition) => competition.name === stored);
+  // Normalise apostrophes so "Women's" and "Women's" match the same entry.
+  const normalise = (value: string) => value.replace(/[\u2018\u2019]/g, "'");
+  const target = normalise(stored);
+
+  const exact = competitions.find((competition) => normalise(competition.name) === target);
   if (exact) return exact;
 
-  const short = competitions.find((competition) => competition.short === stored);
+  const short = competitions.find((competition) => normalise(competition.short) === target);
   if (short) return short;
 
   // Fixtures may carry a round suffix, e.g. "Women's Orange Cup · Final".
-  const base = stored.split("·")[0].trim();
+  const base = target.split("·")[0].trim();
   return (
-    competitions.find((competition) => competition.name === base) ??
-    competitions.find((competition) => competition.short === base) ??
+    competitions.find((competition) => normalise(competition.name) === base) ??
+    competitions.find((competition) => normalise(competition.short) === base) ??
     null
   );
 }

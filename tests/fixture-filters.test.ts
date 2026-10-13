@@ -60,11 +60,11 @@ describe("matchCompetition", () => {
   });
 
   it("returns null for an unknown competition rather than hiding the fixture", () => {
-    expect(matchCompetition("LFA Women’s Super Cup")).toBeNull();
+    expect(matchCompetition("LFA Women’s Super Cup")).toBe("lfa-super-cup");
     expect(matchCompetition("")).toBeNull();
   });
 
-  it("covers all three club competitions", () => {
+  it("covers all four club competitions", () => {
     for (const entry of COMPETITIONS) {
       expect(matchCompetition(entry.label)).toBe(entry.slug);
     }
@@ -72,7 +72,7 @@ describe("matchCompetition", () => {
 });
 
 describe("isCompetitionSlug", () => {
-  it("accepts the three known slugs", () => {
+  it("accepts the four known slugs", () => {
     for (const entry of COMPETITIONS) {
       expect(isCompetitionSlug(entry.slug)).toBe(true);
     }
@@ -88,6 +88,7 @@ describe("isCompetitionSlug", () => {
 describe("parseMatchFilters", () => {
   it("accepts a well-formed period and competition", () => {
     expect(parseMatchFilters({ period: "2026-10", competition: "womens-orange-cup" })).toEqual({
+      season: null,
       period: "2026-10",
       competition: "womens-orange-cup",
     });
@@ -103,7 +104,7 @@ describe("parseMatchFilters", () => {
   });
 
   it("handles missing params", () => {
-    expect(parseMatchFilters({})).toEqual({ period: null, competition: null });
+    expect(parseMatchFilters({})).toEqual({ season: null, period: null, competition: null });
   });
 });
 

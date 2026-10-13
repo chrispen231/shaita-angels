@@ -19,9 +19,9 @@ import styles from "./MatchCentre.module.css";
  * a filtered view is shareable, bookmarkable, and works without JavaScript.
  */
 
-const MONTH_PARAMS = ["period", "competition"] as const;
+const MONTH_PARAMS = ["season", "period", "competition"] as const;
 
-type Filters = { period: string | null; competition: string | null };
+type Filters = { season: string | null; period: string | null; competition: string | null };
 
 export default function MatchCentre({
   fixtures,
@@ -61,20 +61,24 @@ export default function MatchCentre({
     );
   }
 
-  const { period, competition } = filters;
+  const { season, period, competition } = filters;
+
+  // Which seasons actually contain fixtures, newest first.
+  const seasons = Array.from(new Set(fixtures.map((f) => f.season))).sort().reverse();
 
   // Which months actually contain fixtures, newest first. Only these become
   // tabs, so the filter row never offers an empty month.
   const months = Array.from(new Set(fixtures.map((f) => monthKey(f.match_date)))).sort().reverse();
 
-  const byPeriod = period ? fixtures.filter((f) => monthKey(f.match_date) === period) : fixtures;
+  const bySeason = season ? fixtures.filter((f) => f.season === season) : fixtures;
+  const byPeriod = period ? bySeason.filter((f) => monthKey(f.match_date) === period) : bySeason;
   const byCompetition = competition
     ? byPeriod.filter((f) => matchCompetition(f.competition) === competition)
     : byPeriod;
 
-  // Group the survivors by month, newest month first.
+  // Group the survivors by month, oldest month first (chronological order).
   const groups = new Map<string, Fixture[]>();
-  for (const fixture of [...byCompetition].sort((a, b) => b.match_date.localeCompare(a.match_date))) {
+  for (const fixture of [...byCompetition].sort((a, b) => a.match_date.localeCompare(b.match_date))) {
     const key = monthKey(fixture.match_date);
     const list = groups.get(key) ?? [];
     list.push(fixture);
@@ -83,18 +87,42 @@ export default function MatchCentre({
 
   const href = (next: Partial<Filters>) => {
     const params = new URLSearchParams();
-    const merged = { period, competition, ...next };
+    const merged = { season, period, competition, ...next };
+    if (merged.season) params.set("season", merged.season);
     if (merged.period) params.set("period", merged.period);
     if (merged.competition) params.set("competition", merged.competition);
     const query = params.toString();
     return query ? `/matches?${query}` : "/matches";
   };
 
-  const anyFilter = Boolean(period || competition);
+  const anyFilter = Boolean(season || period || competition);
 
   return (
     <div className={styles.centre}>
       <nav className={styles.filters} aria-label="Filter fixtures">
+        <div className={styles.filterRow}>
+          <span className={styles.filterLabel} id="season-label">
+            Season
+          </span>
+          <ul className={styles.chips} aria-labelledby="season-label">
+            <li>
+              <Link className={`${styles.chip} ${!season ? styles.chipActive : ""}`} href={href({ season: null })} aria-current={!season ? "true" : undefined}>
+                All
+              </Link>
+            </li>
+            {seasons.map((key) => (
+              <li key={key}>
+                <Link
+                  className={`${styles.chip} ${season === key ? styles.chipActive : ""}`}
+                  href={href({ season: key })}
+                  aria-current={season === key ? "true" : undefined}
+                >
+                  {key.replace("-", "/")}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
         <div className={styles.filterRow}>
           <span className={styles.filterLabel} id="period-label">
             Period

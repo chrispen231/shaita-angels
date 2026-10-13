@@ -49,8 +49,8 @@ describe("competitions", () => {
 
   it("includes the four competitions the club plays in", () => {
     const names = builtInCompetitions().map((competition) => competition.name);
-    expect(names).toContain("LFA Women's First Division");
-    expect(names).toContain("Women's Orange Cup");
+    expect(names).toContain("LFA Women\u2019s First Division");
+    expect(names).toContain("Women\u2019s Orange Cup");
     expect(names).toContain("LFA Super Cup");
     expect(names).toContain("Club Friendlies");
   });
@@ -61,7 +61,13 @@ describe("matchCompetition", () => {
 
   it("matches an exact stored name", () => {
     expect(matchCompetition(competitions, "LFA Women\u2019s First Division")?.slug).toBe(
-      "lfa-womens-first-division",
+      "lfa-womens-first-division"
+    );
+  });
+
+  it("matches a name with a straight apostrophe", () => {
+    expect(matchCompetition(competitions, "Women's Orange Cup")?.slug).toBe(
+      "womens-orange-cup"
     );
   });
 
@@ -72,10 +78,10 @@ describe("matchCompetition", () => {
   it("matches a value carrying a round suffix", () => {
     // Fixtures may store "Women's Orange Cup · Final" from an import.
     expect(matchCompetition(competitions, "Women\u2019s Orange Cup \u00b7 Final")?.slug).toBe(
-      "womens-orange-cup",
+      "womens-orange-cup"
     );
     expect(matchCompetition(competitions, "Orange Cup \u00b7 Semi-final")?.slug).toBe(
-      "womens-orange-cup",
+      "womens-orange-cup"
     );
   });
 

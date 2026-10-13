@@ -116,6 +116,7 @@ export function matchCompetition(competition: string): CompetitionSlug | null {
 
   if (/first-division/.test(flat)) return "lfa-womens-first-division";
   if (/orange-cup/.test(flat)) return "womens-orange-cup";
+  if (/super-cup/.test(flat)) return "lfa-super-cup";
   if (/friendl/.test(flat)) return "club-friendlies";
   return null;
 }
