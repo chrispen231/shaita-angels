@@ -6,6 +6,7 @@ import {
   saveArticle,
   toggleArticlePublished,
   retractArticle,
+  deleteArticle,
 } from "./actions";
 import type { FixtureActionState } from "@/types/fixtures";
 import { slugify } from "@/lib/content-validation";
@@ -33,6 +34,7 @@ export default function NewsManager({ articles }: { articles: ArticleRow[] }) {
   const [saveState, saveAction, savePending] = useActionState(saveArticle, initial);
   const [toggleState, toggleAction] = useActionState(toggleArticlePublished, initial);
   const [retractState, retractAction, retractPending] = useActionState(retractArticle, initial);
+  const [deleteState, deleteAction, deletePending] = useActionState(deleteArticle, initial);
 
   const [editing, setEditing] = useState<string | "new" | null>(null);
   const [slug, setSlug] = useState("");
@@ -46,8 +48,7 @@ export default function NewsManager({ articles }: { articles: ArticleRow[] }) {
           {articles.length} {articles.length === 1 ? "story" : "stories"}
         </h2>
         <p className={styles.hint}>
-          Stories are saved as drafts until you publish them. Retracting a story keeps it as a
-          draft rather than deleting it, so a shared link stays meaningful.
+          Stories are saved as drafts until you publish them. Retract to unpublish, or delete to remove permanently.
         </p>
 
         {articles.length === 0 ? (
@@ -119,19 +120,37 @@ export default function NewsManager({ articles }: { articles: ArticleRow[] }) {
                         Retract
                       </button>
                     )}
+
+                    <button
+                      type="button"
+                      className={styles.removeButton}
+                      onClick={() => setConfirming(confirming === article.id ? null : article.id)}
+                      aria-expanded={confirming === article.id}
+                    >
+                      Delete
+                    </button>
                   </div>
 
                   {confirming === article.id && (
-                    <form action={retractAction} className={styles.confirm}>
-                      <input type="hidden" name="id" value={article.id} />
+                    <div className={styles.confirm}>
                       <p className={styles.confirmText}>
-                        Retract &ldquo;{article.title}&rdquo;? It disappears from the newsroom and the
-                        homepage, and is kept as a draft.
+                        Retract keeps the story as a draft. Delete removes it permanently.
                       </p>
                       <div className={styles.confirmActions}>
-                        <button type="submit" className={styles.danger} disabled={retractPending}>
-                          {retractPending ? "Retracting…" : "Yes, retract"}
-                        </button>
+                        {article.is_published && (
+                          <form action={retractAction}>
+                            <input type="hidden" name="id" value={article.id} />
+                            <button type="submit" className={styles.secondary} disabled={retractPending}>
+                              {retractPending ? "Retracting…" : "Retract"}
+                            </button>
+                          </form>
+                        )}
+                        <form action={deleteAction}>
+                          <input type="hidden" name="id" value={article.id} />
+                          <button type="submit" className={styles.danger} disabled={deletePending}>
+                            {deletePending ? "Deleting…" : "Delete permanently"}
+                          </button>
+                        </form>
                         <button
                           type="button"
                           className={styles.secondary}
@@ -140,7 +159,7 @@ export default function NewsManager({ articles }: { articles: ArticleRow[] }) {
                           Cancel
                         </button>
                       </div>
-                    </form>
+                    </div>
                   )}
 
                   {isEditing && (
@@ -171,6 +190,9 @@ export default function NewsManager({ articles }: { articles: ArticleRow[] }) {
         </p>
         <p className={retractState.status === "error" ? styles.error : styles.success} role="status" aria-live="polite">
           {retractState.message}
+        </p>
+        <p className={deleteState.status === "error" ? styles.error : styles.success} role="status" aria-live="polite">
+          {deleteState.message}
         </p>
       </section>
 

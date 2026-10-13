@@ -152,11 +152,7 @@ export async function toggleArticlePublished(
 }
 
 /**
- * Unpublishing is the removal path for articles.
- *
- * There is no hard delete here, deliberately: the story keeps its row so a
- * re-publish restores it, and the public page is never a 404 for a story the
- * club has taken down. Slug history stays intact.
+ * Retract: unpublish a story, keeping it as a draft so a shared link stays meaningful.
  */
 export async function retractArticle(
   _previous: FixtureActionState,
@@ -181,6 +177,31 @@ export async function retractArticle(
   revalidatePath("/news");
   revalidatePath("/");
   return { status: "success", message: "Story retracted. It is kept as a draft." };
+}
+
+/**
+ * Delete: permanently remove a story. Available for any article, published or draft.
+ */
+export async function deleteArticle(
+  _previous: FixtureActionState,
+  formData: FormData,
+): Promise<FixtureActionState> {
+  const context = await requireContentEditor();
+
+  const id = field(formData, "id");
+  if (!UUID.test(id)) return { status: "error", message: "Unknown story." };
+
+  const { error } = await context.supabase.from("articles").delete().eq("id", id);
+
+  if (error) {
+    console.error("Article delete failed", error.message);
+    return { status: "error", message: "We couldn't delete that story." };
+  }
+
+  revalidatePath("/admin/news");
+  revalidatePath("/news");
+  revalidatePath("/");
+  return { status: "success", message: "Story deleted." };
 }
 
 // =============================================================================
