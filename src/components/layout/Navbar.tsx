@@ -25,12 +25,12 @@ export default function Navbar() {
           <summary aria-label="Open navigation"><span /><span /><span /></summary>
           <nav className="mobile-menu" aria-label="Main navigation">
             {navigation.map((item) => <Link href={item.href} key={item.href}>{item.label}</Link>)}
-            <Link className="mobile-cta" href="/matches">Match centre</Link>
+            <Link className="mobile-cta" href="/shop">Shop</Link>
           </nav>
         </details>
         <nav className="desktop-nav" aria-label="Main navigation">
           {navigation.map((item) => <Link href={item.href} key={item.href}>{item.label}</Link>)}
-          <Link className="nav-cta" href="/matches">Match centre <span aria-hidden="true">↗</span></Link>
+          <Link className="nav-cta" href="/shop">Shop <span aria-hidden="true">↗</span></Link>
         </nav>
       </div>
     </header>
