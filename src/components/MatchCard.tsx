@@ -54,40 +54,89 @@ export default function MatchCard({
         </Heading>
 
         <div className={styles.teams}>
-          <div className={styles.team}>
-            <span className={styles.crest}>
-              <Image src="/shaita-angels-logo.png" alt="" width={40} height={46} />
-            </span>
-            <strong>Shaita Angels</strong>
-          </div>
+          {fixture.venue_type === "away" ? (
+            <>
+              <div className={styles.team}>
+                <span className={styles.crest} data-opponent="true">
+                  {fixture.opponent_logo_url ? (
+                    <Image src={fixture.opponent_logo_url} alt="" width={40} height={46} />
+                  ) : (
+                    opponentInitials(fixture.opponent)
+                  )}
+                </span>
+                <strong>{fixture.opponent}</strong>
+              </div>
 
-          <div className={styles.score}>
-            <span className={styles.digits}>
-              {scored ? (
-                <>
-                  <b>{fixture.shaita_goals}</b>
-                  <i aria-hidden="true">–</i>
-                  <b>{fixture.opponent_goals}</b>
-                </>
-              ) : (
-                <span className={styles.vs}>VS</span>
-              )}
-            </span>
-            {scored ? (
-              <span className={styles.srOnly}>
-                Shaita Angels {fixture.shaita_goals}, {fixture.opponent} {fixture.opponent_goals}
-              </span>
-            ) : (
-              kickoff && <small>{kickoff}</small>
-            )}
-          </div>
+              <div className={styles.score}>
+                <span className={styles.digits}>
+                  {scored ? (
+                    <>
+                      <b>{fixture.opponent_goals}</b>
+                      <i aria-hidden="true">–</i>
+                      <b>{fixture.shaita_goals}</b>
+                    </>
+                  ) : (
+                    <span className={styles.vs}>VS</span>
+                  )}
+                </span>
+                {scored ? (
+                  <span className={styles.srOnly}>
+                    {fixture.opponent} {fixture.opponent_goals}, Shaita Angels {fixture.shaita_goals}
+                  </span>
+                ) : (
+                  kickoff && <small>{kickoff}</small>
+                )}
+              </div>
 
-          <div className={`${styles.team} ${styles.away}`}>
-            <span className={styles.crest} data-opponent="true">
-              {opponentInitials(fixture.opponent)}
-            </span>
-            <strong>{fixture.opponent}</strong>
-          </div>
+              <div className={`${styles.team} ${styles.away}`}>
+                <span className={styles.crest} data-shaita="true">
+                  <Image src="/shaita-angels-logo.png" alt="" width={40} height={46} />
+                </span>
+                <strong>Shaita Angels</strong>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={styles.team}>
+                <span className={styles.crest} data-shaita="true">
+                  <Image src="/shaita-angels-logo.png" alt="" width={40} height={46} />
+                </span>
+                <strong>Shaita Angels</strong>
+              </div>
+
+              <div className={styles.score}>
+                <span className={styles.digits}>
+                  {scored ? (
+                    <>
+                      <b>{fixture.shaita_goals}</b>
+                      <i aria-hidden="true">–</i>
+                      <b>{fixture.opponent_goals}</b>
+                    </>
+                  ) : (
+                    <span className={styles.vs}>VS</span>
+                  )}
+                </span>
+                {scored ? (
+                  <span className={styles.srOnly}>
+                    Shaita Angels {fixture.shaita_goals}, {fixture.opponent} {fixture.opponent_goals}
+                  </span>
+                ) : (
+                  kickoff && <small>{kickoff}</small>
+                )}
+              </div>
+
+              <div className={`${styles.team} ${styles.away}`}>
+                <span className={styles.crest} data-opponent="true">
+                  {fixture.opponent_logo_url ? (
+                    <Image src={fixture.opponent_logo_url} alt="" width={40} height={46} />
+                  ) : (
+                    opponentInitials(fixture.opponent)
+                  )}
+                </span>
+                <strong>{fixture.opponent}</strong>
+              </div>
+            </>
+          )}
         </div>
 
         <div className={styles.bottom}>

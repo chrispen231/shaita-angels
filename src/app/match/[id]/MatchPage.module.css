@@ -102,6 +102,11 @@
   padding: 6px;
 }
 
+.crest[data-shaita="true"] {
+  background: var(--white);
+  color: var(--ink);
+}
+
 .crest[data-opponent="true"] {
   background: var(--charcoal);
   color: rgba(255, 255, 255, 0.92);
@@ -371,6 +376,7 @@
 
 .playerList {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1px;
   margin: 0;
   padding: 0;

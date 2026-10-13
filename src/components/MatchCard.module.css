@@ -134,6 +134,11 @@
   padding: 5px;
 }
 
+.crest[data-shaita="true"] {
+  background: var(--white);
+  color: var(--ink);
+}
+
 .crest[data-opponent="true"] {
   background: #2b2b30;
   color: rgba(255, 255, 255, 0.9);
