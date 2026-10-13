@@ -392,6 +392,18 @@
   gap: 12px;
   padding: 11px 14px;
   background: var(--white);
+  min-width: 0;
+}
+
+/* In the goalscorers list there is no shirt number, so the first column is
+   dropped and the name needs to stay on one line. Without this the name wraps
+   one letter per line when the row is narrow. */
+.scorers .player {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.scorers .playerName {
+  white-space: nowrap;
 }
 
 .playerNumber {
