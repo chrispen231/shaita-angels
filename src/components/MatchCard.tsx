@@ -59,7 +59,7 @@ export default function MatchCard({
               <div className={styles.team}>
                 <span className={styles.crest} data-opponent="true">
                   {fixture.opponent_logo_url ? (
-                    <Image src={fixture.opponent_logo_url} alt="" width={40} height={46} />
+                    <Image src={fixture.opponent_logo_url} alt="" width={44} height={50} />
                   ) : (
                     opponentInitials(fixture.opponent)
                   )}
@@ -90,7 +90,7 @@ export default function MatchCard({
 
               <div className={`${styles.team} ${styles.away}`}>
                 <span className={styles.crest} data-shaita="true">
-                  <Image src="/shaita-angels-logo.png" alt="" width={40} height={46} />
+                  <Image src="/shaita-angels-logo.png" alt="" width={44} height={50} />
                 </span>
                 <strong>Shaita Angels</strong>
               </div>
@@ -99,7 +99,7 @@ export default function MatchCard({
             <>
               <div className={styles.team}>
                 <span className={styles.crest} data-shaita="true">
-                  <Image src="/shaita-angels-logo.png" alt="" width={40} height={46} />
+                  <Image src="/shaita-angels-logo.png" alt="" width={44} height={50} />
                 </span>
                 <strong>Shaita Angels</strong>
               </div>
@@ -128,7 +128,7 @@ export default function MatchCard({
               <div className={`${styles.team} ${styles.away}`}>
                 <span className={styles.crest} data-opponent="true">
                   {fixture.opponent_logo_url ? (
-                    <Image src={fixture.opponent_logo_url} alt="" width={40} height={46} />
+                    <Image src={fixture.opponent_logo_url} alt="" width={44} height={50} />
                   ) : (
                     opponentInitials(fixture.opponent)
                   )}

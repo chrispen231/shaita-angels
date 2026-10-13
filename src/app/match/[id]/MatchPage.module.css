@@ -87,8 +87,8 @@
 }
 
 .crest {
-  width: 56px;
-  height: 64px;
+  width: 62px;
+  height: 70px;
   display: grid;
   place-items: center;
   background: var(--red);
@@ -341,8 +341,8 @@
   }
 
   .crest {
-    width: 46px;
-    height: 54px;
+    width: 50px;
+    height: 58px;
     font-size: 16px;
   }
 

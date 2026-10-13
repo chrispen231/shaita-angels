@@ -118,8 +118,8 @@
 }
 
 .crest {
-  width: 40px;
-  height: 46px;
+  width: 44px;
+  height: 50px;
   flex: none;
   display: grid;
   place-items: center;
@@ -267,8 +267,8 @@
   }
 
   .crest {
-    width: 34px;
-    height: 40px;
+    width: 38px;
+    height: 44px;
     font-size: 13px;
   }
 

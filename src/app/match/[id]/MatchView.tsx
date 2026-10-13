@@ -81,7 +81,7 @@ export default function MatchView({
               <div className={styles.side}>
                 <span className={styles.crest} data-opponent="true">
                   {fixture.opponent_logo_url ? (
-                    <Image src={fixture.opponent_logo_url} alt="" width={56} height={64} />
+                    <Image src={fixture.opponent_logo_url} alt="" width={62} height={70} />
                   ) : (
                     opponentInitials(fixture.opponent)
                   )}
@@ -113,7 +113,7 @@ export default function MatchView({
               </div>
               <div className={`${styles.side} ${styles.away}`}>
                 <span className={styles.crest} data-shaita="true">
-                  <Image src="/shaita-angels-logo.png" alt="" width={56} height={64} />
+                  <Image src="/shaita-angels-logo.png" alt="" width={62} height={70} />
                 </span>
                 <strong>Shaita Angels</strong>
               </div>
@@ -122,7 +122,7 @@ export default function MatchView({
             <>
               <div className={styles.side}>
                 <span className={styles.crest} data-shaita="true">
-                  <Image src="/shaita-angels-logo.png" alt="" width={56} height={64} />
+                  <Image src="/shaita-angels-logo.png" alt="" width={62} height={70} />
                 </span>
                 <strong>Shaita Angels</strong>
               </div>
@@ -152,7 +152,7 @@ export default function MatchView({
               <div className={`${styles.side} ${styles.away}`}>
                 <span className={styles.crest} data-opponent="true">
                   {fixture.opponent_logo_url ? (
-                    <Image src={fixture.opponent_logo_url} alt="" width={56} height={64} />
+                    <Image src={fixture.opponent_logo_url} alt="" width={62} height={70} />
                   ) : (
                     opponentInitials(fixture.opponent)
                   )}
