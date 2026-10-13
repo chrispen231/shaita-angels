@@ -33,6 +33,17 @@ const nextConfig: NextConfig = {
      * the club's own public bucket, and nothing else on the Supabase host.
      */
     remotePatterns: [
+      /*
+       * hostname uses an explicit wildcard segment. The bare "**.supabase.co" form
+       * did not match the project host in a live request - a request for a real
+       * storage URL returned INVALID_IMAGE_OPTIMIZE_REQUEST, identically to a
+       * blocked host, so the allowance was silently not applying.
+       *
+       * pathname is narrowed to the public storage prefix: this permits the club's
+       * own buckets and nothing else on the Supabase host. With no pathname, every
+       * public object is fetchable through the optimiser, including anything else
+       * that host exposes.
+       */
       {
         protocol: "https",
         hostname: "**.supabase.co",

@@ -174,6 +174,10 @@ export default function ImageField({
             upload uses the surrounding form with a formAction override instead. That
             keeps it one request with its own server action, and no nesting.
           */}
+          {/* The server action needs to know which bucket to write to. Without
+              this, formData.get("purpose") is null and every upload is rejected
+              with "Unknown upload target" before the file is even checked. */}
+          <input type="hidden" name="purpose" value={purpose} />
           <button
             type="submit"
             formAction={uploadAction}
