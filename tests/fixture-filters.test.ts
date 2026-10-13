@@ -86,9 +86,9 @@ describe("isCompetitionSlug", () => {
 });
 
 describe("parseMatchFilters", () => {
-  it("accepts a well-formed period and competition", () => {
-    expect(parseMatchFilters({ period: "2026-10", competition: "womens-orange-cup" })).toEqual({
-      season: null,
+  it("accepts a well-formed season, period and competition", () => {
+    expect(parseMatchFilters({ season: "2026/27", period: "2026-10", competition: "womens-orange-cup" })).toEqual({
+      season: "2026/27",
       period: "2026-10",
       competition: "womens-orange-cup",
     });

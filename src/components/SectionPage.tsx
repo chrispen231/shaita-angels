@@ -15,7 +15,7 @@ export type MatchFilters = { season: string | null; period: string | null; compe
 
 /** Reads and validates the match centre filters from the URL. */
 export function parseMatchFilters(params: { season?: string; period?: string; competition?: string }): MatchFilters {
-  const season = params.season && /^\d{4}-\d{2}$/.test(params.season) ? params.season : null;
+  const season = params.season && /^\d{4}\/\d{2}$/.test(params.season) ? params.season : null;
   const period = params.period && /^\d{4}-\d{2}$/.test(params.period) ? params.period : null;
   const competition = params.competition && isCompetitionSlug(params.competition) ? params.competition : null;
   return { season, period, competition };

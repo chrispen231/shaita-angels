@@ -117,7 +117,7 @@ export default function MatchCentre({
                   href={href({ season: key })}
                   aria-current={season === key ? "true" : undefined}
                 >
-                  {key.replace("-", "/")}
+                  {key}
                 </Link>
               </li>
             ))}
