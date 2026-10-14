@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { ROLES, type Role } from "@/lib/admin/roles";
+import { getSupabaseConfig } from "@/lib/supabase/config";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -12,16 +13,9 @@ import type { FixtureActionState } from "@/types/fixtures";
  * supabase/migrations/20261005140000_role_guards.sql. The role check here gives a
  * clear message; RLS is what actually stops the write.
  *
- * Two hazards this file deliberately does not try to handle:
- *
- *   * An admin can only be added once they exist as a Supabase Auth user. Adding
- *     a row for an email with no auth account creates an admin who can never sign
- *     in and can never be removed through this screen without confusion. The form
- *     asks for the email only and the README explains the two-step order.
- *
- *   * Removing the last super admin is refused by a database trigger, not here.
- *     The check in the database is the one that counts, because it also covers
- *     direct SQL and the Supabase dashboard.
+ * Auth user management uses the Supabase Management API with the service_role
+ * key (SUPABASE_SERVICE_ROLE_KEY in Vercel). Without it, admins must already
+ * have a Supabase Auth account before being added.
  */
 
 async function requireSuperAdmin() {
@@ -43,33 +37,126 @@ function isRole(value: string): value is Role {
   return (ROLES as readonly string[]).includes(value);
 }
 
+// =============================================================================
+// Supabase Management API
+// =============================================================================
+
+async function managementApi<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<T | null> {
+  const config = getSupabaseConfig();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!config || !serviceKey) return null;
+
+  const res = await fetch(`${config.url}/auth/v1/admin/${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error(`Management API ${method} ${path} failed`, res.status, text);
+    return null;
+  }
+
+  if (res.status === 204) return null as T;
+  return res.json() as Promise<T>;
+}
+
+/**
+ * Create a Supabase Auth user.
+ * Returns "created" | "exists" | null (error).
+ */
+async function createAuthUser(email: string): Promise<"created" | "exists" | null> {
+  const result = await managementApi<{ id?: string }>(
+    "POST",
+    "users",
+    { email, email_confirm: false },
+  );
+
+  if (result === null) {
+    const existing = await managementApi<{ users?: { email: string }[] }>(
+      "GET",
+      `users?email=${encodeURIComponent(email)}`,
+    );
+    if (existing?.users?.length) return "exists";
+    return null;
+  }
+  return "created";
+}
+
+/**
+ * Delete a Supabase Auth user by email. Best effort.
+ */
+async function deleteAuthUser(email: string): Promise<void> {
+  const existing = await managementApi<{ users?: { id: string; email: string }[] }>(
+    "GET",
+    `users?email=${encodeURIComponent(email)}`,
+  );
+  const userId = existing?.users?.[0]?.id;
+  if (!userId) return;
+
+  await managementApi("DELETE", `users/${userId}`);
+}
+
+// =============================================================================
+// Actions
+// =============================================================================
+
 export async function addAdmin(
   _previous: FixtureActionState,
   formData: FormData,
 ): Promise<FixtureActionState> {
-  const context = await requireSuperAdmin();
+  try {
+    const context = await requireSuperAdmin();
 
-  const email = field(formData, "email").toLowerCase();
-  const role = field(formData, "role");
+    const email = field(formData, "email").toLowerCase();
+    const role = field(formData, "role");
 
-  if (!EMAIL.test(email) || email.length > 254) {
-    return { status: "error", message: "Enter a valid email address." };
-  }
-  if (!isRole(role)) {
-    return { status: "error", message: "Choose a role." };
-  }
-
-  const { error } = await context.supabase.from("site_admins").insert({ email, role });
-  if (error) {
-    if (error.code === "23505") {
-      return { status: "error", message: "That email is already an administrator." };
+    if (!EMAIL.test(email) || email.length > 254) {
+      return { status: "error", message: "Enter a valid email address." };
     }
-    console.error("Admin insert failed", error.message);
-    return { status: "error", message: "We couldn't add that administrator." };
-  }
+    if (!isRole(role)) {
+      return { status: "error", message: "Choose a role." };
+    }
 
-  revalidatePath("/admin/users");
-  return { status: "success", message: `${email} added as ${role.replace("_", " ")}.` };
+    const authResult = await createAuthUser(email);
+    if (authResult === null) {
+      return {
+        status: "error",
+        message:
+          "Could not create the sign-in account. Make sure SUPABASE_SERVICE_ROLE_KEY is set in Vercel.",
+      };
+    }
+
+    const { error } = await context.supabase.from("site_admins").insert({ email, role });
+    if (error) {
+      if (error.code === "23505") {
+        return { status: "error", message: "That email is already an administrator." };
+      }
+      console.error("Admin insert failed", error.message);
+      return { status: "error", message: "We couldn't add that administrator." };
+    }
+
+    revalidatePath("/admin/users");
+    const authMessage =
+      authResult === "created"
+        ? " A confirmation email has been sent to them."
+        : " They already had a sign-in account.";
+    return {
+      status: "success",
+      message: `${email} added as ${role.replace("_", " ")}.${authMessage}`,
+    };
+  } catch (e) {
+    return { status: "error", message: e instanceof Error ? e.message : "Could not add administrator." };
+  }
 }
 
 export async function changeAdminRole(
@@ -106,30 +193,39 @@ export async function removeAdmin(
   _previous: FixtureActionState,
   formData: FormData,
 ): Promise<FixtureActionState> {
-  const context = await requireSuperAdmin();
+  try {
+    const context = await requireSuperAdmin();
 
-  const email = field(formData, "email").toLowerCase();
-  if (!email) return { status: "error", message: "Missing administrator." };
+    const email = field(formData, "email").toLowerCase();
+    if (!email) return { status: "error", message: "Missing administrator." };
 
-  if (email === context.user.email.toLowerCase()) {
-    return {
-      status: "error",
-      message: "You cannot remove your own account while signed in.",
-    };
-  }
-
-  const { error } = await context.supabase.from("site_admins").delete().eq("email", email);
-  if (error) {
-    if (error.code === "42501") {
+    if (email === context.user.email.toLowerCase()) {
       return {
         status: "error",
-        message: "That would leave the site with no super admin.",
+        message: "You cannot remove your own account while signed in.",
       };
     }
-    console.error("Admin delete failed", error.message);
-    return { status: "error", message: "We couldn't remove that administrator." };
-  }
 
-  revalidatePath("/admin/users");
-  return { status: "success", message: `${email} removed.` };
+    const { error } = await context.supabase.from("site_admins").delete().eq("email", email);
+    if (error) {
+      if (error.code === "42501") {
+        return {
+          status: "error",
+          message: "That would leave the site with no super admin.",
+        };
+      }
+      console.error("Admin delete failed", error.message);
+      return { status: "error", message: "We couldn't remove that administrator." };
+    }
+
+    await deleteAuthUser(email);
+
+    revalidatePath("/admin/users");
+    return {
+      status: "success",
+      message: `${email} removed. Their sign-in account has also been deleted.`,
+    };
+  } catch (e) {
+    return { status: "error", message: e instanceof Error ? e.message : "Could not remove administrator." };
+  }
 }

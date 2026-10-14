@@ -24,9 +24,8 @@ export default function UserManager({ admins, currentEmail }: { admins: AdminRow
         <h2 className={styles.cardTitle}>Administrators</h2>
         <p className={styles.hint}>
           {admins.length} {admins.length === 1 ? "person has" : "people have"} access, {superAdmins}{" "}
-          {superAdmins === 1 ? "is" : "are"} super admin. An administrator must already have a Supabase
-          sign-in before they appear here: create their account at /admin/login first, then add their
-          email below.
+          {superAdmins === 1 ? "is" : "are"} super admin. Adding an administrator creates their Supabase
+          sign-in account and sends a confirmation email — no need to ask them to sign up first.
         </p>
 
         <ul className={styles.list}>
@@ -116,8 +115,8 @@ export default function UserManager({ admins, currentEmail }: { admins: AdminRow
       <form action={addAction} className={styles.card}>
         <h2 className={styles.cardTitle}>Add an administrator</h2>
         <p className={styles.hint}>
-          The person must already be able to sign in at /admin/login. Adding an email here grants
-          access; it does not create their account.
+          Enter the person&apos;s email and choose a role. Their Supabase sign-in account is created
+          automatically and they receive a confirmation email.
         </p>
 
         <div className={styles.field}>
