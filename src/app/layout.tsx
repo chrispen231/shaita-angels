@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Shaita Angels FC", description: "From Careysburg. For the whole game." },
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Shaita Angels" },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
