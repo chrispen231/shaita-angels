@@ -247,7 +247,7 @@ function Lineups({ fixture, content }: { fixture: Fixture; content: MatchContent
 
   return (
     <div className={styles.detail}>
-      <Pitch players={starters} formation={fixture.formation} side="shaita" />
+      <Pitch players={starters} formation={fixture.formation} venueType={fixture.venue_type} side="shaita" />
       <PlayerGroup title="Starting lineup" rows={starters} />
 
       {bench.length > 0 && <PlayerGroup title="Substitutes" rows={bench} />}
