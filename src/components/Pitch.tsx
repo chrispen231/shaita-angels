@@ -27,7 +27,16 @@ export default function Pitch({
     (p) => p.pitch_x !== null && p.pitch_y !== null,
   );
 
-  if (positioned.length === 0) return null;
+  if (positioned.length === 0) {
+    return (
+      <div className={styles.pitchWrap}>
+        {formation && <p className={styles.formationLabel}>{formation}</p>}
+        <div className={styles.pitchEmpty}>
+          <p>Set pitch coordinates in the match editor to see the formation.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.pitchWrap} aria-label={`${side === "shaita" ? "Shaita Angels" : "Opponent"} formation${formation ? ` (${formation})` : ""}`}>

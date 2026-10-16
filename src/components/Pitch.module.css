@@ -3,6 +3,21 @@
   max-width: 640px;
 }
 
+.pitchEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 68 / 105;
+  background: #2d8a3e;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font: 500 14px/1.5 var(--body);
+  text-align: center;
+  padding: 24px;
+}
+
 .formationLabel {
   text-align: center;
   font: 800 13px/1.2 var(--body);

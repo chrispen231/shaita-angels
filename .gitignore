@@ -43,3 +43,5 @@ next-env.d.ts
 
 # supabase CLI local state (contains the project's database connection URL)
 supabase/.temp
+
+.vercel
