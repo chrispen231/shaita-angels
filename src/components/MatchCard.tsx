@@ -6,10 +6,11 @@ import {
   competitionBadge,
   formatKickoff,
   formatMatchDate,
-  hasScore,
+  hasScoreline,
   opponentInitials,
   roundLabel,
 } from "@/lib/fixtures";
+import LiveClock from "@/components/LiveClock";
 import styles from "./MatchCard.module.css";
 
 /**
@@ -26,7 +27,8 @@ export default function MatchCard({
   fixture: Fixture;
   headingLevel?: "h2" | "h3";
 }) {
-  const scored = hasScore(fixture);
+  const scored = hasScoreline(fixture);
+  const isLive = fixture.status === "live";
   const kickoff = formatKickoff(fixture.kickoff_time);
   const round = roundLabel(fixture);
   const Heading = headingLevel;
@@ -43,7 +45,16 @@ export default function MatchCard({
         </span>
 
         <div className={styles.top}>
-          <span className={`${styles.tag} ${styles[fixture.status]}`}>{STATUS_LABEL[fixture.status]}</span>
+          <span className={`${styles.tag} ${styles[fixture.status]}`}>
+            {isLive && <span className={styles.pulse} aria-hidden="true" />}
+            {STATUS_LABEL[fixture.status]}
+            {isLive && (
+              <>
+                {" "}
+                <LiveClock wentLiveAt={fixture.went_live_at} />
+              </>
+            )}
+          </span>
           <time dateTime={fixture.match_date} className={styles.date}>
             {formatMatchDate(fixture.match_date)}
           </time>

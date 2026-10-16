@@ -27,7 +27,7 @@ export type FixtureInput = {
 };
 
 const VENUE_TYPES = ["home", "away", "neutral"] as const;
-const STATUSES = ["scheduled", "played", "postponed", "cancelled"] as const;
+const STATUSES = ["scheduled", "played", "live", "postponed", "cancelled"] as const;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 // A logo URL is rendered into an image src, so it must be an absolute http(s) URL.
@@ -63,16 +63,30 @@ export function validateFixture(input: FixtureInput): string | null {
     return "Choose a valid match status.";
   }
 
-  // fixtures_scores_match_status: a played match needs both scores (0-99), and
-  // every other status must carry neither.
+  // fixtures_scores_match_status: a played match needs both scores (0-99). A live
+  // match may carry either a complete scoreline or none at all - marking a match
+  // live at 0-0 should not require typing the score first - but never half a pair,
+  // which is always a mistake rather than a state. Every other status carries
+  // neither.
   if (input.status === "played") {
     const for_ = input.shaita_goals;
     const against = input.opponent_goals;
     if (for_ === null || against === null || !SCORE.test(String(for_)) || !SCORE.test(String(against))) {
       return "Played matches need both scores (0–99).";
     }
+  } else if (input.status === "live") {
+    const for_ = input.shaita_goals;
+    const against = input.opponent_goals;
+    const bothNull = for_ === null && against === null;
+    const bothSet = for_ !== null && against !== null;
+    if (!bothNull && !bothSet) {
+      return "A live match needs both scores or neither.";
+    }
+    if (bothSet && (!SCORE.test(String(for_)) || !SCORE.test(String(against)))) {
+      return "Live scores must be between 0 and 99.";
+    }
   } else if (input.shaita_goals !== null || input.opponent_goals !== null) {
-    return "Played matches need both scores (0–99).";
+    return "Only a played or live match can carry a score.";
   }
 
   if (input.venue.length > 160 || input.notes.length > 2000) {

@@ -7,7 +7,7 @@ import {
   daysUntil,
   formatKickoff,
   formatMatchDateLong,
-  hasScore,
+  hasScoreline,
   matchCompetition,
   opponentInitials,
   roundLabel,
@@ -19,6 +19,7 @@ import {
   type PublicLineupRow,
 } from "@/lib/matches/content";
 import { formatMinute, describeGoal } from "@/lib/matches/validation";
+import LiveClock from "@/components/LiveClock";
 import styles from "./MatchPage.module.css";
 
 export type MatchTab = "lineups" | "commentary" | "stats";
@@ -53,7 +54,8 @@ export default function MatchView({
   tab: MatchTab;
   content?: MatchContent;
 }) {
-  const scored = hasScore(fixture);
+  const scored = hasScoreline(fixture);
+  const isLive = fixture.status === "live";
   const kickoff = formatKickoff(fixture.kickoff_time);
   const countdown = fixture.status === "scheduled" ? daysUntil(fixture.match_date) : null;
   const round = roundLabel(fixture);
@@ -166,7 +168,16 @@ export default function MatchView({
         <p className={styles.meta}>
           <time dateTime={fixture.match_date}>{formatMatchDateLong(fixture.match_date)}</time>
           {fixture.venue ? <span>{fixture.venue}</span> : <span>{fixture.venue_type} fixture</span>}
-          {kickoff && <span>Kick-off {kickoff} local time</span>}
+          {/* Once a match is live the scheduled kick-off is history, so the clock
+              replaces it rather than sitting next to a time that has passed. */}
+          {isLive ? (
+            <span className={styles.liveMeta}>
+              <span className={styles.pulse} aria-hidden="true" />
+              Live <LiveClock wentLiveAt={fixture.went_live_at} />
+            </span>
+          ) : (
+            kickoff && <span>Kick-off {kickoff} local time</span>
+          )}
           <span className={`${styles.status} ${styles[fixture.status]}`}>{STATUS_LABEL[fixture.status]}</span>
         </p>
       </header>
@@ -316,6 +327,21 @@ function Commentary({ fixture, content }: { fixture: Fixture; content: MatchCont
             </p>
           ))}
         </section>
+      </div>
+    );
+  }
+
+  // A live match gets its own copy: "there is nothing to report yet" would be
+  // wrong while a match is in progress and the club simply has not written a
+  // report.
+  if (fixture.status === "live") {
+    return (
+      <div className={styles.empty}>
+        <h2>Commentary</h2>
+        <p>
+          This match is in progress. Live commentary is not published, and a written report will
+          appear here once the club supplies one after full time.
+        </p>
       </div>
     );
   }

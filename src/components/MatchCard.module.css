@@ -92,6 +92,40 @@
   color: #4a4744;
 }
 
+.tag.live {
+  /* Solid red, the loudest thing on the card. A match in progress is the one
+     thing a fan opening the site is looking for. */
+  background: var(--red);
+  color: white;
+}
+
+/* A soft pulse, so a live match reads as live even in a still screenshot. */
+.pulse {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.75); }
+}
+
+.live-minute {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Respect a reader who asked for less motion: keep the dot, drop the pulse. */
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}
+
 .teams {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);

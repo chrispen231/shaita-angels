@@ -119,6 +119,7 @@ export const VENUE_TYPES = [
 
 export const MATCH_STATUSES = [
   { value: "scheduled", label: "Scheduled" },
+  { value: "live", label: "Live" },
   { value: "played", label: "Played" },
   { value: "postponed", label: "Postponed" },
   { value: "cancelled", label: "Cancelled" },

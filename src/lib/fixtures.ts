@@ -87,7 +87,7 @@ export function monthLabel(key: string) {
 // A single line: `as const` cannot be applied to a concatenation, so the column
 // list cannot be wrapped for readability. That is why this is one long line
 // rather than the tidier wrapped form.
-export const FIXTURE_COLUMNS = "id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, opponent_logo_url, opponent_logo_alt, is_published, created_at, updated_at" as const;
+export const FIXTURE_COLUMNS = "id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, opponent_logo_url, opponent_logo_alt, went_live_at, is_published, created_at, updated_at" as const;
 
 export const COMPETITIONS = [
   { slug: "lfa-womens-first-division", label: "LFA Women’s First Division", short: "First Division" },
@@ -136,16 +136,39 @@ export function roundLabel(fixture: Fixture) {
   return match ? `Matchweek ${match[1]}` : null;
 }
 
-/** Full time, upcoming, postponed or cancelled, in the site's vocabulary. */
+/** Full time, upcoming, live, postponed or cancelled, in the site's vocabulary. */
 export const STATUS_LABEL: Record<Fixture["status"], string> = {
   scheduled: "Upcoming",
+  live: "Live",
   played: "Full time",
   postponed: "Postponed",
   cancelled: "Cancelled",
 };
 
+/**
+ * A finished result: played, with both scores recorded.
+ *
+ * Deliberately excludes live. This answers "is this match over", which drives the
+ * "N played" counts in the match centre and the result/upcoming split. A live
+ * match is not a result yet.
+ */
 export function hasScore(fixture: Fixture) {
   return fixture.status === "played" && fixture.shaita_goals !== null && fixture.opponent_goals !== null;
+}
+
+/**
+ * A scoreline worth printing, whether the match is live or finished.
+ *
+ * Separate from hasScore because a live match shows a running score that is not
+ * yet a result. Using hasScore for display would hide the score of a match in
+ * progress, which is the one thing a fan is looking for.
+ */
+export function hasScoreline(fixture: Fixture) {
+  return (
+    (fixture.status === "played" || fixture.status === "live") &&
+    fixture.shaita_goals !== null &&
+    fixture.opponent_goals !== null
+  );
 }
 
 export function opponentInitials(opponent: string) {

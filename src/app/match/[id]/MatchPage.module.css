@@ -190,6 +190,39 @@
   color: #4a4744;
 }
 
+.status.live {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+
+/* The live clock in the meta row. */
+.liveMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--red-deep);
+}
+
+.liveMeta .pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liveMeta .pulse {
+    animation: none;
+  }
+}
+
 /* Tabs */
 .tabs {
   display: flex;

@@ -97,11 +97,13 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(matchDate) || Number.isNaN(Date.parse(`${matchDate}T00:00:00Z`))) return { status: "error", message: "Enter a valid match date." };
   if (!(["home", "away", "neutral"] as const).includes(venueType as "home" | "away" | "neutral")) return { status: "error", message: "Choose a valid venue type." };
-  if (!( ["scheduled", "played", "postponed", "cancelled"] as const).includes(status as "scheduled" | "played" | "postponed" | "cancelled")) return { status: "error", message: "Choose a valid match status." };
+  if (!( ["scheduled", "played", "live", "postponed", "cancelled"] as const).includes(status as "scheduled" | "played" | "live" | "postponed" | "cancelled")) return { status: "error", message: "Choose a valid match status." };
 
+  // A live match may carry a scoreline or none at all; every other non-played
+  // status carries none. Mirrors fixtures_scores_match_status.
   let shaitaGoals: number | null = null;
   let opponentGoals: number | null = null;
-  if (status === "played" && /^\d{1,2}$/.test(rawFor) && /^\d{1,2}$/.test(rawAgainst)) {
+  if ((status === "played" || status === "live") && /^\d{1,2}$/.test(rawFor) && /^\d{1,2}$/.test(rawAgainst)) {
     shaitaGoals = Number(rawFor);
     opponentGoals = Number(rawAgainst);
   }
@@ -131,9 +133,46 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
     shaita_goals: shaitaGoals, opponent_goals: opponentGoals, notes: notes || null,
     is_published: published, updated_at: new Date().toISOString(),
   };
+
+  /*
+   * The live clock's start point.
+   *
+   * went_live_at is stamped on the transition INTO live and left alone after that.
+   * Editing a live fixture - correcting the score, fixing a typo in the venue -
+   * must not restart the minute counter, which it would if this wrote a fresh
+   * timestamp on every save.
+   *
+   * Read the current value first so the transition can be detected. The read is
+   * the admin's own session, so RLS applies as it does everywhere else.
+   */
+  let wentLiveAt: string | null = null;
+  if (id) {
+    const { data: current } = await context.supabase
+      .from("fixtures")
+      .select("status, went_live_at")
+      .eq("id", id)
+      .maybeSingle();
+
+    const wasLive = current?.status === "live";
+    const existing = current?.went_live_at ?? null;
+
+    if (status === "live") {
+      // Keep the original start time when the match was already live; otherwise
+      // start the clock now.
+      wentLiveAt = wasLive && existing ? existing : new Date().toISOString();
+    } else {
+      // Leaving live clears it, so a match re-marked live later starts a fresh
+      // clock rather than resuming a stale one.
+      wentLiveAt = null;
+    }
+  } else if (status === "live") {
+    // A fixture created directly as live starts its clock now.
+    wentLiveAt = new Date().toISOString();
+  }
+
   const query = id
-    ? context.supabase.from("fixtures").update(values).eq("id", id)
-    : context.supabase.from("fixtures").insert({ ...values, created_by: context.user.id });
+    ? context.supabase.from("fixtures").update({ ...values, went_live_at: wentLiveAt }).eq("id", id)
+    : context.supabase.from("fixtures").insert({ ...values, went_live_at: wentLiveAt, created_by: context.user.id });
   const { error } = await query;
   if (error) {
     console.error("Fixture save failed", error.message);

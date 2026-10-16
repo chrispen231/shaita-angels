@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { Fixture, FixtureActionState } from "@/types/fixtures";
 import { saveFixture } from "./actions";
 import ImageField from "@/app/admin/ImageField";
+import { looksFinished } from "@/lib/fixtures/live-clock";
 import {
   VENUE_TYPES,
   MATCH_STATUSES,
@@ -66,8 +67,18 @@ function FixtureForm({
 
 function FixtureRow({ fixture, competitions }: { fixture: Fixture; competitions: Competition[] }) {
   const score = fixture.status === "played" ? `${fixture.shaita_goals}–${fixture.opponent_goals}` : fixture.status;
+  // A match left live after everyone went home is the one failure mode of a manual
+  // status. Flag it here rather than on the public site, where it would just look
+  // wrong to a fan.
+  const stale = fixture.status === "live" && looksFinished(fixture.went_live_at, new Date());
   return <details className={styles.fixtureRow}>
-    <summary><span>{fixture.match_date} · {fixture.opponent}</span><span>{score}{fixture.is_published ? " · Published" : " · Draft"}</span></summary>
+    <summary>
+      <span>{fixture.match_date} · {fixture.opponent}</span>
+      <span>
+        {stale && <b className={styles.staleLive}>Still live? </b>}
+        {score}{fixture.is_published ? " · Published" : " · Draft"}
+      </span>
+    </summary>
     <FixtureForm key={fixture.id} fixture={fixture} competitions={competitions} title={`Edit ${fixture.opponent}`} />
   </details>;
 }

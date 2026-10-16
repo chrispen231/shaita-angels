@@ -86,7 +86,7 @@ describe("venue type", () => {
 });
 
 describe("status", () => {
-  it.each(["scheduled", "played", "postponed", "cancelled"])("accepts %s", (status) => {
+  it.each(["scheduled", "live", "played", "postponed", "cancelled"])("accepts %s", (status) => {
     const input =
       status === "played"
         ? valid
@@ -94,7 +94,7 @@ describe("status", () => {
     expect(validateFixture(input)).toBeNull();
   });
 
-  it.each(["", "played-extra", "PLANNED"])("rejects %o", (status) => {
+  it.each(["", "played-extra", "PLANNED", "LIVE"])("rejects %o", (status) => {
     const input =
       status === ""
         ? { ...valid, status, shaita_goals: null, opponent_goals: null }
@@ -109,10 +109,34 @@ describe("scores mirror the fixtures_scores_match_status constraint", () => {
     expect(validateFixture({ ...valid, shaita_goals: null })).toMatch(/both scores/i);
   });
 
-  it("forbids scores on any non-played status", () => {
+  it("forbids scores on a status that is neither played nor live", () => {
     for (const status of ["scheduled", "postponed", "cancelled"] as const) {
-      expect(validateFixture({ ...valid, status })).toMatch(/both scores/i);
+      expect(validateFixture({ ...valid, status })).toMatch(/played or live/i);
     }
+  });
+
+  it("allows a live match with no score yet", () => {
+    // Marking a match live at 0-0 should not require typing the score first.
+    expect(
+      validateFixture({ ...valid, status: "live", shaita_goals: null, opponent_goals: null }),
+    ).toBeNull();
+  });
+
+  it("allows a live match with a running score", () => {
+    expect(validateFixture({ ...valid, status: "live", shaita_goals: 1, opponent_goals: 0 })).toBeNull();
+    expect(validateFixture({ ...valid, status: "live", shaita_goals: 0, opponent_goals: 0 })).toBeNull();
+  });
+
+  it("rejects half a scoreline on a live match", () => {
+    // One score without the other is always a mistake, never a state.
+    expect(validateFixture({ ...valid, status: "live", opponent_goals: null })).toMatch(/both scores or neither/i);
+    expect(validateFixture({ ...valid, status: "live", shaita_goals: null })).toMatch(/both scores or neither/i);
+  });
+
+  it("rejects an out-of-range live score", () => {
+    expect(validateFixture({ ...valid, status: "live", shaita_goals: 100, opponent_goals: 0 })).toMatch(
+      /between 0 and 99/i,
+    );
   });
 
   it("allows a goalless draw", () => {
