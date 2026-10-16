@@ -56,12 +56,18 @@ export function orderFixtures(fixtures: Fixture[]): Fixture[] {
   const bySoonest = (a: Fixture, b: Fixture) => a.match_date.localeCompare(b.match_date);
   const byMostRecent = (a: Fixture, b: Fixture) => b.match_date.localeCompare(a.match_date);
 
-  const upcoming = fixtures.filter((f) => f.status !== "played").sort(bySoonest);
+  // A live match is the first thing a fan opening the site wants to find, so it
+  // leads the rail rather than sitting in the upcoming bucket where it would be
+  // ordered by date beneath fixtures still to play.
+  const live = fixtures.filter((f) => f.status === "live").sort(bySoonest);
+  const upcoming = fixtures
+    .filter((f) => f.status !== "played" && f.status !== "live")
+    .sort(bySoonest);
   const played = fixtures.filter((f) => f.status === "played").sort(byMostRecent);
 
   // Interleave so the rail does not read as a wall of past results once a
   // season is under way: next match, latest result, next match, ...
-  const mixed: Fixture[] = [];
+  const mixed: Fixture[] = [...live];
   for (let i = 0; i < Math.max(upcoming.length, played.length); i += 1) {
     if (upcoming[i]) mixed.push(upcoming[i]);
     if (played[i]) mixed.push(played[i]);
