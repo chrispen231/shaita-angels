@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { saveLineup, saveGoals, saveCards, saveReport } from "./actions";
+import { saveLineup, saveGoals, saveCards, saveReport, saveFormation } from "./actions";
 import type { FixtureActionState } from "@/types/fixtures";
 import {
-  POSITIONS,
+  POSITION_GROUPS,
+  FORMATIONS,
   CARD_TYPES,
   SIDES,
   formatMinute,
@@ -30,6 +31,8 @@ export type LineupRow = {
   player_name: string;
   shirt_number: number | null;
   position: string | null;
+  pitch_x: number | null;
+  pitch_y: number | null;
   is_starter: boolean;
   sort_order: number;
 };
@@ -58,6 +61,7 @@ const SIDES_: readonly Side[] = SIDES;
 export default function MatchEditor({
   fixtureId,
   opponent,
+  formation,
   lineup,
   goals,
   cards,
@@ -66,6 +70,7 @@ export default function MatchEditor({
 }: {
   fixtureId: string;
   opponent: string;
+  formation: string | null;
   lineup: LineupRow[];
   goals: GoalRow[];
   cards: CardRow[];
@@ -80,7 +85,7 @@ export default function MatchEditor({
   // One extra blank row per list, always kept at the end.
   const [lineupRows, setLineupRows] = useState([
     ...lineup,
-    { player_name: "", shirt_number: null, position: "", is_starter: true, sort_order: 0 },
+    { player_name: "", shirt_number: null, position: "", pitch_x: null, pitch_y: null, is_starter: true, sort_order: 0 },
   ]);
   const [goalRows, setGoalRows] = useState([
     ...goals,
@@ -109,6 +114,8 @@ export default function MatchEditor({
   const updateLineup = (index: number, patch: Partial<(typeof lineupRows)[number]>) =>
     setLineupRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
 
+  const [formationState, formationAction, formationPending] = useActionState(saveFormation, initial);
+
   const updateGoal = (index: number, patch: Partial<(typeof goalRows)[number]>) =>
     setGoalRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
 
@@ -129,6 +136,39 @@ export default function MatchEditor({
       </datalist>
 
       <input type="hidden" name="fixture_id" value={fixtureId} />
+
+      {/* ---------------------------------------------------------------- */}
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>Formation</h2>
+        <p className={styles.hint}>
+          The tactical shape for this match, e.g. 4-4-2. This appears on the public
+          match page above the pitch diagram.
+        </p>
+        <form action={formationAction} className={styles.form}>
+          <input type="hidden" name="fixture_id" value={fixtureId} />
+          <label className={styles.srOnly} htmlFor="formation-input">
+            Formation
+          </label>
+          <select
+            id="formation-input"
+            name="formation"
+            defaultValue={formation ?? ""}
+          >
+            <option value="">No formation set</option>
+            {FORMATIONS.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
+          <div className={styles.actions}>
+            <button type="submit" disabled={formationPending}>
+              {formationPending ? "Saving…" : "Save formation"}
+            </button>
+          </div>
+          <Status state={formationState} />
+        </form>
+      </section>
 
       {/* ---------------------------------------------------------------- */}
       <section className={styles.card}>
@@ -187,12 +227,48 @@ export default function MatchEditor({
                   onChange={(event) => updateLineup(index, { position: event.target.value })}
                 >
                   <option value="">Position</option>
-                  {POSITIONS.map((position) => (
-                    <option key={position} value={position}>
-                      {position}
-                    </option>
+                  {POSITION_GROUPS.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.positions.map((position) => (
+                        <option key={position} value={position}>
+                          {position}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
+                <label className={styles.srOnly} htmlFor={`lineup-pitch-x-${index}`}>
+                  Pitch X for player {index + 1}
+                </label>
+                <input
+                  id={`lineup-pitch-x-${index}`}
+                  name={`lineup_pitch_x_${index}`}
+                  className={styles.pitchCoord}
+                  placeholder="X"
+                  inputMode="numeric"
+                  value={row.pitch_x ?? ""}
+                  onChange={(event) =>
+                    updateLineup(index, {
+                      pitch_x: event.target.value === "" ? null : Number(event.target.value),
+                    })
+                  }
+                />
+                <label className={styles.srOnly} htmlFor={`lineup-pitch-y-${index}`}>
+                  Pitch Y for player {index + 1}
+                </label>
+                <input
+                  id={`lineup-pitch-y-${index}`}
+                  name={`lineup_pitch_y_${index}`}
+                  className={styles.pitchCoord}
+                  placeholder="Y"
+                  inputMode="numeric"
+                  value={row.pitch_y ?? ""}
+                  onChange={(event) =>
+                    updateLineup(index, {
+                      pitch_y: event.target.value === "" ? null : Number(event.target.value),
+                    })
+                  }
+                />
 
                 <label className={styles.checkbox}>
                   <input
@@ -224,7 +300,7 @@ export default function MatchEditor({
               onClick={() =>
                 setLineupRows((rows) => [
                   ...rows,
-                  { player_name: "", shirt_number: null, position: "", is_starter: true, sort_order: 0 },
+                  { player_name: "", shirt_number: null, position: "", pitch_x: null, pitch_y: null, is_starter: true, sort_order: 0 },
                 ])
               }
             >

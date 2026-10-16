@@ -218,7 +218,9 @@ describe("lineup", () => {
   const row = (over: Partial<LineupInput> = {}): LineupInput => ({
     player_name: "Player",
     shirt_number: "",
-    position: "Forward",
+    position: "ST",
+    pitch_x: "",
+    pitch_y: "",
     is_starter: true,
     ...over,
   });

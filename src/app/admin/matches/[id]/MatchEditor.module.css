@@ -91,6 +91,12 @@
   width: 64px;
 }
 
+.pitchCoord {
+  flex: 0 0 52px;
+  width: 52px;
+  text-align: center;
+}
+
 /* Shows the minute as it will be published, so 93 reads as 90+3' before saving. */
 .minutePreview {
   flex: 0 0 52px;
@@ -226,7 +232,8 @@
   }
 
   .shirt,
-  .minute {
+  .minute,
+  .pitchCoord {
     flex: 1 1 calc(50% - 4px);
     width: auto;
   }

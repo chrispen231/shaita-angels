@@ -39,6 +39,8 @@ const player = (over: Partial<PublicLineupRow> = {}): PublicLineupRow => ({
   player_name: "Player",
   shirt_number: null,
   position: null,
+  pitch_x: null,
+  pitch_y: null,
   is_starter: true,
   sort_order: 0,
   ...over,

@@ -11,6 +11,7 @@ import {
   validateAssistNote,
   validateReport,
   validateGoalForMinute,
+  validateFormation,
   type LineupInput,
   type Side,
 } from "@/lib/matches/validation";
@@ -65,6 +66,8 @@ function rows(formData: FormData, prefix: string) {
       player_name: name.trim(),
       shirt_number: at("shirt"),
       position: at("position"),
+      pitch_x: at("pitch_x"),
+      pitch_y: at("pitch_y"),
       side: at("side"),
       minute: at("minute"),
       added_stoppage: at("stoppage") === "on" || at("stoppage") === "true",
@@ -97,6 +100,8 @@ export async function saveLineup(
     player_name: row.player_name,
     shirt_number: row.shirt_number,
     position: row.position,
+    pitch_x: row.pitch_x,
+    pitch_y: row.pitch_y,
     is_starter: formData.get(`lineup_starter_${index}`) === "on",
   }));
 
@@ -134,6 +139,8 @@ export async function saveLineup(
       player_name: trimmed,
       shirt_number: row.shirt_number === "" ? null : Number(row.shirt_number),
       position: row.position || null,
+      pitch_x: row.pitch_x === "" ? null : Number(row.pitch_x),
+      pitch_y: row.pitch_y === "" ? null : Number(row.pitch_y),
       is_starter: row.is_starter,
       sort_order: orderByName.get(row.player_name) ?? 0,
     };
@@ -295,6 +302,51 @@ export async function saveCards(
   revalidatePath(`/admin/matches/${fixtureId}`);
   revalidatePath(`/match/${fixtureId}`);
   return { status: "success", message: `Saved ${payload.length} ${payload.length === 1 ? "card" : "cards"}.` };
+}
+
+// =============================================================================
+// Formation
+// =============================================================================
+
+export async function saveFormation(
+  _previous: FixtureActionState,
+  formData: FormData,
+): Promise<FixtureActionState> {
+  const context = await requireFixtureEditor();
+  const fixtureId = fixtureIdFrom(formData);
+
+  const formation = field(formData, "formation").trim();
+
+  if (formation === "") {
+    const { error } = await context.supabase
+      .from("fixtures")
+      .update({ formation: null })
+      .eq("id", fixtureId);
+    if (error) {
+      console.error("Formation clear failed", error.message);
+      return { status: "error", message: "We couldn't clear the formation." };
+    }
+    revalidatePath(`/admin/matches/${fixtureId}`);
+    revalidatePath(`/match/${fixtureId}`);
+    return { status: "success", message: "Formation cleared." };
+  }
+
+  const error = validateFormation(formation);
+  if (error) return { status: "error", message: error };
+
+  const { error: updateError } = await context.supabase
+    .from("fixtures")
+    .update({ formation })
+    .eq("id", fixtureId);
+
+  if (updateError) {
+    console.error("Formation save failed", updateError.message);
+    return { status: "error", message: "We couldn't save the formation." };
+  }
+
+  revalidatePath(`/admin/matches/${fixtureId}`);
+  revalidatePath(`/match/${fixtureId}`);
+  return { status: "success", message: `Formation saved as ${formation}.` };
 }
 
 // =============================================================================

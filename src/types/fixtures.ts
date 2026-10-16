@@ -23,6 +23,11 @@ export type Fixture = {
    * match has never been live.
    */
   went_live_at: string | null;
+  /**
+   * Tactical formation, e.g. "4-4-2", "4-3-3". Null when not set.
+   * Validated by fixtures_formation_format constraint.
+   */
+  formation: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;

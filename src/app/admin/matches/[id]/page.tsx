@@ -31,7 +31,7 @@ export default async function MatchEditorPage({
 
   const { data: fixture } = await context.supabase
     .from("fixtures")
-    .select("id, opponent, match_date, competition, status, is_published")
+    .select("id, opponent, match_date, competition, status, is_published, formation")
     .eq("id", id)
     .maybeSingle();
 
@@ -42,7 +42,7 @@ export default async function MatchEditorPage({
   const [lineup, goals, cards, report, squad] = await Promise.all([
     context.supabase
       .from("lineups")
-      .select("player_name, shirt_number, position, is_starter, sort_order")
+      .select("player_name, shirt_number, position, pitch_x, pitch_y, is_starter, sort_order")
       .eq("fixture_id", id)
       .order("is_starter", { ascending: false })
       .order("sort_order", { ascending: true }),
@@ -64,6 +64,8 @@ export default async function MatchEditorPage({
     player_name: String(row.player_name),
     shirt_number: row.shirt_number === null ? null : Number(row.shirt_number),
     position: row.position === null ? "" : String(row.position),
+    pitch_x: row.pitch_x === null ? null : Number(row.pitch_x),
+    pitch_y: row.pitch_y === null ? null : Number(row.pitch_y),
     is_starter: Boolean(row.is_starter),
     sort_order: index,
   }));
@@ -99,6 +101,7 @@ export default async function MatchEditorPage({
       <MatchEditor
         fixtureId={fixture.id}
         opponent={fixture.opponent}
+        formation={fixture.formation}
         lineup={lineupRows}
         goals={goalRows}
         cards={cardRows}

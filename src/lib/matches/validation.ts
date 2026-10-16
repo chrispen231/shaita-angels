@@ -20,13 +20,90 @@ export type CardType = (typeof CARD_TYPES)[number];
 export const FEET = ["left", "right", "both"] as const;
 export type Foot = (typeof FEET)[number];
 
-/** Goalkeeper, defender, midfielder, forward, or anything the club prefers. */
-export const POSITIONS = [
-  "Goalkeeper",
-  "Defender",
-  "Midfielder",
-  "Forward",
+/**
+ * Specific football position codes.
+ *
+ * The club wants the granularity Livescore shows: not "Defender" but CB, RB, LB.
+ * Grouped by line so the admin dropdown reads as a pitch, not an alphabetical
+ * list. Order matters — it is the order the options appear in.
+ */
+export const POSITION_GROUPS = [
+  {
+    label: "Goalkeeper",
+    positions: ["GK"],
+  },
+  {
+    label: "Defence",
+    positions: ["CB", "RB", "LB", "RWB", "LWB"],
+  },
+  {
+    label: "Midfield",
+    positions: ["CDM", "CM", "CAM", "LM", "RM", "AM"],
+  },
+  {
+    label: "Attack",
+    positions: ["LW", "RW", "ST", "CF", "SS"],
+  },
 ] as const;
+
+/** Every valid position code, flat. */
+export const POSITIONS: readonly string[] = POSITION_GROUPS.flatMap((g) => g.positions);
+
+/**
+ * Every valid formation, most common first.
+ *
+ * Covers the shapes a women's club in Liberia would plausibly play. The club can
+ * also enter any formation matching the pattern, since the column is text —
+ * this list only drives the dropdown.
+ */
+export const FORMATIONS = [
+  "4-4-2",
+  "4-3-3",
+  "4-2-3-1",
+  "4-1-4-1",
+  "3-5-2",
+  "3-4-3",
+  "4-5-1",
+  "5-3-2",
+  "5-4-1",
+  "4-4-1-1",
+  "4-3-2-1",
+  "3-4-2-1",
+] as const;
+
+/** Validates a formation string against the fixtures_formation_format pattern. */
+export function validateFormation(value: string): string | null {
+  if (value === "") return null; // null/empty is allowed
+  if (!/^[1-9]-[1-9](-[1-9](-[1-9])?)?$/.test(value)) {
+    return "Enter a formation like 4-4-2, 4-3-3, or 3-5-2.";
+  }
+  // The numbers should sum to 10 (11 players minus the goalkeeper).
+  const parts = value.split("-").map(Number);
+  const sum = parts.reduce((a, b) => a + b, 0);
+  if (sum !== 10) {
+    return `A formation must have 10 outfield players (you have ${sum}).`;
+  }
+  return null;
+}
+
+/** Validates a position code. */
+export function validatePosition(value: string): string | null {
+  if (value === "") return null; // null is allowed
+  if (!POSITIONS.includes(value)) {
+    return `Choose a valid position (${POSITIONS.slice(0, 8).join(", ")}, …).`;
+  }
+  return null;
+}
+
+/** Validates pitch coordinates (0-100). */
+export function validatePitchCoordinate(value: string, axis: "x" | "y"): string | null {
+  if (value === "") return null; // null is allowed
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0 || num > 100) {
+    return `Pitch ${axis} must be between 0 and 100.`;
+  }
+  return null;
+}
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -215,6 +292,8 @@ export type LineupInput = {
   player_name: string;
   shirt_number: string;
   position: string;
+  pitch_x: string;
+  pitch_y: string;
   is_starter: boolean;
 };
 
@@ -235,6 +314,15 @@ export function validateLineup(rows: LineupInput[]): string | null {
 
     const numberError = validateShirtNumber(row.shirt_number);
     if (numberError) return numberError;
+
+    const positionError = validatePosition(row.position);
+    if (positionError) return positionError;
+
+    const pitchXError = validatePitchCoordinate(row.pitch_x, "x");
+    if (pitchXError) return pitchXError;
+
+    const pitchYError = validatePitchCoordinate(row.pitch_y, "y");
+    if (pitchYError) return pitchYError;
 
     if (!isBlank(row.shirt_number)) {
       const number = Number(row.shirt_number);

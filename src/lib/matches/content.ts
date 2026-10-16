@@ -21,6 +21,8 @@ export type PublicLineupRow = {
   player_name: string;
   shirt_number: number | null;
   position: string | null;
+  pitch_x: number | null;
+  pitch_y: number | null;
   is_starter: boolean;
   sort_order: number;
 };
@@ -63,7 +65,7 @@ export const getMatchContent = cache(async (fixtureId: string): Promise<MatchCon
   const [lineup, goals, cards, report] = await Promise.all([
     supabase
       .from("lineups")
-      .select("player_name, shirt_number, position, is_starter, sort_order")
+      .select("player_name, shirt_number, position, pitch_x, pitch_y, is_starter, sort_order")
       .eq("fixture_id", fixtureId)
       .order("is_starter", { ascending: false })
       .order("sort_order", { ascending: true }),

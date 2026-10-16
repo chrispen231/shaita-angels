@@ -87,7 +87,7 @@ export function monthLabel(key: string) {
 // A single line: `as const` cannot be applied to a concatenation, so the column
 // list cannot be wrapped for readability. That is why this is one long line
 // rather than the tidier wrapped form.
-export const FIXTURE_COLUMNS = "id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, opponent_logo_url, opponent_logo_alt, went_live_at, is_published, created_at, updated_at" as const;
+export const FIXTURE_COLUMNS = "id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, opponent_logo_url, opponent_logo_alt, went_live_at, formation, is_published, created_at, updated_at" as const;
 
 export const COMPETITIONS = [
   { slug: "lfa-womens-first-division", label: "LFA Women’s First Division", short: "First Division" },

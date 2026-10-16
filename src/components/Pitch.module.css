@@ -1,0 +1,146 @@
+.pitchWrap {
+  margin: 0 auto 32px;
+  max-width: 640px;
+}
+
+.formationLabel {
+  text-align: center;
+  font: 800 13px/1.2 var(--body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 12px;
+}
+
+/* The pitch itself — vertical orientation, goal at top. */
+.pitch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 68 / 105; /* standard football pitch proportions */
+  background: #2d8a3e;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Pitch markings — drawn with borders and pseudo-elements. */
+.goalArea {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 8%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top: none;
+}
+
+.penaltyArea {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 18%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top: none;
+}
+
+.halfwayLine {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.centerCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28%;
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+}
+
+.centerSpot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+}
+
+/* Player markers. */
+.player {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--red);
+  color: white;
+  font: 800 11px/1 var(--body);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  z-index: 1;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.player:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+.playerNumber {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.playerPosition {
+  font-size: 8px;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-top: 1px;
+}
+
+/* Bench players are smaller and semi-transparent. */
+.player[data-starter="false"] {
+  background: rgba(178, 34, 52, 0.6);
+  width: 28px;
+  height: 28px;
+}
+
+.player[data-starter="false"] .playerNumber {
+  font-size: 10px;
+}
+
+/* Responsive: shrink markers on small screens. */
+@media (max-width: 480px) {
+  .player {
+    width: 28px;
+    height: 28px;
+    font-size: 9px;
+  }
+  .playerNumber {
+    font-size: 10px;
+  }
+  .playerPosition {
+    font-size: 7px;
+  }
+  .player[data-starter="false"] {
+    width: 22px;
+    height: 22px;
+  }
+}

@@ -20,6 +20,7 @@ import {
 } from "@/lib/matches/content";
 import { formatMinute, describeGoal } from "@/lib/matches/validation";
 import LiveClock from "@/components/LiveClock";
+import Pitch from "@/components/Pitch";
 import styles from "./MatchPage.module.css";
 
 export type MatchTab = "lineups" | "commentary" | "stats";
@@ -246,6 +247,7 @@ function Lineups({ fixture, content }: { fixture: Fixture; content: MatchContent
 
   return (
     <div className={styles.detail}>
+      <Pitch players={starters} formation={fixture.formation} side="shaita" />
       <PlayerGroup title="Starting lineup" rows={starters} />
 
       {bench.length > 0 && <PlayerGroup title="Substitutes" rows={bench} />}

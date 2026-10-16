@@ -31,6 +31,7 @@ function make(overrides: Partial<Fixture> & { id: string }): Fixture {
     opponent_logo_url: null,
     opponent_logo_alt: null,
     went_live_at: null,
+    formation: null,
     is_published: true,
     created_at: "",
     updated_at: "",
