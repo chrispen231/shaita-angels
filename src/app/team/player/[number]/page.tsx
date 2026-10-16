@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getSquadPlayer } from "@/lib/content";
 import { pad, singular } from "@/lib/format";
-import { playerPhotos } from "@/data/site";
+import { photosForPlayer } from "@/lib/player-photos";
 
 export const dynamic = "force-dynamic";
 
@@ -39,8 +39,8 @@ export default async function PlayerProfilePage({
   const player = await getSquadPlayer(Number(number));
   if (!player) notFound();
 
-  const photos = playerPhotos[player.name] ?? [];
-  const photo = photos[0] ?? player.photo;
+  const photos = photosForPlayer(player);
+  const photo = photos[0] ?? null;
 
   return (
     <div className="player-profile-page">

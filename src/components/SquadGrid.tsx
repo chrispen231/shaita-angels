@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { pad, singular } from "@/lib/format";
 import type { SquadPlayer } from "@/lib/content";
-import { playerPhotos } from "@/data/site";
+import { photosForPlayer } from "@/lib/player-photos";
 
 /**
  * Squad grid with position filters.
@@ -55,7 +55,7 @@ export default function SquadGrid({
       </div>
       <div className="squad-cards">
         {visiblePlayers.map((player) => {
-          const photos = playerPhotos[player.name] ?? [];
+          const photos = photosForPlayer(player);
           return (
             <Link
               className="player-card"
