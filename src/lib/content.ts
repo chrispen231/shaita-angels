@@ -42,7 +42,10 @@ export type SquadPlayer = {
   name: string;
   position: string;
   photo: string | null;
+  /** Description for the primary photo, for screen readers. */
   photoAlt: string | null;
+  /** A second portrait shown on hover. Null means no hover swap. */
+  photoAlternate: string | null;
   bio: string | null;
 };
 
@@ -232,7 +235,7 @@ export const getSquad = cache(async (): Promise<SquadPlayer[]> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("squad")
-    .select("id, full_name, position, shirt_number, photo_url, bio")
+    .select("id, full_name, position, shirt_number, photo_url, photo_url_alt, bio")
     .eq("is_published", true)
     .order("shirt_number", { ascending: true, nullsFirst: false })
     .order("full_name", { ascending: true });
@@ -253,6 +256,9 @@ export const getSquad = cache(async (): Promise<SquadPlayer[]> => {
       position: String(row.position ?? "Player"),
       photo: row.photo_url === null ? null : String(row.photo_url),
       photoAlt: row.photo_url === null ? null : `${String(row.full_name)} in Shaita Angels colours`,
+      // The alternate portrait is a separate image, not alt text. photoAlt above is
+      // the description; this is the hover image.
+      photoAlternate: row.photo_url_alt === null ? null : String(row.photo_url_alt),
       bio: row.bio === null ? null : String(row.bio),
     }));
 });

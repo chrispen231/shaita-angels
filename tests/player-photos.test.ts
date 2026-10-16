@@ -46,9 +46,38 @@ describe("photosForPlayer", () => {
     expect(photos[1]).toContain("-alt");
   });
 
-  it("returns an uploaded photo alone, with no invented alternate", () => {
+  it("returns an uploaded photo alone when no alternate was supplied", () => {
+    // The common case for a single upload: one image, no hover swap.
     const uploaded = "https://example.supabase.co/storage/v1/object/public/players/2026-10-15/x.png";
     expect(photosForPlayer({ name: "Haddy Wally", photo: uploaded })).toHaveLength(1);
+  });
+
+  it("returns an uploaded pair when an alternate was supplied", () => {
+    // This is what the second upload field buys: an uploaded player gets the same
+    // hover portrait a bundled player has.
+    const primary = "https://example.supabase.co/storage/v1/object/public/players/2026-10-15/a.png";
+    const alternate = "https://example.supabase.co/storage/v1/object/public/players/2026-10-15/a-alt.png";
+    expect(photosForPlayer({ name: "Someone New", photo: primary, photoAlternate: alternate })).toEqual([
+      primary,
+      alternate,
+    ]);
+  });
+
+  it("puts the primary photo first, so the hover swap shows the right pair", () => {
+    const primary = "https://example.supabase.co/storage/v1/object/public/players/2026-10-15/p.png";
+    const alternate = "https://example.supabase.co/storage/v1/object/public/players/2026-10-15/a.png";
+    const photos = photosForPlayer({ name: "X", photo: primary, photoAlternate: alternate });
+    expect(photos[0]).toBe(primary);
+    expect(photos[1]).toBe(alternate);
+  });
+
+  it("ignores an alternate supplied without a primary photo", () => {
+    // An alternate alone would render a card with no primary image. The bundled
+    // fallback is the correct answer here, not a half-empty pair.
+    const alternate = "https://example.supabase.co/storage/v1/object/public/players/2026-10-15/a.png";
+    expect(photosForPlayer({ name: "Blessing King", photo: null, photoAlternate: alternate })).toEqual(
+      playerPhotos["Blessing King"],
+    );
   });
 
   it("returns nothing for a player with neither source", () => {

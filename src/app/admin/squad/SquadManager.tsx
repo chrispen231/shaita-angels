@@ -21,6 +21,7 @@ export type SquadRow = {
   shirt_number: number | null;
   bio: string | null;
   photo_url: string | null;
+  photo_url_alt: string | null;
   is_minor: boolean;
   is_published: boolean;
 };
@@ -284,6 +285,16 @@ function PlayerFields({
           purpose="player"
           defaultValue={player?.photo_url ?? null}
           hint="Optional. Without one, the card and profile use the shirt artwork."
+        />
+      </div>
+
+      <div className={styles.fieldWide}>
+        <ImageField
+          name="photo_url_alt"
+          label="Alternate photo"
+          purpose="player"
+          defaultValue={player?.photo_url_alt ?? null}
+          hint="Optional. Shown when a fan hovers the card, matching the double-photo effect. Needs a main photo to appear."
         />
       </div>
 

@@ -49,6 +49,7 @@ function readInput(formData: FormData) {
     shirt_number: field(formData, "shirt_number"),
     bio: String(formData.get("bio") ?? ""),
     photo_url: field(formData, "photo_url"),
+    photo_url_alt: field(formData, "photo_url_alt"),
   };
 }
 
@@ -72,6 +73,7 @@ export async function savePlayer(
     shirt_number: toNumber(input.shirt_number),
     bio: emptyToNull(input.bio),
     photo_url: emptyToNull(input.photo_url),
+    photo_url_alt: emptyToNull(input.photo_url_alt),
     is_published: false,
   });
 
@@ -111,6 +113,7 @@ export async function updatePlayer(
       shirt_number: toNumber(input.shirt_number),
       bio: emptyToNull(input.bio),
       photo_url: emptyToNull(input.photo_url),
+      photo_url_alt: emptyToNull(input.photo_url_alt),
     })
     .eq("id", id);
 

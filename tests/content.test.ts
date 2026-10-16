@@ -81,6 +81,7 @@ describe("positionsInUse", () => {
     position,
     photo: null,
     photoAlt: null,
+    photoAlternate: null,
     bio: null,
   });
 

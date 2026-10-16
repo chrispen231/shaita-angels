@@ -14,14 +14,17 @@ import { playerPhotos } from "@/data/site";
  * without a deploy. The bundled map is the fallback for the players photographed
  * before the media library existed, so those cards keep working.
  *
- * A bundled player keeps their alternate portrait; an uploaded one does not,
- * because the upload field stores a single image. Adding a second upload field
- * later is the change that would bring alternates to uploaded photos.
+ * A bundled player keeps the pair the map already holds. An uploaded player gets
+ * a hover portrait only when the club supplies an alternate; without one the card
+ * shows a single image and simply does not swap.
  */
 export function photosForPlayer(player: {
   name: string;
   photo?: string | null;
+  photoAlternate?: string | null;
 }): string[] {
-  if (player.photo) return [player.photo];
+  if (player.photo) {
+    return player.photoAlternate ? [player.photo, player.photoAlternate] : [player.photo];
+  }
   return playerPhotos[player.name] ?? [];
 }

@@ -17,7 +17,7 @@ export default async function SquadPage() {
   const { data } = await context.supabase
     .from("squad")
     .select(
-      "id, full_name, date_of_birth, position, preferred_foot, height_cm, weight_kg, shirt_number, bio, photo_url, is_minor, is_published",
+      "id, full_name, date_of_birth, position, preferred_foot, height_cm, weight_kg, shirt_number, bio, photo_url, photo_url_alt, is_minor, is_published",
     )
     .order("shirt_number", { ascending: true, nullsFirst: false })
     .order("full_name", { ascending: true });
@@ -33,6 +33,7 @@ export default async function SquadPage() {
     shirt_number: row.shirt_number === null ? null : Number(row.shirt_number),
     bio: row.bio === null ? null : String(row.bio),
     photo_url: row.photo_url === null ? null : String(row.photo_url),
+    photo_url_alt: row.photo_url_alt === null ? null : String(row.photo_url_alt),
     is_minor: Boolean(row.is_minor),
     is_published: Boolean(row.is_published),
   }));
