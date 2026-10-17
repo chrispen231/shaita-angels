@@ -27,7 +27,7 @@ for (const { name, device } of scenarios) {
   await page.waitForTimeout(1500);
 
   const info = await page.evaluate(() => {
-    const btn = document.querySelector("ul li button");
+    const btn = document.querySelector("ul li a");
     const img = document.querySelector("ul li img");
     return {
       viewport: window.innerWidth,
@@ -43,7 +43,7 @@ for (const { name, device } of scenarios) {
   // The real thing the user does: tap the thumbnail once.
   const result = { opened: false, imageSize: null, error: null };
   try {
-    const btn = page.locator("ul li button").first();
+    const btn = page.locator("ul li a").first();
     await btn.tap({ timeout: 5000 });
     await page.waitForTimeout(700);
 
