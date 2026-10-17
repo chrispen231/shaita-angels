@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./media.module.css";
 
 export type GalleryPhoto = {
@@ -20,7 +20,20 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const activePhoto = activeIndex === null ? null : photos[activeIndex];
 
-  const close = useCallback(() => setActiveIndex(null), []);
+  // Remember what was focused so focus can return there on close.
+  const openerRef = useRef<HTMLElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+
+  const close = useCallback(() => {
+    setActiveIndex(null);
+    openerRef.current?.focus();
+  }, []);
+
+  const open = useCallback((index: number, trigger: HTMLElement) => {
+    openerRef.current = trigger;
+    setActiveIndex(index);
+  }, []);
+
   const step = useCallback(
     (delta: number) => {
       setActiveIndex((current) => {
@@ -44,11 +57,13 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [activeIndex, close, step]);
 
-  // Stop the page behind the lightbox from scrolling.
+  // Stop the page behind the lightbox from scrolling, and move focus into the
+  // dialog so keyboard and screen-reader users are not stranded behind it.
   useEffect(() => {
     if (activeIndex === null) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
     return () => {
       document.body.style.overflow = previous;
     };
@@ -71,13 +86,30 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
           <ul className={styles.grid}>
             {photos.map((photo, index) => (
               <li key={photo.id} className={styles.card}>
-                <button
-                  type="button"
+                {/*
+                  An <a> with a real href, not a <button>: if JavaScript fails to
+                  load or hydrate (older iOS Safari), the link still opens the
+                  full-size photo natively. When JS does run we intercept the
+                  click and open the in-page lightbox instead.
+
+                  A <button>/<a> may only contain phrasing content, so the
+                  thumbnail wrapper and caption are <span>s -- <div> here is
+                  invalid HTML that engines may re-parent, breaking the target.
+                */}
+                <a
                   className={styles.figure}
-                  onClick={() => setActiveIndex(index)}
+                  href={photo.public_url}
+                  target="_blank"
+                  rel="noopener"
+                  onClick={(event) => {
+                    // Let modified clicks (new tab, etc.) behave normally.
+                    if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+                    event.preventDefault();
+                    open(index, event.currentTarget);
+                  }}
                   aria-label={`View ${photo.original_filename ?? "photo"} full size`}
                 >
-                  <div className={styles.thumb}>
+                  <span className={styles.thumb}>
                     <Image
                       src={photo.public_url}
                       alt={photo.original_filename ?? "Shaita Angels gallery photo"}
@@ -85,14 +117,12 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                       unoptimized
                       sizes="(max-width: 720px) 100vw, 33vw"
                     />
-                  </div>
-                  <figcaption className={styles.figcaption}>
+                  </span>
+                  <span className={styles.figcaption}>
                     <span className={styles.caption}>Shaita Angels FC</span>
-                    <span className={styles.date}>
-                      {formatDate(photo.uploaded_at)}
-                    </span>
-                  </figcaption>
-                </button>
+                    <span className={styles.date}>{formatDate(photo.uploaded_at)}</span>
+                  </span>
+                </a>
               </li>
             ))}
           </ul>
@@ -106,6 +136,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
               onClick={close}
             >
               <button
+                ref={closeRef}
                 type="button"
                 className={styles.lightboxClose}
                 onClick={close}
@@ -141,11 +172,8 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                 </>
               )}
 
-              <figure
-                className={styles.lightboxFigure}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <div className={styles.lightboxImage}>
+              <figure className={styles.lightboxFigure} onClick={(event) => event.stopPropagation()}>
+                <span className={styles.lightboxImage}>
                   {/* `fill` + object-fit: contain scales the photo up to the
                       viewport-sized box while preserving its aspect ratio. */}
                   <Image
@@ -156,7 +184,10 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                     sizes="92vw"
                     priority
                   />
-                </div>
+                  {/* A 544KB photo over mobile data takes a moment; without this
+                      the black backdrop looks like the tap did nothing. */}
+                  <span className={styles.lightboxSpinner} aria-hidden="true" />
+                </span>
                 <figcaption className={styles.lightboxFigcaption}>
                   <span className={styles.lightboxCaption}>Shaita Angels FC</span>
                   <span className={styles.lightboxDate}>
