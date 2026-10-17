@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "./media.module.css";
 
 export type GalleryPhoto = {
@@ -11,8 +11,48 @@ export type GalleryPhoto = {
   uploaded_at: string;
 };
 
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("en-GB");
+}
+
 export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
-  const [activePhoto, setActivePhoto] = useState<GalleryPhoto | null>(null);
+  // Index rather than the object itself, so prev/next can step through the set.
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const activePhoto = activeIndex === null ? null : photos[activeIndex];
+
+  const close = useCallback(() => setActiveIndex(null), []);
+  const step = useCallback(
+    (delta: number) => {
+      setActiveIndex((current) => {
+        if (current === null || photos.length === 0) return current;
+        // Wrap around so the arrows never dead-end.
+        return (current + delta + photos.length) % photos.length;
+      });
+    },
+    [photos.length],
+  );
+
+  // Escape closes; arrows step through. Bound only while the lightbox is open.
+  useEffect(() => {
+    if (activeIndex === null) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") close();
+      else if (event.key === "ArrowRight") step(1);
+      else if (event.key === "ArrowLeft") step(-1);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeIndex, close, step]);
+
+  // Stop the page behind the lightbox from scrolling.
+  useEffect(() => {
+    if (activeIndex === null) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [activeIndex]);
 
   return (
     <>
@@ -29,13 +69,13 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
       ) : (
         <>
           <ul className={styles.grid}>
-            {photos.map((photo) => (
+            {photos.map((photo, index) => (
               <li key={photo.id} className={styles.card}>
                 <button
                   type="button"
                   className={styles.figure}
-                  onClick={() => setActivePhoto(photo)}
-                  aria-label={`View ${photo.original_filename ?? "photo"}`}
+                  onClick={() => setActiveIndex(index)}
+                  aria-label={`View ${photo.original_filename ?? "photo"} full size`}
                 >
                   <div className={styles.thumb}>
                     <Image
@@ -46,10 +86,10 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                       sizes="(max-width: 720px) 100vw, 33vw"
                     />
                   </div>
-                  <figcaption>
+                  <figcaption className={styles.figcaption}>
                     <span className={styles.caption}>Shaita Angels FC</span>
                     <span className={styles.date}>
-                      {new Date(photo.uploaded_at).toLocaleDateString("en-GB")}
+                      {formatDate(photo.uploaded_at)}
                     </span>
                   </figcaption>
                 </button>
@@ -63,35 +103,70 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
               role="dialog"
               aria-modal="true"
               aria-label={activePhoto.original_filename ?? "Photo viewer"}
-              onClick={() => setActivePhoto(null)}
+              onClick={close}
             >
               <button
                 type="button"
                 className={styles.lightboxClose}
-                onClick={() => setActivePhoto(null)}
+                onClick={close}
                 aria-label="Close"
               >
                 ×
               </button>
+
+              {photos.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      step(-1);
+                    }}
+                    aria-label="Previous photo"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.lightboxNav} ${styles.lightboxNext}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      step(1);
+                    }}
+                    aria-label="Next photo"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+
               <figure
                 className={styles.lightboxFigure}
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className={styles.lightboxImage}>
+                  {/* `fill` + object-fit: contain scales the photo up to the
+                      viewport-sized box while preserving its aspect ratio. */}
                   <Image
                     src={activePhoto.public_url}
                     alt={activePhoto.original_filename ?? "Shaita Angels gallery photo"}
                     fill
                     unoptimized
-                    sizes="100vw"
+                    sizes="92vw"
                     priority
                   />
                 </div>
                 <figcaption className={styles.lightboxFigcaption}>
                   <span className={styles.lightboxCaption}>Shaita Angels FC</span>
                   <span className={styles.lightboxDate}>
-                    {new Date(activePhoto.uploaded_at).toLocaleDateString("en-GB")}
+                    {formatDate(activePhoto.uploaded_at)}
                   </span>
+                  {photos.length > 1 && (
+                    <span className={styles.lightboxCount}>
+                      {(activeIndex ?? 0) + 1} / {photos.length}
+                    </span>
+                  )}
                 </figcaption>
               </figure>
             </div>
