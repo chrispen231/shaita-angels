@@ -71,7 +71,15 @@ export default function MatchView({
       <header className={styles.header}>
         <p className={styles.badge}>{competitionBadge(fixture.competition)}</p>
         <h1 className={styles.title}>
-          Shaita Angels <span className={styles.titleVs}>vs</span> {fixture.opponent}
+          {fixture.venue_type === "away" ? (
+            <>
+              {fixture.opponent} <span className={styles.titleVs}>vs</span> Shaita Angels
+            </>
+          ) : (
+            <>
+              Shaita Angels <span className={styles.titleVs}>vs</span> {fixture.opponent}
+            </>
+          )}
         </h1>
         <p className={styles.competition}>
           {fixture.competition} · {fixture.season}
