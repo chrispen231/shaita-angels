@@ -111,7 +111,7 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
           <div className={styles.controls}>
             <button
               type="button"
-              className={styles.arrow}
+              className={`${styles.arrow} ${styles.arrowPrev}`}
               onClick={() => goTo(index - 1)}
               aria-label="Previous featured story"
             >
@@ -132,7 +132,7 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
             </ul>
             <button
               type="button"
-              className={styles.arrow}
+              className={`${styles.arrow} ${styles.arrowNext}`}
               onClick={() => goTo(index + 1)}
               aria-label="Next featured story"
             >

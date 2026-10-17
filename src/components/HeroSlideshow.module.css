@@ -146,24 +146,63 @@
   }
 
   /*
-   * On mobile .hero-photo is a relative block, so these offsets are measured
-   * from the bottom of the photo rather than the hero - they stay on the image
-   * instead of colliding with the stacked copy below it.
+   * Mobile layout requested by the club: prev pinned to the far left, next
+   * pinned to the far right with pause directly beneath it, dots between.
    *
-   * The caption wraps to two lines at this width, so it is clamped to exactly
-   * two and the controls are lifted clear of that reserved height. Measured,
-   * not guessed: a 40px offset left the caption and controls overlapping by 1px.
+   * The shared flex row is dissolved so each control can be positioned against
+   * the photo box directly. .hero-photo is a relative block at this width, so
+   * these offsets are measured from the bottom of the photo rather than the
+   * hero, keeping the controls on the image and clear of the stacked copy.
+   *
+   * Measured, not guessed: the caption wraps to two lines here, so the control
+   * band is kept above that reserved height.
    */
   .controls {
-    right: 18px;
-    bottom: 78px;
-    gap: 6px;
+    position: static;
+    display: contents;
   }
 
-  .arrow,
+  /*
+   * Vertical stack, measured from the bottom of the photo:
+   *   caption   10px .. ~41px  (clamped to two lines)
+   *   pause     52px ..  88px
+   *   arrows    96px .. 132px  (pause sits in the 8px gap below them)
+   * The first attempt put pause at 36px, which ran into the caption's second
+   * line by 5px, so these offsets are spaced off measured boxes rather than
+   * eyeballed.
+   */
+  .arrowPrev {
+    position: absolute;
+    left: 18px;
+    bottom: 96px;
+  }
+
+  .arrowNext {
+    position: absolute;
+    right: 18px;
+    bottom: 96px;
+  }
+
+  /* Sits directly under the next arrow, right-aligned to it. */
+  .pause {
+    position: absolute;
+    right: 18px;
+    bottom: 52px;
+  }
+
+  .arrowPrev,
+  .arrowNext,
   .pause {
     width: 36px;
     height: 36px;
+  }
+
+  .dots {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 96px;
+    gap: 4px;
   }
 
   .caption {

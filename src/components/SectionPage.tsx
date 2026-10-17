@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import newsStyles from "./SectionPage.module.css";
 import { gallery, sections } from "@/data/site";
 import { getArticles, getHonors, getSquad, positionsInUse , formatArticleDate } from "@/lib/content";
 import SquadGrid from "@/components/SquadGrid";
 import MatchCentre from "@/components/MatchCentre";
+import NewsArchive from "@/components/NewsArchive";
+import { NEWS_FILTER_CATEGORIES } from "@/lib/reference-data";
 import { getPublishedFixtures } from "@/lib/fixtures";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { isCompetitionSlug } from "@/lib/fixtures";
@@ -62,18 +63,21 @@ export default async function SectionPage({
           <div className="honors-list">{honors.map((honor) => <article key={`${honor.year}-${honor.name}`}><span>{honor.year}</span><strong>{honor.name}</strong><small>{honor.detail ?? ""}</small><b aria-hidden="true">✳</b></article>)}</div>
         </>}
 
-        {section === "news" && <div className={newsStyles.newsroom}>
-          <div className="newsroom-label"><span className="eyebrow">The latest</span><span>SHAITA ANGELS FC <i aria-hidden="true">/</i> NEWSROOM</span></div>
-          {articles[0] && <Link className="news-card news-card-featured news-lead-story" href={`/news/${articles[0].slug}`}>
-            <div className="news-image"><Image src={articles[0].image ?? "/news-featured.jpg"} alt={articles[0].imageAlt ?? `Shaita Angels FC`} fill priority sizes="(max-width: 720px) 100vw, 60vw" /></div>
-            <div className="news-copy"><span className="news-featured-tag">FEATURE STORY</span><div className="news-meta"><span>{articles[0].category}</span><time>{formatArticleDate(articles[0].date)}</time></div><h2>{articles[0].title}</h2><p>{articles[0].excerpt}</p><span className="text-link">Read the story <span aria-hidden="true">↗</span></span></div>
-          </Link>}
-          <div className="content-heading news-archive-heading"><div><p className="eyebrow">From the archive</p><h2>More from the newsroom</h2></div><span className="data-note">Club stories · Match reports · History</span></div>
-          <div className="news-grid news-archive-grid">{articles.slice(1).map((article) => <Link className="news-card" href={`/news/${article.slug}`} key={article.slug}>
-            <div className="news-image"><Image src={article.image ?? "/news-featured.jpg"} alt={article.imageAlt ?? `Shaita Angels FC`} fill sizes="(max-width: 720px) 100vw, 50vw" /></div><div className="news-copy"><div className="news-meta"><span>{article.category}</span><time>{formatArticleDate(article.date)}</time></div><h3>{article.title}</h3><p>{article.excerpt}</p><span className="text-link">Read story <span aria-hidden="true">↗</span></span></div>
-          </Link>)}</div>
-          <p className="newsroom-note">Stories are published as club updates are confirmed. Check back for more from the Angels.</p>
-        </div>}
+        {section === "news" && (
+          <NewsArchive
+            articles={articles.map((article) => ({
+              slug: article.slug,
+              category: article.category,
+              date: article.date,
+              title: article.title,
+              excerpt: article.excerpt,
+              image: article.image,
+              imageAlt: article.imageAlt,
+              isFeatured: article.isFeatured,
+            }))}
+            categories={[...NEWS_FILTER_CATEGORIES]}
+          />
+        )}
 
         {section === "media" && <>
           <div className="content-heading"><div><p className="eyebrow">From the archive</p><h2>Moments in red.</h2></div></div>

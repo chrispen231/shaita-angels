@@ -139,5 +139,23 @@ export const ARTICLE_CATEGORIES = [
   "Club history",
   "Transfer news",
   "Community",
+  "Press release",
   "Announcement",
+] as const;
+
+/**
+ * Which categories the public news page offers as filters.
+ *
+ * "Announcement" is deliberately absent: it is the club's internal catch-all for
+ * notices that are not really news, so it would add a filter tab that no reader
+ * wants. Articles in it still appear under "All". Add a category here when it
+ * has enough volume to deserve its own tab.
+ */
+export const NEWS_FILTER_CATEGORIES = [
+  "Match report",
+  "Transfer news",
+  "Trophy room",
+  "Press release",
+  "Club history",
+  "Community",
 ] as const;
