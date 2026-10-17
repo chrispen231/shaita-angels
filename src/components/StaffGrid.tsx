@@ -18,7 +18,7 @@ export default function StaffGrid({ staff }: { staff: StaffMember[] }) {
         <div>
           <p className="eyebrow">The team behind the team</p>
           <h2>Staff profiles coming soon.</h2>
-          <p>We're preparing the club's staff listing. Names and roles will be published here once confirmed by Shaita Angels.</p>
+          <p>We&rsquo;re preparing the club&rsquo;s staff listing. Names and roles will be published here once confirmed by Shaita Angels.</p>
         </div>
       </div>
     );

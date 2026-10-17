@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { gallery, sections } from "@/data/site";
-import { getArticles, getHonors, getSquad, positionsInUse , formatArticleDate } from "@/lib/content";
+import { getArticles, getHonors, getSquad, positionsInUse } from "@/lib/content";
 import SquadGrid from "@/components/SquadGrid";
 import MatchCentre from "@/components/MatchCentre";
 import NewsArchive from "@/components/NewsArchive";
