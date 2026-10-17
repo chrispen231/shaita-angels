@@ -181,15 +181,29 @@ export async function togglePublish(
     return { status: "error", message: "Unknown photo.", url: "", path: "" };
   }
 
-  const { error } = await context.supabase
+  // `.select()` makes PostgREST return the affected rows. Without it a blocked
+  // UPDATE returns no error and zero rows, so the UI would claim success while
+  // nothing changed -- which is exactly how the broken RLS policy hid itself.
+  const { data, error } = await context.supabase
     .from("media_uploads")
     .update({ is_published: publish })
     .eq("id", id)
-    .eq("purpose", "gallery");
+    .eq("purpose", "gallery")
+    .select("id");
 
   if (error) {
     console.error("Publish toggle failed", error.message);
     return { status: "error", message: "We couldn't change the publish state.", url: "", path: "" };
+  }
+
+  if (!data || data.length === 0) {
+    console.error("Publish toggle matched no rows", id);
+    return {
+      status: "error",
+      message: "That photo wasn't updated. You may not have permission to publish it.",
+      url: "",
+      path: "",
+    };
   }
 
   revalidatePath("/admin/media");
