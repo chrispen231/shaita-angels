@@ -99,7 +99,6 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                 <a
                   className={styles.figure}
                   href={photo.public_url}
-                  target="_blank"
                   rel="noopener"
                   onClick={(event) => {
                     // Let modified clicks (new tab, etc.) behave normally.
