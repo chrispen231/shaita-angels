@@ -32,13 +32,15 @@
 }
 
 /*
- * Controls sit above the caption. They are visible on every device rather than
- * appearing on hover, because touch has no hover state.
+ * Controls sit below the hero's action row. The homepage places .hero-content
+ * 72px from the bottom, so anything above ~58px (controls are 40px tall) lands
+ * on top of the "Meet the Angels" button. Bottom-aligned here instead, on the
+ * same line as the caption.
  */
 .controls {
   position: absolute;
   right: 32px;
-  bottom: 56px;
+  bottom: 18px;
   z-index: 3;
   display: flex;
   align-items: center;
@@ -143,9 +145,18 @@
     object-position: center;
   }
 
+  /*
+   * On mobile .hero-photo is a relative block, so these offsets are measured
+   * from the bottom of the photo rather than the hero - they stay on the image
+   * instead of colliding with the stacked copy below it.
+   *
+   * The caption wraps to two lines at this width, so it is clamped to exactly
+   * two and the controls are lifted clear of that reserved height. Measured,
+   * not guessed: a 40px offset left the caption and controls overlapping by 1px.
+   */
   .controls {
     right: 18px;
-    bottom: 12px;
+    bottom: 78px;
     gap: 6px;
   }
 
@@ -155,14 +166,16 @@
     height: 36px;
   }
 
-  /* The mobile hero stacks the photo above the copy, so the caption moves
-     below the image rather than over it. */
   .caption {
     left: 18px;
     right: 18px;
-    bottom: 8px;
+    bottom: 10px;
     max-width: none;
     font-size: 9px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
