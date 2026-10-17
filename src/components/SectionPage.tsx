@@ -79,6 +79,7 @@ export default async function SectionPage({
           <div className="content-heading"><div><p className="eyebrow">From the archive</p><h2>Moments in red.</h2></div></div>
           <div className="gallery-grid">{gallery.map((photo, index) => <figure className={`gallery-item gallery-item-${index + 1}`} key={photo.src}><div><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 720px) 100vw, 50vw" /></div><figcaption>{photo.label}<span>SHAITA ANGELS FC</span></figcaption></figure>)}</div>
           <p className="data-note gallery-note">Photos supplied with the project. Dates and match captions will be added when confirmed by the club.</p>
+          <p style={{textAlign:"center",marginTop:"24px"}}><Link className="text-link" href="/media">View all photos <span aria-hidden="true">↗</span></Link></p>
         </>}
 
         {section === "community" && <>

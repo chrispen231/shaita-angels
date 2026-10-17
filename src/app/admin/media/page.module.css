@@ -132,6 +132,13 @@
 }
 
 
+/* Upload form at the top of the media library. */
+.uploadForm{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px;padding:14px;background:var(--white);border:1px solid var(--line)}
+.uploadLabel{display:flex;align-items:center;gap:10px;flex:1;min-width:200px;cursor:pointer}
+.uploadLabel span{font-size:11px;font-weight:700;color:var(--muted)}
+.uploadLabel input[type="file"]{font-size:11px}
+.uploadBtn{min-height:40px;padding:0 16px;background:var(--ink);color:white;border:0;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+
 /* Library filters and per-card controls. */
 
 .filters {
@@ -162,7 +169,9 @@
 }
 
 .copy,
-.remove {
+.remove,
+.publish,
+.unpublish {
   flex: 1;
   min-height: 40px;
   padding: 0 10px;
@@ -181,6 +190,18 @@
 
 .remove {
   color: var(--red-deep);
+}
+
+.publish {
+  color: #245a32;
+  border-color: #b8d4bc;
+  background: #e8f2e8;
+}
+
+.unpublish {
+  color: #9f2029;
+  border-color: #e4c0bd;
+  background: #fff0ee;
 }
 
 .confirm {

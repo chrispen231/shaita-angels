@@ -22,7 +22,7 @@ export default async function MediaPage() {
   const [uploads, competitions] = await Promise.all([
     context.supabase
       .from("media_uploads")
-      .select("id, bucket, object_path, public_url, purpose, original_filename, uploaded_by, uploaded_at")
+      .select("id, bucket, object_path, public_url, purpose, original_filename, uploaded_by, uploaded_at, is_published")
       .order("uploaded_at", { ascending: false })
       .limit(200),
     getCompetitionsForAdmin(),
@@ -37,6 +37,7 @@ export default async function MediaPage() {
     original_filename: row.original_filename === null ? null : String(row.original_filename),
     uploaded_by: String(row.uploaded_by),
     uploaded_at: String(row.uploaded_at),
+    is_published: Boolean(row.is_published),
   }));
 
   const isSuperAdmin = context.role === "super_admin";

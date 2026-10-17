@@ -14,17 +14,18 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
  * them again server-side, so a mismatch fails the upload rather than corrupting it.
  */
 
-export const MEDIA_BUCKETS = ["sponsor-logos", "news", "players", "opponents"] as const;
+export const MEDIA_BUCKETS = ["sponsor-logos", "news", "players", "opponents", "gallery"] as const;
 export type MediaBucket = (typeof MEDIA_BUCKETS)[number];
 
 /** Which form an upload came from. Drives both the bucket and the audit row. */
-export type UploadPurpose = "sponsor" | "news" | "player" | "opponent";
+export type UploadPurpose = "sponsor" | "news" | "player" | "opponent" | "gallery";
 
 export const PURPOSE_BUCKET: Record<UploadPurpose, MediaBucket> = {
   sponsor: "sponsor-logos",
   news: "news",
   player: "players",
   opponent: "opponents",
+  gallery: "gallery",
 };
 
 export const PURPOSE_LABEL: Record<UploadPurpose, string> = {
@@ -32,6 +33,7 @@ export const PURPOSE_LABEL: Record<UploadPurpose, string> = {
   news: "News image",
   player: "Player photo",
   opponent: "Opponent logo",
+  gallery: "Gallery photo",
 };
 
 /**
@@ -55,6 +57,7 @@ export const SIZE_LIMIT: Record<MediaBucket, number> = {
   news: 5 * 1024 * 1024,
   players: 4 * 1024 * 1024,
   opponents: 2 * 1024 * 1024,
+  gallery: 5 * 1024 * 1024,
 };
 
 export function humanSize(bytes: number): string {

@@ -42,9 +42,10 @@ const UPLOAD_ROLES: Record<UploadPurpose, Role[]> = {
   news: ["content", "super_admin"],
   player: ["content", "fixtures", "super_admin"],
   opponent: ["fixtures", "super_admin"],
+  gallery: ["content", "super_admin"],
 };
 
-const PURPOSES: UploadPurpose[] = ["sponsor", "news", "player", "opponent"];
+const PURPOSES: UploadPurpose[] = ["sponsor", "news", "player", "opponent", "gallery"];
 
 function isPurpose(value: unknown): value is UploadPurpose {
   return typeof value === "string" && (PURPOSES as string[]).includes(value);
@@ -155,6 +156,53 @@ export async function uploadImage(
 }
 
 /**
+ * Toggles the published state of a gallery photo.
+ *
+ * Only super admins can publish or unpublish gallery photos, matching the
+ * RLS policy "Super admins can publish gallery photos" in
+ * 20261016130000_gallery.sql.
+ */
+export async function togglePublish(
+  _previous: UploadState,
+  formData: FormData,
+): Promise<UploadState> {
+  const context = await getAdminContext();
+  if (!context) {
+    return { status: "error", message: "Sign in to change publish state.", url: "", path: "" };
+  }
+  if (context.role !== "super_admin") {
+    return { status: "error", message: "Only a super admin can publish or unpublish gallery photos.", url: "", path: "" };
+  }
+
+  const id = String(formData.get("id") ?? "").trim();
+  const publish = formData.get("publish") === "true";
+
+  if (!id) {
+    return { status: "error", message: "Unknown photo.", url: "", path: "" };
+  }
+
+  const { error } = await context.supabase
+    .from("media_uploads")
+    .update({ is_published: publish })
+    .eq("id", id)
+    .eq("purpose", "gallery");
+
+  if (error) {
+    console.error("Publish toggle failed", error.message);
+    return { status: "error", message: "We couldn't change the publish state.", url: "", path: "" };
+  }
+
+  revalidatePath("/admin/media");
+  revalidatePath("/media");
+  return {
+    status: "success",
+    message: publish ? "Photo published." : "Photo unpublished.",
+    url: "",
+    path: "",
+  };
+}
+
+/**
  * Deletes a stored image.
  *
  * Super admin only, matching the single delete policy. The audit row is kept: the
@@ -176,7 +224,7 @@ export async function deleteImage(
   const bucketRaw = String(formData.get("bucket") ?? "");
   const objectPath = String(formData.get("path") ?? "").trim();
 
-  if (!/^(sponsor-logos|news|players|opponents)$/.test(bucketRaw)) {
+  if (!/^(sponsor-logos|news|players|opponents|gallery)$/.test(bucketRaw)) {
     return { status: "error", message: "Unknown image bucket.", url: "", path: "" };
   }
   // A path from the browser must not be able to escape its bucket or address an

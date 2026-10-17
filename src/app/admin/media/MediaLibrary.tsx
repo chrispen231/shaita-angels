@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Image from "next/image";
-import { deleteImage, type UploadState } from "./actions";
+import { deleteImage, togglePublish, uploadImage, type UploadState } from "./actions";
 import { PURPOSE_LABEL, type UploadPurpose } from "@/lib/media";
 import styles from "./page.module.css";
 
@@ -17,9 +17,10 @@ export type MediaRow = {
   original_filename: string | null;
   uploaded_by: string;
   uploaded_at: string;
+  is_published: boolean;
 };
 
-const PURPOSES: UploadPurpose[] = ["sponsor", "news", "player", "opponent"];
+const PURPOSES: UploadPurpose[] = ["sponsor", "news", "player", "opponent", "gallery"];
 
 /**
  * Browses what has been uploaded, newest first.
@@ -37,6 +38,8 @@ export default function MediaLibrary({
   isSuperAdmin: boolean;
 }) {
   const [state, deleteAction] = useActionState(deleteImage, initial);
+  const [publishState, publishAction, publishPending] = useActionState(togglePublish, initial);
+  const [uploadState, uploadAction] = useActionState(uploadImage, initial);
   const [filter, setFilter] = useState<UploadPurpose | "all">("all");
   const [copied, setCopied] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -57,6 +60,20 @@ export default function MediaLibrary({
 
   return (
     <>
+      <form action={uploadAction} className={styles.uploadForm}>
+        <input type="hidden" name="purpose" value="gallery" />
+        <label className={styles.uploadLabel}>
+          <span>Upload a gallery photo</span>
+          <input type="file" name="file" accept="image/png,image/jpeg,image/webp,image/avif" />
+        </label>
+        <button type="submit" className={styles.uploadBtn}>Upload</button>
+        {uploadState.message && (
+          <p className={uploadState.status === "error" ? styles.formError : styles.formSuccess} role="status">
+            {uploadState.message}
+          </p>
+        )}
+      </form>
+
       <div className={styles.filters} role="group" aria-label="Filter by what the image is for">
         <button
           type="button"
@@ -86,6 +103,15 @@ export default function MediaLibrary({
           aria-live="polite"
         >
           {state.message}
+        </p>
+      )}
+      {publishState.message && (
+        <p
+          className={publishState.status === "error" ? styles.formError : styles.formSuccess}
+          role={publishState.status === "error" ? "alert" : "status"}
+          aria-live="polite"
+        >
+          {publishState.message}
         </p>
       )}
 
@@ -127,6 +153,19 @@ export default function MediaLibrary({
                   {copied === row.public_url ? "Copied" : "Copy URL"}
                 </button>
 
+                {isSuperAdmin && row.purpose === "gallery" && (
+                  <form action={publishAction}>
+                    <input type="hidden" name="id" value={row.id} />
+                    <input type="hidden" name="publish" value={row.is_published ? "false" : "true"} />
+                    <button
+                      type="submit"
+                      className={row.is_published ? styles.unpublish : styles.publish}
+                      disabled={publishPending}
+                    >
+                      {publishPending ? "Saving…" : row.is_published ? "Unpublish" : "Publish"}
+                    </button>
+                  </form>
+                )}
                 {isSuperAdmin && (
                   <button
                     type="button"
