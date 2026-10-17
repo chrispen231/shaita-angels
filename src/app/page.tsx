@@ -5,18 +5,44 @@ import styles from "./HomePage.module.css";
 import { getPublishedFixtures } from "@/lib/fixtures";
 import { formatMatchDate } from "@/lib/fixtures";
 import FixtureCarousel from "@/components/FixtureCarousel";
+import HeroSlideshow, { type HeroSlide } from "@/components/HeroSlideshow";
 
 export const dynamic = "force-dynamic";
+
+/** Fallback hero used when no article is marked featured in the admin. */
+const FALLBACK_SLIDE: HeroSlide = {
+  slug: "",
+  title: "",
+  category: "",
+  image: "/hero-orange-cup-2026.jpg",
+  imageAlt: "Shaita Angels celebrate their 2026 Orange Cup victory with the trophy",
+};
 
 export default async function HomePage() {
   const [articles, honors] = await Promise.all([getArticles(), getHonors()]);
   const lead = articles[0];
   const fixtures = await getPublishedFixtures();
   const latestResult = fixtures?.filter((fixture) => fixture.status === "played").sort((a, b) => b.match_date.localeCompare(a.match_date))[0];
+
+  /*
+   * The hero rotates through articles the club has marked "Featured" in the
+   * news admin, so a player-signing portrait never becomes the front page.
+   * Falls back to the static cup photo when nothing is featured.
+   */
+  const heroSlides: HeroSlide[] = articles
+    .filter((article) => article.isFeatured && article.image)
+    .map((article) => ({
+      slug: article.slug,
+      title: article.title,
+      category: article.category,
+      image: article.image as string,
+      imageAlt: article.imageAlt ?? article.title,
+    }));
+  const slides = heroSlides.length > 0 ? heroSlides : [FALLBACK_SLIDE];
   return <>
     <style>{`.site-header{position:relative;z-index:20;margin-bottom:-86px;background:linear-gradient(180deg,rgba(5,6,7,.68),rgba(5,6,7,0));border-bottom:0;color:white}.site-header .brand-copy strong,.site-header .desktop-nav>a:not(.nav-cta){color:white}.site-header .brand-copy small{color:var(--gold);text-transform:uppercase;text-align:justify;text-align-last:justify}.site-header .mobile-nav summary span{background:white}.site-header .mobile-menu{color:var(--ink)}.hero-content{position:absolute;inset:auto 0 72px;height:auto;padding-bottom:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:16px}.hero-copy .eyebrow{font-size:9px;line-height:1.4;margin:0 0 6px}.hero-copy h1{font-size:clamp(32px,4vw,54px);line-height:.9;letter-spacing:-.02em;max-width:none;margin:0;white-space:nowrap}.hero-copy .hero-lede{font-size:12px;line-height:1.4;margin:8px 0 0}.hero-actions{gap:16px}@media(max-width:680px){.site-header{height:72px;margin-bottom:-72px}.hero-content{inset:auto 0 56px;grid-template-columns:1fr;gap:10px}.hero-copy h1{font-size:clamp(29px,8vw,38px);white-space:normal}.hero-copy .hero-lede{font-size:11px;margin-top:6px}.hero-actions{gap:14px}}`}</style>
     <section className={`hero ${styles.homeHero}`}>
-      <div className="hero-photo"><Image src="/hero-orange-cup-2026.jpg" alt="Shaita Angels celebrate their 2026 Orange Cup victory with the trophy" fill priority sizes="100vw" /></div>
+      <div className="hero-photo"><HeroSlideshow slides={slides} /></div>
       <div className="hero-shade" />
       <div className="wrap hero-content"><div className="hero-copy"><p className="eyebrow eyebrow-light">Women’s football · Liberia</p><h1>OUR HOME. <span>OUR GAME.</span></h1><p className="hero-lede">A club built in Careysburg. A future built together.</p></div><div className="hero-actions"><Link className="button button-primary" href="/team">Meet the Angels <span aria-hidden="true">↗</span></Link><Link className="hero-text-link" href="/club">Discover our story</Link></div></div>
     </section>

@@ -1,0 +1,173 @@
+/*
+ * Hero slideshow.
+ *
+ * The slides sit inside the existing `.hero-photo` box, so they inherit its
+ * sizing and the mobile override in HomePage.module.css without duplication.
+ * A crossfade is used rather than a slide transition: it keeps every frame
+ * inside the hero's overflow:hidden and costs no layout work.
+ */
+
+.slideshow {
+  position: absolute;
+  inset: 0;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  /* Hidden slides must not be interactive or focusable. */
+  pointer-events: none;
+}
+
+.slideActive {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.image {
+  object-fit: cover;
+  object-position: center 42%;
+}
+
+/*
+ * Controls sit above the caption. They are visible on every device rather than
+ * appearing on hover, because touch has no hover state.
+ */
+.controls {
+  position: absolute;
+  right: 32px;
+  bottom: 56px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arrow,
+.pause {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(5, 6, 7, 0.45);
+  color: white;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.arrow:hover,
+.pause:hover {
+  background: rgba(5, 6, 7, 0.75);
+  border-color: white;
+}
+
+.pause {
+  font-size: 11px;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dot {
+  /* 14px of paint inside a 24px target, so the tap area meets guidance. */
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.dot::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.dotActive::before {
+  background: white;
+  transform: scale(1.25);
+}
+
+.caption {
+  position: absolute;
+  left: 32px;
+  bottom: 20px;
+  z-index: 3;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: min(60%, 620px);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 12px rgba(5, 6, 7, 0.9);
+}
+
+.captionLabel {
+  color: var(--gold);
+  flex: none;
+}
+
+.captionLink {
+  color: rgba(255, 255, 255, 0.92);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  padding-bottom: 2px;
+}
+
+.captionLink:hover {
+  color: white;
+  border-bottom-color: white;
+}
+
+@media (max-width: 680px) {
+  .image {
+    object-position: center;
+  }
+
+  .controls {
+    right: 18px;
+    bottom: 12px;
+    gap: 6px;
+  }
+
+  .arrow,
+  .pause {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* The mobile hero stacks the photo above the copy, so the caption moves
+     below the image rather than over it. */
+  .caption {
+    left: 18px;
+    right: 18px;
+    bottom: 8px;
+    max-width: none;
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    transition-duration: 0.01ms;
+  }
+}

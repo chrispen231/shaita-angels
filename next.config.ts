@@ -9,6 +9,14 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
+/**
+ * Photographs under public/ whose filenames are stable. Vercel otherwise serves
+ * them with `max-age=0, must-revalidate`, so every visit revalidated the hero
+ * photograph and the archive shots.
+ */
+const publicImages =
+  "/:file(gallery-1.jpg|gallery-2.jpg|gallery-3.jpg|hero-orange-cup-2026.jpg|news-featured.jpg|orange-cup-2026.jpg|shaita-angels-logo.png)";
+
 const nextConfig: NextConfig = {
   // Next regenerates AGENTS.md / CLAUDE.md on every `next dev` unless this is
   // set. This project documents itself in README.md and docs/, so the stub files
@@ -26,24 +34,10 @@ const nextConfig: NextConfig = {
      * photo and opponent crest 400s at render time - which is the whole feature
      * failing while looking fine in the admin.
      *
-     * The hostname is read from the environment rather than hardcoded so a staging
-     * project works too, and so the project reference is not duplicated here.
-     *
      * pathname is narrowed to /storage/v1/object/public/ deliberately: this permits
      * the club's own public bucket, and nothing else on the Supabase host.
      */
     remotePatterns: [
-      /*
-       * hostname uses an explicit wildcard segment. The bare "**.supabase.co" form
-       * did not match the project host in a live request - a request for a real
-       * storage URL returned INVALID_IMAGE_OPTIMIZE_REQUEST, identically to a
-       * blocked host, so the allowance was silently not applying.
-       *
-       * pathname is narrowed to the public storage prefix: this permits the club's
-       * own buckets and nothing else on the Supabase host. With no pathname, every
-       * public object is fetchable through the optimiser, including anything else
-       * that host exposes.
-       */
       {
         protocol: "https",
         hostname: "**.supabase.co",
@@ -53,7 +47,38 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      {
+        // Content-hashed build output: safe to cache for a year, immutable.
+        source: "/_next/static/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        /*
+         * Photographs under public/ with stable filenames. They are content, not
+         * build output, so they get a long max-age plus stale-while-revalidate:
+         * the cached copy is served instantly and any replacement is fetched in
+         * the background on the next visit. If one of these is ever replaced
+         * without renaming the file, shorten this header.
+         */
+        source: publicImages,
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
+      {
+        source: "/manifest.webmanifest",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
+      {
+        // Everything else keeps the security headers. Listed last so the rules
+        // above win for the paths they name.
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
   },
 };
 

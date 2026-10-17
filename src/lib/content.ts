@@ -81,7 +81,7 @@ export function formatArticleDate(iso: string): string {
 // =============================================================================
 
 function fromSeedArticles(): Article[] {
-  return seedArticles.map((article) => ({
+  return seedArticles.map((article, index) => ({
     slug: article.slug,
     category: article.category,
     date: article.date,
@@ -90,7 +90,13 @@ function fromSeedArticles(): Article[] {
     image: article.image,
     imageAlt: article.imageAlt,
     body: article.body,
-    isFeatured: false,
+    /*
+     * The seed is an offline fallback used when Supabase is unconfigured or a
+     * read fails. It carries no editorial `featured` flag, so the two most
+     * recent seed stories stand in for the hero slideshow; otherwise the hero
+     * would silently fall back to a single hardcoded photo in that mode.
+     */
+    isFeatured: index < 2,
   }));
 }
 
