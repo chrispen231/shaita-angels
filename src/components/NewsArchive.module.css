@@ -1,14 +1,12 @@
 /*
  * News archive: label bar, filter chips, then the article grid.
  *
- * The card and grid markup itself comes from globals.css (news-card, news-grid,
- * news-image, news-copy) so the archive keeps looking like the rest of the site;
- * only the filter chrome and the newsroom label are defined here.
+ * Everything that styles the cards, the lead story and the archive headings
+ * lives in SectionPage.module.css and is reused from there - this file only
+ * covers the filter chrome and the newsroom label. Duplicating those rules here
+ * let the lead story's display headline silently lose its styling the moment
+ * the archive moved into its own component, so do not copy them in.
  */
-
-.newsroom {
-  width: 100%;
-}
 
 .label {
   display: flex;

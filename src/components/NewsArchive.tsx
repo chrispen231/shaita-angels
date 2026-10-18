@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import styles from "./NewsArchive.module.css";
+import newsStyles from "./SectionPage.module.css";
 
 export type ArchiveArticle = {
   slug: string;
@@ -93,7 +94,7 @@ export default function NewsArchive({
   const rest = isUnfiltered ? filtered.slice(1) : filtered;
 
   return (
-    <div className={styles.newsroom}>
+    <div className={newsStyles.newsroom}>
       <div className={styles.label}>
         <span className="eyebrow">The latest</span>
         <span>
