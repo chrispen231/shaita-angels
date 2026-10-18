@@ -139,7 +139,7 @@ export default function ImageField({
             <input
               ref={fileInput}
               type="file"
-              name="file"
+              name={`file_${name}`}
               accept={accept}
               className={styles.fileInput}
               onChange={onFileChosen}
@@ -176,8 +176,14 @@ export default function ImageField({
           */}
           {/* The server action needs to know which bucket to write to. Without
               this, formData.get("purpose") is null and every upload is rejected
-              with "Unknown upload target" before the file is even checked. */}
+              with "Unknown upload target" before the file is even checked.
+
+              It also names the field this button belongs to, so the server can
+              read the matching file_<name> input. Without that, a form with two
+              file inputs would pick whichever the browser serialised first --
+              so uploading the second field's file would read the first. */}
           <input type="hidden" name="purpose" value={purpose} />
+          <input type="hidden" name="source" value={name} />
           <button
             type="submit"
             formAction={uploadAction}

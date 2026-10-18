@@ -64,7 +64,7 @@ export default function MediaLibrary({
         <input type="hidden" name="purpose" value="gallery" />
         <label className={styles.uploadLabel}>
           <span>Upload a gallery photo</span>
-          <input type="file" name="file" accept="image/png,image/jpeg,image/webp,image/avif" />
+          <input type="file" name="file_gallery" accept="image/png,image/jpeg,image/webp,image/avif" />
         </label>
         <button type="submit" className={styles.uploadBtn}>Upload</button>
         {uploadState.message && (

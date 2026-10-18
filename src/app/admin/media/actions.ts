@@ -47,6 +47,33 @@ const UPLOAD_ROLES: Record<UploadPurpose, Role[]> = {
 
 const PURPOSES: UploadPurpose[] = ["sponsor", "news", "player", "opponent", "gallery"];
 
+/**
+ * Pull the chosen file out of the form.
+ *
+ * A form can hold more than one ImageField - a staff record has a photo and an
+ * alternate - so each file input is named after its own field. The Upload button
+ * posts which field it belongs to via `source`, and that is read first, because
+ * an empty file input contributes nothing to the submission and a form with two
+ * inputs would otherwise yield whichever the browser serialised first: the first
+ * upload works and every later one silently reads the wrong field.
+ *
+ * Falls back to whichever `file_` input has content, so the standalone media
+ * library form - which does not post `source` - still works.
+ */
+function chosenFile(formData: FormData): File | null {
+  const source = String(formData.get("source") ?? "");
+  if (source) {
+    const match = formData.get(`file_${source}`);
+    if (match instanceof File && match.size > 0) return match;
+  }
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("file_") && value instanceof File && value.size > 0) {
+      return value;
+    }
+  }
+  return null;
+}
+
 function isPurpose(value: unknown): value is UploadPurpose {
   return typeof value === "string" && (PURPOSES as string[]).includes(value);
 }
@@ -76,8 +103,8 @@ export async function uploadImage(
       };
     }
 
-    const file = formData.get("file");
-    if (!(file instanceof File) || file.size === 0) {
+    const file = chosenFile(formData);
+    if (!file || file.size === 0) {
       return { status: "error", message: "Choose an image to upload.", url: "", path: "" };
     }
 
