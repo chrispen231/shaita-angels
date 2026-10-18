@@ -1,12 +1,20 @@
 /*
  * News archive: label bar, filter chips, then the article grid.
  *
- * Everything that styles the cards, the lead story and the archive headings
- * lives in SectionPage.module.css and is reused from there - this file only
- * covers the filter chrome and the newsroom label. Duplicating those rules here
- * let the lead story's display headline silently lose its styling the moment
- * the archive moved into its own component, so do not copy them in.
+ * This file owns the newsroom markup and all of its styles. It used to be
+ * inside SectionPage, and the card/lead rules lived in SectionPage.module.css
+ * while the markup moved here - which let the lead story's display headline
+ * silently fall back to body text, because nothing imported that stylesheet.
+ * Those rules are now defined here, scoped to .newsroom, so the markup and its
+ * styling live together. Keep them that way.
  */
+
+.newsroom {
+  --newsroom-rule: #d9d4cc;
+  width: 100%;
+}
+
+/* Label bar */
 
 .label {
   display: flex;
@@ -101,18 +109,18 @@
   color: var(--muted);
 }
 
+/* The "Stories are published..." note is styled by .newsroom-note above, which
+   carries its own colours. */
+.status + .newsroom-note {
+  margin-top: 28px;
+}
+
 .empty {
   padding: 48px 24px;
   text-align: center;
   color: var(--muted);
   font-size: 14px;
   border: 1px dashed var(--line);
-}
-
-.note {
-  margin-top: 26px;
-  font-size: 11px;
-  color: var(--muted);
 }
 
 @media (max-width: 680px) {
@@ -139,5 +147,110 @@
 
   .chip {
     white-space: nowrap;
+  }
+}
+
+/* ============================================================================
+   Lead story, feature tag, archive headings and the archive grid.
+   Moved here verbatim from SectionPage.module.css.
+
+   The inner selectors stay :global() on purpose: news-lead-story, news-copy,
+   news-card, news-archive-* and newsroom-note are plain class names shared with
+   globals.css, so they are written in JSX as bare strings rather than through
+   the module's styles object. Dropping :global() makes the emitted selector
+   look for a hashed class that never appears in the DOM, and the rule silently
+   stops matching - which is exactly how the lead headline lost its styling.
+   ========================================================================== */
+
+.newsroom :global(.news-lead-story) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.newsroom :global(.news-lead-story .news-copy) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 55px);
+}
+
+.newsroom :global(.news-featured-tag) {
+  margin-bottom: 18px;
+  padding: 7px 9px;
+  background: var(--red);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+/* The headline that broke when the stylesheet was left behind. */
+.newsroom :global(.news-lead-story .news-copy h2) {
+  margin: 14px 0 13px;
+  font: 800 clamp(32px, 4.1vw, 52px) / 0.94 var(--display);
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+}
+
+.newsroom :global(.news-lead-story .news-copy .text-link) {
+  margin-top: 6px;
+}
+
+.newsroom :global(.news-archive-heading) {
+  margin-top: 70px;
+  padding-top: 26px;
+  border-top: 1px solid var(--newsroom-rule);
+}
+
+.newsroom :global(.news-archive-heading h2) {
+  font-size: clamp(32px, 4vw, 48px);
+}
+
+.newsroom :global(.news-archive-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.newsroom :global(.news-archive-grid .news-card) {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* The footer note. Its own colours, not just muted text.
+   Unlike the classes above this one is local to the module (styles.newsroomNote
+   in the JSX), so it must NOT be :global() - the DOM carries the hashed class. */
+.newsroom .newsroomNote {
+  margin: 28px 0 0;
+  padding: 17px 19px;
+  border-left: 3px solid var(--gold);
+  background: #ede9e2;
+  color: #5d5854;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+@media (max-width: 680px) {
+  .newsroom :global(.news-lead-story .news-copy) {
+    padding: 21px 19px 24px;
+  }
+
+  .newsroom :global(.news-featured-tag) {
+    margin-bottom: 13px;
+  }
+
+  .newsroom :global(.news-lead-story .news-copy h2) {
+    font-size: 34px;
+  }
+
+  .newsroom :global(.news-archive-heading) {
+    margin-top: 48px;
+  }
+
+  .newsroom :global(.news-archive-heading .data-note) {
+    font-size: 9px;
+  }
+
+  .newsroom :global(.news-archive-grid) {
+    grid-template-columns: 1fr;
   }
 }
