@@ -42,8 +42,8 @@ export default async function SectionPage({
   return (
     <>
       {section === "team" ? <>
-        <nav className="team-subnav" aria-label="Women's team sections"><div className="wrap team-subnav-inner">
-          <span>SHAITA ANGELS WOMEN</span><Link href="/team" aria-current="page">Squad</Link><Link href="/team/staff">Staff</Link><Link href="/matches">Matches</Link><Link href="/club#honours">Honours</Link>
+        <nav className="team-subnav" aria-label="Club sections"><div className="wrap team-subnav-inner">
+          <span>SHAITA ANGELS</span><Link href="/team" aria-current="page">Squad</Link><Link href="/team/staff">Staff</Link><Link href="/team/leadership">Leadership</Link><Link href="/club#honours">Honours</Link>
         </div></nav>
         <section className="squad-page-heading"><div className="wrap"><p className="eyebrow">First team · {squad.length} players</p><h1>The squad</h1><p>Meet the Angels. One team, every number, all together.</p></div></section>
       </> : <section className={`inner-hero ${section === "news" ? "news-hero" : ""}`}>
