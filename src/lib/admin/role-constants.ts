@@ -25,6 +25,7 @@ export type ScreenKey =
   | "sponsors"
   | "settings"
   | "users"
+  | "audit"
   | "fixtures"
   | "matches"
   | "news"
@@ -39,6 +40,7 @@ export const SCREEN_ACCESS: Record<ScreenKey, readonly Role[]> = {
   sponsors: ["super_admin"],
   settings: ["super_admin"],
   users: ["super_admin"],
+  audit: ["super_admin"],
   fixtures: ["super_admin", "fixtures"],
   matches: ["super_admin", "fixtures"],
   news: ["super_admin", "content"],

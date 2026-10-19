@@ -18,6 +18,7 @@ import {
   Trophy,
   Users,
   X,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 import { ROLE_LABELS, canAccess, type Role, type ScreenKey } from "@/lib/admin/role-constants";
@@ -38,6 +39,7 @@ const NAV: NavItem[] = [
   { screen: "sponsors", href: "/admin/sponsors", label: "Sponsors", group: "Site", icon: Handshake },
   { screen: "settings", href: "/admin/settings", label: "Social & contact", group: "Site", icon: Settings2 },
   { screen: "users", href: "/admin/users", label: "Administrators", group: "Site", icon: ShieldCheck },
+  { screen: "audit", href: "/admin/audit", label: "Audit log", group: "Site", icon: Activity },
 ];
 
 export default function AdminSidebar({ role, email, active }: { role: Role; email: string; active?: ScreenKey }) {

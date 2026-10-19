@@ -1,0 +1,281 @@
+.container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font: 800 32px/1 var(--display);
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+.desc {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  padding: 16px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.filterGroup label {
+  font: 700 11px/1 var(--body);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+
+.filterGroup input,
+.filterGroup select {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  font: 14px var(--body);
+  min-width: 180px;
+}
+
+.filterGroup input:focus,
+.filterGroup select:focus {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.filterSubmit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font: 700 12px/1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  cursor: pointer;
+}
+
+.filterSubmit:hover {
+  background: var(--red-deep);
+}
+
+.filterIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px;
+  color: var(--muted);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.empty {
+  text-align: center;
+  padding: 48px;
+  color: var(--muted);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th,
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  background: var(--paper);
+  font: 700 11px/1 var(--body);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  position: sticky;
+  top: 0;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background: rgba(0,0,0,.02);
+}
+
+.colTime {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.colActor {
+  font-variant-numeric: tabular-nums;
+}
+
+.colTarget code {
+  font: 600 12px var(--body);
+  background: var(--paper);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.targetId {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.colAction {
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.colDetails pre {
+  margin: 0;
+  padding: 8px;
+  background: var(--paper);
+  border-radius: 6px;
+  font-size: 11px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.colDetails details summary {
+  cursor: pointer;
+  color: var(--red);
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 700 10px var(--body);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.role-super {
+  background: rgba(220, 38, 38, .15);
+  color: var(--red);
+}
+
+.role-fixtures {
+  background: rgba(37, 99, 235, .15);
+  color: #2563eb;
+}
+
+.role-content {
+  background: rgba(34, 197, 94, .15);
+  color: #22c55e;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.pageBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: var(--paper);
+  border-color: var(--red);
+}
+
+.pageBtn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.pageBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.pageInfo {
+  font: 600 13px var(--body);
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterGroup {
+    min-width: 0;
+  }
+
+  .filterGroup input,
+  .filterGroup select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filterSubmit {
+    justify-content: center;
+  }
+}
