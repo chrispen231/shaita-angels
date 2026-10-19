@@ -252,19 +252,44 @@
   }
   .menuToggle:hover { background: rgba(255, 255, 255, .1); }
   .navigation { display: none; }
-  .navigationOpen {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    left: 0;
-    display: flex;
-    max-height: min(72dvh, 620px);
-    padding: 0 18px 18px;
-    overflow-y: auto;
-    background: var(--admin-sidebar);
-    box-shadow: 0 14px 20px rgba(0, 0, 0, .18);
+  /*
+   * The open panel covers the whole viewport, header bar included, rather than
+   * dropping below it. `position: fixed` is what makes it escape the sticky
+   * header; the wrapper's own z-index does not help because a fixed child
+   * stacks against the viewport, not its ancestor.
+   *
+   * The wrapper carries the dark background and top padding, and the inner
+   * groups scroll, so the toggle button at the top stays reachable while a long
+   * nav list moves under it.
+   */
+  .sidebar {
+    background: transparent;
+    box-shadow: none;
+    pointer-events: none;
   }
-  .navigationGroups { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; padding-top: 8px; }
+  .sidebarTop {
+    position: relative;
+    z-index: 2;
+    background: var(--admin-sidebar);
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .13);
+    pointer-events: auto;
+  }
+  .navigationOpen {
+    position: fixed;
+    z-index: 1;
+    inset: 0;
+    display: flex;
+    padding: 10px 18px 18px;
+    overflow: hidden;
+    background: var(--admin-sidebar);
+    pointer-events: auto;
+  }
+  .navigationGroups {
+    overflow-y: auto;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+    padding-top: 8px;
+  }
   .foot { margin-top: 18px; }
   .main { padding: 28px clamp(18px, 4vw, 36px) 44px; }
 }

@@ -50,8 +50,23 @@ export default function AdminSidebar({ role, email, active }: { role: Role; emai
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") setOpen(false);
     }
+    // The panel is a full-screen overlay on mobile, so the page behind it must
+    // not scroll. Only lock while the toggle is actually reachable: resizing up
+    // to the desktop layout leaves `open` true but the nav is always visible
+    // there, and a locked body would be a bug.
+    const mobile = window.matchMedia("(max-width: 900px)");
+    const previousOverflow = document.body.style.overflow;
+    function syncScrollLock() {
+      document.body.style.overflow = mobile.matches ? "hidden" : previousOverflow;
+    }
+    syncScrollLock();
+    mobile.addEventListener("change", syncScrollLock);
     window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      mobile.removeEventListener("change", syncScrollLock);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [open]);
 
   return (
