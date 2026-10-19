@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { createClient } from "@/lib/supabase/server";
+import { logAdminAction } from "@/lib/admin/audit";
 
 export type UploadState = {
   status: "idle" | "success" | "error";
@@ -62,6 +63,16 @@ export async function togglePublish(
     };
   }
 
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "media",
+    target_id: id,
+    action: publish ? "Published gallery photo" : "Unpublished gallery photo",
+    details: { purpose: "gallery" },
+  });
+
   revalidatePath("/admin/media");
   revalidatePath("/media");
   return {
@@ -110,6 +121,16 @@ export async function deleteImage(
     console.error("Image delete failed", error.message);
     return { status: "error", message: "We couldn't delete that image.", url: "", path: "" };
   }
+
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "media",
+    target_id: objectPath,
+    action: "Deleted image",
+    details: { bucket: bucketRaw, path: objectPath },
+  });
 
   revalidatePath("/admin/media");
   return { status: "success", message: "Image deleted. Records still pointing at it will show a gap.", url: "", path: "" };

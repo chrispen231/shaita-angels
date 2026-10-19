@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { ROLES, type Role } from "@/lib/admin/roles";
 import { getSupabaseConfig } from "@/lib/supabase/config";
+import { logAdminAction } from "@/lib/admin/audit";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -145,6 +146,16 @@ export async function addAdmin(
       return { status: "error", message: "We couldn't add that administrator." };
     }
 
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "user",
+      target_id: email,
+      action: "Added admin",
+      details: { email, role },
+    });
+
     revalidatePath("/admin/users");
     const authMessage =
       authResult === "created"
@@ -185,6 +196,16 @@ export async function changeAdminRole(
     return { status: "error", message: "We couldn't change that role." };
   }
 
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "user",
+    target_id: email,
+    action: "Changed admin role",
+    details: { email, new_role: role },
+  });
+
   revalidatePath("/admin/users");
   return { status: "success", message: `${email} is now ${role.replace("_", " ")}.` };
 }
@@ -217,6 +238,16 @@ export async function removeAdmin(
       console.error("Admin delete failed", error.message);
       return { status: "error", message: "We couldn't remove that administrator." };
     }
+
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "user",
+      target_id: email,
+      action: "Removed admin",
+      details: { email },
+    });
 
     await deleteAuthUser(email);
 

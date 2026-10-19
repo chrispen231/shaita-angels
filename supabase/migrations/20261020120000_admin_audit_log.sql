@@ -20,7 +20,7 @@ create table public.admin_audit_log (
 
   constraint admin_audit_action_length check (char_length(action) between 1 and 200),
   constraint admin_audit_target_type check (target_type in (
-    'fixture', 'match_content', 'news', 'sponsor', 'site_settings', 'user', 'media', 'staff', 'honour'
+    'fixture', 'match_content', 'news', 'sponsor', 'site_settings', 'user', 'media', 'staff', 'honour', 'squad'
   )),
   constraint admin_audit_actor_role check (actor_role in ('super_admin', 'fixtures', 'content'))
 );

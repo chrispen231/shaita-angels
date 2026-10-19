@@ -5,6 +5,7 @@ import { getSiteUrl } from "@/lib/supabase/config";
 import { getAdminContext } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { validateFixture } from "@/lib/fixtures/validation";
+import { logAdminAction } from "@/lib/admin/audit";
 import type { FixtureActionState } from "@/types/fixtures";
 
 export async function signInAdmin(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
@@ -178,6 +179,17 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
     console.error("Fixture save failed", error.message);
     return { status: "error", message: "We couldn’t save that fixture. Check the details and try again." };
   }
+
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "fixture",
+    target_id: id || "new",
+    action: id ? "Updated fixture" : "Created fixture",
+    details: { opponent, competition, season, status, venue_type: venueType },
+  });
+
   redirect("/admin?saved=1");
 }
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAdminContext } from "@/lib/admin/roles";
+import { logAdminAction } from "@/lib/admin/audit";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -89,17 +90,27 @@ export async function saveSponsor(
     : context.supabase.from("sponsors").insert({ ...values, created_at: new Date().toISOString() });
 
   const { error } = await query;
-  if (error) {
-    console.error("Sponsor save failed", error.message);
-    return {
-      status: "error",
-      message: "We couldn't save that sponsor. Check the details and try again.",
-    };
-  }
+    if (error) {
+      console.error("Sponsor save failed", error.message);
+      return {
+        status: "error",
+        message: "We couldn't save that sponsor. Check the details and try again.",
+      };
+    }
 
-  revalidatePath("/admin/sponsors");
-  revalidatePath("/");
-  return { status: "success", message: id ? "Sponsor updated." : "Sponsor added." };
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "sponsor",
+      target_id: id || "new",
+      action: id ? "Updated sponsor" : "Created sponsor",
+      details: { name, tier, url: url || null, published },
+    });
+
+    revalidatePath("/admin/sponsors");
+    revalidatePath("/");
+    return { status: "success", message: id ? "Sponsor updated." : "Sponsor added." };
 }
 
 export async function setSponsorPublished(
@@ -113,18 +124,28 @@ export async function setSponsorPublished(
   if (!id) return { status: "error", message: "Missing sponsor." };
 
   const { error } = await context.supabase
-    .from("sponsors")
-    .update({ is_published: published, updated_at: new Date().toISOString() })
-    .eq("id", id);
+      .from("sponsors")
+      .update({ is_published: published, updated_at: new Date().toISOString() })
+      .eq("id", id);
 
-  if (error) {
-    console.error("Sponsor publish toggle failed", error.message);
-    return { status: "error", message: "We couldn't update that sponsor." };
-  }
+    if (error) {
+      console.error("Sponsor publish toggle failed", error.message);
+      return { status: "error", message: "We couldn't update that sponsor." };
+    }
 
-  revalidatePath("/admin/sponsors");
-  revalidatePath("/");
-  return { status: "success", message: published ? "Sponsor published." : "Sponsor unpublished." };
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "sponsor",
+      target_id: id,
+      action: published ? "Published sponsor" : "Unpublished sponsor",
+      details: { name: field(formData, "name") || "unknown" },
+    });
+
+    revalidatePath("/admin/sponsors");
+    revalidatePath("/");
+    return { status: "success", message: published ? "Sponsor published." : "Sponsor unpublished." };
 }
 
 /**
@@ -160,14 +181,24 @@ export async function deleteSponsor(
   }
 
   const { error } = await context.supabase.from("sponsors").delete().eq("id", id);
-  if (error) {
-    console.error("Sponsor delete failed", error.message);
-    return { status: "error", message: "We couldn't remove that sponsor." };
-  }
+    if (error) {
+      console.error("Sponsor delete failed", error.message);
+      return { status: "error", message: "We couldn't remove that sponsor." };
+    }
 
-  revalidatePath("/admin/sponsors");
-  revalidatePath("/");
-  return { status: "success", message: `${sponsor.name} removed.` };
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "sponsor",
+      target_id: id,
+      action: "Deleted sponsor",
+      details: { name: sponsor.name },
+    });
+
+    revalidatePath("/admin/sponsors");
+    revalidatePath("/");
+    return { status: "success", message: `${sponsor.name} removed.` };
 }
 
 export async function saveSettings(
@@ -204,24 +235,34 @@ export async function saveSettings(
   }
 
   const { error } = await context.supabase
-    .from("site_settings")
-    .upsert(
-      {
-        id: true,
-        social_handles: handles,
-        contact_email: contactEmail || null,
-        phone_orders: phoneOrders || null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
+      .from("site_settings")
+      .upsert(
+        {
+          id: true,
+          social_handles: handles,
+          contact_email: contactEmail || null,
+          phone_orders: phoneOrders || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" },
+      );
 
-  if (error) {
-    console.error("Site settings save failed", error.message);
-    return { status: "error", message: "We couldn't save the settings." };
-  }
+    if (error) {
+      console.error("Site settings save failed", error.message);
+      return { status: "error", message: "We couldn't save the settings." };
+    }
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/");
-  return { status: "success", message: "Settings saved." };
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "site_settings",
+      target_id: "singleton",
+      action: "Updated site settings",
+      details: { contact_email: contactEmail || null, phone_orders: phoneOrders || null, social_handles_count: handles.length },
+    });
+
+    revalidatePath("/admin/settings");
+    revalidatePath("/");
+    return { status: "success", message: "Settings saved." };
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { validateArticle, validateHonor, splitParagraphs } from "@/lib/content-validation";
+import { logAdminAction } from "@/lib/admin/audit";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -115,6 +116,16 @@ export async function saveArticle(
     return { status: "error", message: "We couldn't save that story." };
   }
 
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "news",
+    target_id: id || input.slug,
+    action: id ? "Updated article" : "Created article",
+    details: { slug: input.slug, title: input.title, category: input.category, is_published: publish, is_featured: input.is_featured },
+  });
+
   revalidatePath("/admin/news");
   revalidatePath("/news");
   revalidatePath("/");
@@ -144,6 +155,16 @@ export async function toggleArticlePublished(
     console.error("Article publish toggle failed", error.message);
     return { status: "error", message: "We couldn't change that story's visibility." };
   }
+
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "news",
+    target_id: id,
+    action: publish ? "Published article" : "Unpublished article",
+    details: { slug: field(formData, "slug") || "unknown" },
+  });
 
   revalidatePath("/admin/news");
   revalidatePath("/news");
@@ -198,6 +219,16 @@ export async function deleteArticle(
     return { status: "error", message: "We couldn't delete that story." };
   }
 
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "news",
+    target_id: id,
+    action: "Deleted article",
+    details: { slug: field(formData, "slug") || "unknown" },
+  });
+
   revalidatePath("/admin/news");
   revalidatePath("/news");
   revalidatePath("/");
@@ -240,6 +271,16 @@ export async function saveHonor(
     return { status: "error", message: "We couldn't save that honour." };
   }
 
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "honour",
+    target_id: id || input.name,
+    action: id ? "Updated honour" : "Created honour",
+    details: { name: input.name, year_label: input.year_label },
+  });
+
   revalidatePath("/admin/honours");
   revalidatePath("/club");
   revalidatePath("/");
@@ -260,6 +301,16 @@ export async function removeHonor(
     console.error("Honour delete failed", error.message);
     return { status: "error", message: "We couldn't remove that honour." };
   }
+
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "honour",
+    target_id: id,
+    action: "Removed honour",
+    details: {},
+  });
 
   revalidatePath("/admin/honours");
   revalidatePath("/club");

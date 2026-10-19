@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 export interface AdminAuditEntry {
   actor_email: string;
   actor_role: "super_admin" | "fixtures" | "content";
-  target_type: "fixture" | "match_content" | "news" | "sponsor" | "site_settings" | "user" | "media" | "staff" | "honour";
+  target_type: "fixture" | "match_content" | "news" | "sponsor" | "site_settings" | "user" | "media" | "staff" | "honour" | "squad";
   target_id: string;
   action: string;
   details?: Record<string, unknown>;

@@ -91,6 +91,7 @@ export default function AuditLog() {
     "media",
     "staff",
     "honour",
+    "squad",
   ];
 
   const roleBadges: Record<string, string> = {

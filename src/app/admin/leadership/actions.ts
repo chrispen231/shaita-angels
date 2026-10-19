@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { validateLeadership, type LeadershipInput } from "@/lib/leadership-validation";
+import { logAdminAction } from "@/lib/admin/audit";
 import type { FixtureActionState } from "@/types/fixtures";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -57,6 +58,17 @@ export async function addLeader(_previous: FixtureActionState, formData: FormDat
       console.error("Leadership insert failed", error.message);
       return { status: "error", message: "Could not add this leadership profile. Check that the leadership database migration has been applied." };
     }
+    
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "staff",
+      target_id: input.full_name,
+      action: "Added leadership profile",
+      details: { full_name: input.full_name, role: input.role },
+    });
+
     refresh();
     return { status: "success", message: "Leadership profile added as an unpublished draft." };
   } catch (error) {
@@ -78,6 +90,17 @@ export async function updateLeader(_previous: FixtureActionState, formData: Form
       if (error) console.error("Leadership update failed", error.message);
       return { status: "error", message: "Could not save changes. Check the profile still exists and the migration is applied." };
     }
+    
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "staff",
+      target_id: id,
+      action: "Updated leadership profile",
+      details: { full_name: input.full_name, role: input.role },
+    });
+
     refresh();
     return { status: "success", message: "Leadership profile updated." };
   } catch (error) {
@@ -96,6 +119,17 @@ export async function setLeaderPublished(_previous: FixtureActionState, formData
       if (error) console.error("Leadership visibility update failed", error.message);
       return { status: "error", message: "Could not change this profile's visibility." };
     }
+    
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "staff",
+      target_id: id,
+      action: publish ? "Published leadership profile" : "Unpublished leadership profile",
+      details: {},
+    });
+
     refresh();
     return { status: "success", message: publish ? "Leadership profile published." : "Leadership profile unpublished." };
   } catch (error) {
@@ -113,6 +147,17 @@ export async function removeLeader(_previous: FixtureActionState, formData: Form
       if (error) console.error("Leadership delete failed", error.message);
       return { status: "error", message: "Could not remove this leadership profile." };
     }
+    
+    // Log the admin action
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "staff",
+      target_id: id,
+      action: "Removed leadership profile",
+      details: {},
+    });
+
     refresh();
     return { status: "success", message: "Leadership profile removed." };
   } catch (error) {
