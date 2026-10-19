@@ -1,7 +1,19 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Trophy } from "lucide-react";
 import type { Honor } from "@/lib/content";
 import styles from "./TrophyShowcase.module.css";
+
+const trophyPhotos: Record<string, { src: string; alt: string }> = {
+  "orange cup": {
+    src: "/trophies/orange-cup-original.jpg",
+    alt: "The original Women’s Orange Cup trophy won by Shaita Angels",
+  },
+  "lfa women’s super cup": {
+    src: "/trophies/super-cup-original.jpg",
+    alt: "Shaita Angels’ LFA Women’s Super Cup trophy",
+  },
+};
 
 type TrophyShowcaseProps = {
   honors: Honor[];
@@ -47,7 +59,19 @@ export default function TrophyShowcase({
             {awards.map((award) => (
               <article className={styles.card} key={award.name} aria-label={`${award.count} ${award.name} ${award.count === 1 ? "title" : "titles"}`}>
                 <div className={styles.cardMain}>
-                  <Trophy className={styles.trophy} size={66} strokeWidth={1.35} aria-hidden="true" />
+                  {trophyPhotos[award.name.toLocaleLowerCase()] ? (
+                    <div className={styles.photoPanel}>
+                      <Image
+                        src={trophyPhotos[award.name.toLocaleLowerCase()].src}
+                        alt={trophyPhotos[award.name.toLocaleLowerCase()].alt}
+                        fill
+                        sizes="(max-width: 600px) 42vw, 180px"
+                        className={styles.photo}
+                      />
+                    </div>
+                  ) : (
+                    <Trophy className={styles.trophy} size={66} strokeWidth={1.35} aria-hidden="true" />
+                  )}
                   <strong className={styles.count} aria-hidden="true">{String(award.count).padStart(2, "0")}</strong>
                   <span className={styles.srOnly}>{award.count} {award.count === 1 ? "title" : "titles"}</span>
                 </div>
