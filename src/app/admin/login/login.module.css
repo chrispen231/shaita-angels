@@ -1,20 +1,426 @@
 /* Admin sign-in and password-reset screens.
-   Shares the admin palette with AdminShell but is a separate file so the
-   fixtures editor can change its own layout without affecting sign-in. */
+   A glassmorphism card floating over the LoginBackdrop video. The card is the
+   only interactive surface; the backdrop owns everything behind it. */
 
-.shell{min-height:100vh;background:#f5f1e8;color:#171615;padding:clamp(24px,5vw,68px) max(20px,calc((100vw - 1120px)/2));}
-.kicker{font-size:10px;line-height:1.4;letter-spacing:.16em;font-weight:800;color:#b12632;text-transform:uppercase;margin:0 0 8px}
-.muted{color:#6c6861;font-size:14px;line-height:1.6}
-.loginCard{max-width:540px;margin:8vh auto 0;padding:clamp(24px,5vw,48px);background:white;border:1px solid #e4ded2;box-shadow:0 20px 60px #17161512}
-.backLink{display:inline-flex;margin-top:24px;color:#171615;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
-.feedback{padding:12px 14px;font-size:13px;line-height:1.5}
-.notice{background:#e8f2e8;color:#245a32}
-.error{background:#fff0ee;color:#9f2029}
-.feedback{background:#edf3f7;color:#184768}
-.form{display:grid;gap:12px}
-.form{padding:14px;border-top:1px solid #e4ded2}
-.shell{padding-top:28px}
-.muted{font-size:12px}
-.resetDetails{margin-top:22px;border-top:1px solid #e4ded2;padding-top:18px}
-.muted{margin:12px 0}
-.form{margin-top:14px}
+.shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(20px, 5vw, 56px) clamp(16px, 4vw, 40px);
+  color: #fff;
+  /* The backdrop is fixed, so the shell must not paint over it. */
+  background: transparent;
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 420px;
+  padding: clamp(26px, 4.5vw, 40px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(18, 12, 14, 0.55);
+  /* Progressive enhancement: without blur support the 0.55 alpha above still
+     clears contrast against the video, so the card never becomes unreadable. */
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: cardIn 620ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Brand lockup at the top of the card. */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.brandMark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 4px;
+}
+
+.brandText {
+  display: grid;
+  gap: 2px;
+}
+
+.brandName {
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.brandSub {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+}
+
+.kicker {
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0.16em;
+  font-weight: 800;
+  color: #ffd9de;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.title {
+  font-family: var(--display);
+  font-size: clamp(30px, 6vw, 38px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.subtitle {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.86);
+  margin: 0 0 22px;
+}
+
+.muted {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.backLink {
+  display: inline-flex;
+  margin-top: 22px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 160ms ease;
+}
+.backLink:hover,
+.backLink:focus-visible {
+  color: #fff;
+}
+
+/* ---- Form ---- */
+
+.form {
+  display: grid;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.82);
+  margin-top: 10px;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+.input:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.input:focus {
+  outline: none;
+  border-color: #ff8a97;
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: 0 0 0 3px rgba(255, 85, 102, 0.24);
+}
+
+/* Password field and its show/hide control share one rounded surface. */
+.passwordWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.passwordWrap .input {
+  padding-right: 52px;
+}
+.revealButton {
+  position: absolute;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.62);
+  cursor: pointer;
+  transition: color 160ms ease, background 160ms ease;
+}
+.revealButton:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+.revealButton:focus-visible {
+  outline: 2px solid #ff5566;
+  outline-offset: 2px;
+}
+
+.submit {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #d81f3c 0%, #b1142d 100%);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  box-shadow: 0 10px 24px rgba(200, 16, 46, 0.34);
+  transition: transform 120ms ease, box-shadow 200ms ease, filter 160ms ease;
+}
+.submit:hover:not(:disabled) {
+  filter: brightness(1.07);
+  box-shadow: 0 12px 28px rgba(200, 16, 46, 0.42);
+}
+.submit:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 6px 16px rgba(200, 16, 46, 0.34);
+}
+.submit:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.submit:disabled {
+  cursor: not-allowed;
+  filter: saturate(0.6) brightness(0.82);
+  box-shadow: none;
+}
+
+/* Spinner shown while the sign-in action is in flight. */
+.spinner {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- Messages ---- */
+
+.feedback,
+.notice,
+.error {
+  padding: 11px 13px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 12px 0 0;
+}
+.feedback {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.86);
+}
+.notice {
+  background: rgba(120, 220, 150, 0.14);
+  border: 1px solid rgba(120, 220, 150, 0.28);
+  color: #c8f2d6;
+}
+.error {
+  background: rgba(255, 90, 100, 0.16);
+  border: 1px solid rgba(255, 90, 100, 0.34);
+  color: #ffd2d6;
+}
+
+/* ---- Password reset disclosure ---- */
+
+.resetDetails {
+  margin-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  padding-top: 16px;
+}
+.resetDetails summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.86);
+  list-style: none;
+}
+.resetDetails summary::-webkit-details-marker {
+  display: none;
+}
+.resetDetails summary::before {
+  content: "＋";
+  display: inline-block;
+  margin-right: 7px;
+  color: #ffd9de;
+  font-weight: 800;
+}
+.resetDetails[open] summary::before {
+  content: "−";
+}
+.resetDetails summary:focus-visible {
+  outline: 2px solid #ff5566;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.resetDetails .form {
+  margin-top: 14px;
+}
+
+/* ---- Reduced motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .loginCard {
+    animation: none;
+  }
+  .spinner {
+    animation-duration: 1.4s;
+  }
+}
+
+/* ---- Mobile ---- */
+
+@media (max-width: 520px) {
+  .shell {
+    /* Centre on tall screens, but let a short viewport scroll rather than clip
+       the card when the on-screen keyboard is open. */
+    align-content: start;
+    padding-top: max(28px, env(safe-area-inset-top));
+    padding-bottom: max(28px, env(safe-area-inset-bottom));
+  }
+  .loginCard {
+    border-radius: 18px;
+  }
+}
+
+/* Short viewports (iPhone SE and other 568px-class phones). The card is taller
+   than the screen, so trim the vertical rhythm rather than making the visitor
+   scroll to reach the submit button. */
+@media (max-height: 700px) {
+  .loginCard {
+    padding-top: clamp(20px, 4vw, 28px);
+    padding-bottom: clamp(20px, 4vw, 28px);
+  }
+  .brand {
+    margin-bottom: 14px;
+  }
+  .title {
+    font-size: clamp(26px, 5.5vw, 32px);
+  }
+  .subtitle {
+    margin-bottom: 14px;
+  }
+  .label {
+    margin-top: 6px;
+  }
+  .submit {
+    margin-top: 14px;
+  }
+  .resetDetails {
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+  .backLink {
+    margin-top: 16px;
+  }
+}
+
+/* Very short viewports (568px-class phones in a browser chrome, or any screen
+   under 600px tall). Keep the whole card reachable without scrolling so the
+   submit button is never below the fold. */
+@media (max-height: 620px) {
+  .shell {
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .loginCard {
+    padding: 20px 22px;
+  }
+  .brand {
+    margin-bottom: 10px;
+  }
+  .brandMark {
+    width: 36px;
+    height: 36px;
+  }
+  .kicker {
+    margin-bottom: 4px;
+  }
+  .title {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    margin-bottom: 10px;
+  }
+  .label {
+    margin-top: 4px;
+  }
+  .input {
+    padding: 11px 14px;
+  }
+  .submit {
+    margin-top: 12px;
+    padding: 12px 16px;
+  }
+  .resetDetails {
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+  .backLink {
+    margin-top: 12px;
+  }
+}

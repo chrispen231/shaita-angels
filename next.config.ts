@@ -17,6 +17,14 @@ const securityHeaders = [
 const publicImages =
   "/:file(gallery-1.jpg|gallery-2.jpg|gallery-3.jpg|hero-orange-cup-2026.jpg|news-featured.jpg|orange-cup-2026.jpg|shaita-angels-logo.png)";
 
+/*
+ * The admin sign-in background clips. Stable filenames, never content-hashed,
+ * and a visitor can hit the login page repeatedly - so they get the same
+ * week-long cache plus background revalidation as the photographs above.
+ * Replacing a clip in place means shortening this header or renaming the file.
+ */
+const loginVideos = "/videos/:file(login-bg-1.mp4|login-bg-2.mp4|login-bg-3.mp4|login-bg-4.mp4)";
+
 const nextConfig: NextConfig = {
   // Next regenerates AGENTS.md / CLAUDE.md on every `next dev` unless this is
   // set. This project documents itself in README.md and docs/, so the stub files
@@ -62,6 +70,12 @@ const nextConfig: NextConfig = {
          * without renaming the file, shorten this header.
          */
         source: publicImages,
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
+      {
+        source: loginVideos,
         headers: [
           { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
         ],

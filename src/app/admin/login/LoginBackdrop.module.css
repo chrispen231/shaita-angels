@@ -1,0 +1,56 @@
+/* Full-screen video backdrop for the admin sign-in screen.
+   Owns everything behind the glass card: the video, its overlays and the
+   gradient that stands in when video cannot run. */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  /* The club's crimson, so the fallback still reads as Shaita Angels. */
+  background: #140406;
+}
+
+/* Shown when no video plays at all: reduced motion, every source failed, or
+   autoplay refused. Kept as a real gradient rather than a flat colour so the
+   sign-in screen does not look broken next to the video version. */
+.gradient {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  background:
+    radial-gradient(120% 90% at 18% 12%, #3a0810 0%, transparent 58%),
+    radial-gradient(90% 80% at 88% 88%, #1d0509 0%, transparent 62%),
+    linear-gradient(150deg, #180509 0%, #0b0305 55%, #16060a 100%);
+}
+.gradientVisible {
+  opacity: 1;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.videoReady {
+  opacity: 1;
+}
+
+/* A flat darkening pass so the card's white type clears contrast on any frame. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(9, 3, 5, 0.62) 0%, rgba(9, 3, 5, 0.5) 45%, rgba(9, 3, 5, 0.72) 100%);
+}
+
+/* Edge falloff: keeps the eye on the card without hiding the video's subject. */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(115% 85% at 50% 45%, transparent 42%, rgba(6, 2, 3, 0.55) 100%);
+}
