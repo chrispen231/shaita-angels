@@ -24,6 +24,21 @@ describe("buildGalleryPhotos", () => {
     expect(photos).toHaveLength(5);
   });
 
+  it("includes bundled player portraits used by the squad cards", () => {
+    const photos = buildGalleryPhotos({
+      articles: [],
+      players: [{ ...player, name: "Aline Capehart", photo: null, photoAlternate: null }],
+      staff: [],
+      uploads: [],
+    });
+
+    expect(photos.map(({ public_url }) => public_url)).toEqual([
+      "/players/aline-capehart.jpg",
+      "/players/aline-capehart-alt.jpg",
+    ]);
+    expect(photos.every(({ category }) => category === "players")).toBe(true);
+  });
+
   it("includes published gallery uploads and deduplicates repeated image URLs", () => {
     const photos = buildGalleryPhotos({
       articles: [article], players: [], staff: [],

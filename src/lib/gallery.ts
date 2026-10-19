@@ -1,4 +1,5 @@
 import type { Article, SquadPlayer, StaffMember } from "@/lib/content";
+import { photosForPlayer } from "@/lib/player-photos";
 
 export type GalleryCategory = "stories" | "players" | "staff" | "gallery";
 export type GalleryPhoto = {
@@ -43,12 +44,19 @@ export function buildGalleryPhotos({
     }
   }
   for (const player of players) {
-    if (player.photo) {
-      add({ id: `player:${player.number}`, public_url: player.photo, alt: player.photoAlt || `${player.name}, Shaita Angels player`, title: player.name, category: "players", date: null });
-    }
-    if (player.photoAlternate) {
-      add({ id: `player:${player.number}:alternate`, public_url: player.photoAlternate, alt: `${player.name}, alternate squad photo`, title: player.name, category: "players", date: null });
-    }
+    const playerPhotos = photosForPlayer(player);
+    playerPhotos.forEach((url, index) => {
+      add({
+        id: `player:${player.number}${index > 0 ? `:photo-${index + 1}` : ""}`,
+        public_url: url,
+        alt: index === 0
+          ? player.photoAlt || `${player.name}, Shaita Angels player`
+          : `${player.name}, alternate squad photo`,
+        title: player.name,
+        category: "players",
+        date: null,
+      });
+    });
   }
   for (const member of staff) {
     if (member.photo) {

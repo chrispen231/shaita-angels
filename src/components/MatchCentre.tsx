@@ -54,9 +54,6 @@ export default function MatchCentre({
         <p className={styles.staticMeta}>
           2026 Women’s Orange Cup · Final — 14 July 2026 — Samuel Kanyon Doe Sports Complex, Paynesville
         </p>
-        <p className={styles.notice}>
-          New-season fixtures will appear here once the club confirms them. Nothing is listed before then.
-        </p>
       </div>
     );
   }
@@ -206,7 +203,7 @@ export default function MatchCentre({
         <p className={styles.empty}>
           {configured
             ? "Nothing here yet. Try a different month or competition."
-            : "Fixtures appear here once the club publishes them."}
+            : "No fixtures have been published for this selection."}
         </p>
       )}
     </div>

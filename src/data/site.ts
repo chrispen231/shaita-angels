@@ -134,7 +134,7 @@ export const sections = {
     eyebrow: "Match centre",
     title: "Every match matters.",
     intro:
-      "The Angels finished the 2025–26 First Division as runners-up and won the Orange Cup. New-season fixtures will appear here once announced.",
+      "The Angels finished the 2025–26 First Division as runners-up and won the Orange Cup.",
   },
   club: {
     eyebrow: "Our story",
