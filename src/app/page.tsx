@@ -6,6 +6,7 @@ import { getPublishedFixtures } from "@/lib/fixtures";
 import { formatMatchDate } from "@/lib/fixtures";
 import FixtureCarousel from "@/components/FixtureCarousel";
 import HeroSlideshow, { type HeroSlide } from "@/components/HeroSlideshow";
+import TrophyShowcase from "@/components/TrophyShowcase";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,13 @@ export default async function HomePage() {
       <div className="lead-story"><Link className="lead-image" href={`/news/${lead.slug}`} aria-label={`Read: ${lead.title}`}><Image src={lead.image ?? "/news-featured.jpg"} alt={lead.imageAlt ?? lead.title} fill sizes="(max-width: 780px) 100vw, 58vw" /></Link><article className="lead-copy"><div className="news-meta"><span>{lead.category}</span><time>{formatArticleDate(lead.date)}</time></div><h3><Link href={`/news/${lead.slug}`}>{lead.title}</Link></h3><p>{lead.excerpt}</p><Link className="text-link" href={`/news/${lead.slug}`}>Read the story <span aria-hidden="true">↗</span></Link></article></div>
     </section>
 
-    <section className="honors-band"><div className="wrap honors-wrap"><div className="honors-intro"><p className="eyebrow eyebrow-light">A growing legacy</p><h2>Made of<br /><span>more.</span></h2><p>Every season adds to the story. Every trophy belongs to the people who made it possible.</p><Link className="button button-outline" href="/club">Explore our honours</Link></div><div className="honors-stack">{honors.slice(0, 3).map((honor) => <article className="honor-row" key={`${honor.year}-${honor.name}`}><span className="honor-star" aria-hidden="true">✳</span><span className="honor-year">{honor.year}</span><div><strong>{honor.name}</strong><small>{honor.detail ?? ""}</small></div><span className="honor-cup">CHAMPIONS</span></article>)}</div></div></section>
+    <TrophyShowcase
+      honors={honors}
+      title="Our trophies"
+      subtitle="Every title belongs to the players, supporters and community behind the Angels."
+      linkHref="/club#honours"
+      linkLabel="View full club honours"
+    />
 
     <section className="section wrap origin-section"><div className="origin-image"><Image src="/gallery-3.jpg" alt="Shaita Angels players lined up together" fill sizes="(max-width: 780px) 100vw, 45vw" /><span className="origin-image-tag">CAREYSBURG · SINCE 2019</span></div><div className="origin-copy"><p className="eyebrow">More than a club</p><h2>Started with a ball.<br />Built by belief.</h2><p>Shaita Angels began as a group of Careysburg kickball players who chose football. Today the Angels are cup winners, league challengers, and part of a new chapter for women’s football in Liberia.</p><Link className="text-link" href="/club">The Shaita story <span aria-hidden="true">↗</span></Link></div></section>
 

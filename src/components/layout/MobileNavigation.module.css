@@ -52,6 +52,7 @@
   padding: 26px 24px max(24px, env(safe-area-inset-bottom));
   overflow-y: auto;
   background: var(--paper);
+  color: var(--ink);
   box-shadow: -18px 20px 40px rgba(0, 0, 0, .18);
   animation: slide-in 260ms cubic-bezier(.2, .75, .25, 1) both;
 }
@@ -95,7 +96,8 @@
 .link:hover, .active { color: var(--red); }
 .link:hover { padding-inline: 4px; }
 .index { color: var(--muted); font: 600 9px var(--body); letter-spacing: .08em; }
-.arrow { justify-self: end; color: var(--muted); font: 16px var(--body); }
+.destinationIcon { justify-self: end; color: var(--muted); transition: color 160ms ease, transform 160ms ease; }
+.link:hover .destinationIcon, .active .destinationIcon { color: var(--red); transform: translateX(2px); }
 
 .shop {
   min-height: 52px;
@@ -113,7 +115,7 @@
   transition: background 160ms ease;
 }
 .shop:hover { background: var(--red-deep); }
-.shop span { font-size: 16px; }
+.shop svg { flex: none; }
 .footer { margin: auto 0 0; padding-top: 30px; font-size: 8px; }
 
 .toggle:focus-visible, .close:focus-visible, .link:focus-visible, .shop:focus-visible {

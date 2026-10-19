@@ -4,6 +4,7 @@ import { gallery, sections } from "@/data/site";
 import { getArticles, getHonors, getSquad, positionsInUse } from "@/lib/content";
 import SquadGrid from "@/components/SquadGrid";
 import MatchCentre from "@/components/MatchCentre";
+import TrophyShowcase from "@/components/TrophyShowcase";
 import NewsArchive from "@/components/NewsArchive";
 import { NEWS_FILTER_CATEGORIES } from "@/lib/reference-data";
 import { getPublishedFixtures } from "@/lib/fixtures";
@@ -59,8 +60,13 @@ export default async function SectionPage({
 
         {section === "club" && <>
           <div className="story-layout"><div className="story-image"><Image src="/gallery-1.jpg" alt="Shaita Angels players together in their green away kit in Careysburg" fill sizes="(max-width: 800px) 100vw, 50vw" /></div><div className="story-copy"><p className="eyebrow">Our beginning</p><h2>A different kind of first step.</h2><p>In 2019, a group of women in Careysburg made the move from kickball to football. That decision became Shaita Angels FC: a club rooted in its community and built around the ambition of women players.</p><p>The Angels won the Women’s Lower League in 2022–23 and were promoted to the LFA Women’s First Division, finishing second in 2023–24, then claiming the Orange Cup and Super Cup. In 2026 they added a second Orange Cup to the story.</p><Link className="text-link" href="/news">Read the latest stories <span aria-hidden="true">↗</span></Link></div></div>
-          <div className="content-heading" id="honours"><div><p className="eyebrow">The honours</p><h2>Earned together.</h2></div></div>
-          <div className="honors-list">{honors.map((honor) => <article key={`${honor.year}-${honor.name}`}><span>{honor.year}</span><strong>{honor.name}</strong><small>{honor.detail ?? ""}</small><b aria-hidden="true">✳</b></article>)}</div>
+          <div id="honours">
+            <TrophyShowcase
+              honors={honors}
+              title="Earned together"
+              subtitle="A growing legacy of silverware built by the Angels in Careysburg."
+            />
+          </div>
         </>}
 
         {section === "news" && (

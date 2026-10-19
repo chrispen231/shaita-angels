@@ -3,8 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { CalendarDays, Circle, Images, Newspaper, Shield, ShoppingBag, UsersRound, type LucideIcon } from "lucide-react";
 import { navigation } from "@/data/site";
 import styles from "./MobileNavigation.module.css";
+
+const destinationIcons: Record<string, LucideIcon> = {
+  "/team": UsersRound,
+  "/matches": CalendarDays,
+  "/news": Newspaper,
+  "/club": Shield,
+  "/media": Images,
+};
 
 export default function MobileNavigation() {
   const [open, setOpen] = useState(false);
@@ -77,21 +86,24 @@ export default function MobileNavigation() {
               <button ref={closeRef} className={styles.close} type="button" onClick={() => setOpen(false)} aria-label="Close menu">×</button>
             </div>
             <div className={styles.links}>
-              {navigation.map((item, index) => (
-                <Link
-                  href={item.href}
-                  key={item.href}
-                  className={`${styles.link} ${pathname === item.href || pathname.startsWith(`${item.href}/`) ? styles.active : ""}`}
-                  aria-current={pathname === item.href ? "page" : undefined}
-                  onClick={() => setOpen(false)}
-                >
-                  <span className={styles.index}>{String(index + 1).padStart(2, "0")}</span>
-                  <span>{item.label}</span>
-                  <span className={styles.arrow} aria-hidden="true">↗</span>
-                </Link>
-              ))}
+              {navigation.map((item, index) => {
+                const Icon = destinationIcons[item.href] ?? Circle;
+                return (
+                  <Link
+                    href={item.href}
+                    key={item.href}
+                    className={`${styles.link} ${pathname === item.href || pathname.startsWith(`${item.href}/`) ? styles.active : ""}`}
+                    aria-current={pathname === item.href ? "page" : undefined}
+                    onClick={() => setOpen(false)}
+                  >
+                    <span className={styles.index}>{String(index + 1).padStart(2, "0")}</span>
+                    <span>{item.label}</span>
+                    <Icon className={styles.destinationIcon} size={19} strokeWidth={1.8} aria-hidden="true" />
+                  </Link>
+                );
+              })}
             </div>
-            <Link href="/shop" className={styles.shop} onClick={() => setOpen(false)}>Visit the shop <span aria-hidden="true">↗</span></Link>
+            <Link href="/shop" className={styles.shop} onClick={() => setOpen(false)}>Visit the shop <ShoppingBag size={18} strokeWidth={1.8} aria-hidden="true" /></Link>
             <p className={styles.footer}>PRIDE OF CAREYSBURG · EST. 2019</p>
           </nav>
         </>
