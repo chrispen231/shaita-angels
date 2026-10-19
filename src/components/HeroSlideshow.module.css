@@ -172,13 +172,13 @@
   .arrowPrev {
     position: absolute;
     left: 18px;
-    bottom: 68px;
+    bottom: 48px;
   }
 
   .arrowNext {
     position: absolute;
     right: 18px;
-    bottom: 68px;
+    bottom: 48px;
   }
 
   .arrowPrev,
@@ -192,7 +192,7 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    bottom: 68px;
+    bottom: 48px;
     gap: 4px;
   }
 

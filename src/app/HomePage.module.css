@@ -18,8 +18,10 @@
   }
 
   .homeHero :global(.hero-photo img) {
-    object-fit: contain;
-    object-position: center;
+    /* A consistent edge-to-edge crop prevents some featured photos from
+       looking undersized inside the mobile hero frame. */
+    object-fit: cover;
+    object-position: center 38%;
   }
 
   .homeHero :global(.hero-shade) {
