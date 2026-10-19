@@ -18,7 +18,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
   super_admin: "Everything, including sponsors, settings and other admins.",
   fixtures: "Fixtures, matches, lineups, goals and cards.",
-  content: "News, squad, honours and the media library.",
+  content: "News, squad, staff, leadership, honours and the media library.",
 };
 
 export type ScreenKey =
@@ -30,6 +30,7 @@ export type ScreenKey =
   | "news"
   | "squad"
   | "staff"
+  | "leadership"
   | "honors"
   | "media";
 
@@ -43,6 +44,7 @@ export const SCREEN_ACCESS: Record<ScreenKey, readonly Role[]> = {
   news: ["super_admin", "content"],
   squad: ["super_admin", "content"],
   staff: ["super_admin", "content"],
+  leadership: ["super_admin", "content"],
   honors: ["super_admin", "content"],
   media: ["super_admin", "fixtures", "content"],
 };

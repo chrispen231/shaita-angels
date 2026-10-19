@@ -189,6 +189,42 @@ export type StaffMember = {
   photoAlternate: string | null;
 };
 
+export type LeadershipMember = {
+  id: string;
+  name: string;
+  role: string;
+  bio: string | null;
+  photo: string | null;
+  photoAlt: string | null;
+};
+
+/** Published club leaders, ordered by the order set in the admin console. */
+export const getLeadership = cache(async (): Promise<LeadershipMember[]> => {
+  if (!getSupabaseConfig()) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("leadership")
+    .select("id, full_name, role, bio, photo_url, photo_alt")
+    .eq("is_published", true)
+    .order("sort_order", { ascending: true })
+    .order("full_name", { ascending: true });
+
+  if (error) {
+    console.error("Leadership read failed", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: String(row.id),
+    name: String(row.full_name),
+    role: String(row.role),
+    bio: row.bio === null ? null : String(row.bio),
+    photo: row.photo_url === null ? null : String(row.photo_url),
+    photoAlt: row.photo_alt === null ? `${String(row.full_name)}, ${String(row.role)} at Shaita Angels FC` : String(row.photo_alt),
+  }));
+});
+
 /**
  * Published staff, ordered by sort_order then name.
  *

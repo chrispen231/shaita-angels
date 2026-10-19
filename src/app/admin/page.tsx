@@ -26,6 +26,7 @@ const TILES: Tile[] = [
   },
   { screen: "news", href: "/admin/news", label: "News", blurb: "Stories and announcements." },
   { screen: "squad", href: "/admin/squad", label: "Squad", blurb: "Players, numbers and photos." },
+  { screen: "leadership", href: "/admin/leadership", label: "Leadership", blurb: "Club leaders, bios and portraits." },
   { screen: "honors", href: "/admin/honours", label: "Honours", blurb: "Trophies and milestones." },
   { screen: "media", href: "/admin/media", label: "Media library", blurb: "Images used across the site." },
   { screen: "sponsors", href: "/admin/sponsors", label: "Sponsors", blurb: "The band above the footer." },

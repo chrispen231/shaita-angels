@@ -55,6 +55,7 @@ describe("screen access", () => {
   it("keeps a content admin out of fixtures and sponsors", () => {
     expect(canAccess("content", "news")).toBe(true);
     expect(canAccess("content", "squad")).toBe(true);
+    expect(canAccess("content", "leadership")).toBe(true);
     expect(canAccess("content", "fixtures")).toBe(false);
     expect(canAccess("content", "sponsors")).toBe(false);
     expect(canAccess("content", "users")).toBe(false);
@@ -64,6 +65,7 @@ describe("screen access", () => {
     expect(canAccess("fixtures", "fixtures")).toBe(true);
     expect(canAccess("fixtures", "matches")).toBe(true);
     expect(canAccess("fixtures", "news")).toBe(false);
+    expect(canAccess("fixtures", "leadership")).toBe(false);
     expect(canAccess("fixtures", "sponsors")).toBe(false);
   });
 

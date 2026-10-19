@@ -29,6 +29,7 @@ describe("buckets", () => {
     expect(PURPOSE_BUCKET.news).toBe("news");
     expect(PURPOSE_BUCKET.player).toBe("players");
     expect(PURPOSE_BUCKET.opponent).toBe("opponents");
+    expect(PURPOSE_BUCKET.leadership).toBe("leadership");
   });
 
   it("uses every declared bucket exactly once", () => {
@@ -53,7 +54,7 @@ describe("allowedTypes", () => {
   });
 
   it("allows the raster formats everywhere", () => {
-    for (const purpose of ["sponsor", "news", "player", "opponent"] as UploadPurpose[]) {
+    for (const purpose of ["sponsor", "news", "player", "opponent", "leadership"] as UploadPurpose[]) {
       expect(allowedTypes(purpose)).toContain("image/png");
       expect(allowedTypes(purpose)).toContain("image/jpeg");
       expect(allowedTypes(purpose)).toContain("image/webp");

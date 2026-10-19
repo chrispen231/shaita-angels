@@ -94,7 +94,7 @@ export async function deleteImage(
   const bucketRaw = String(formData.get("bucket") ?? "");
   const objectPath = String(formData.get("path") ?? "").trim();
 
-  if (!/^(sponsor-logos|news|players|opponents|gallery)$/.test(bucketRaw)) {
+  if (!/^(sponsor-logos|news|players|opponents|gallery|leadership)$/.test(bucketRaw)) {
     return { status: "error", message: "Unknown image bucket.", url: "", path: "" };
   }
   // A path from the browser must not be able to escape its bucket or address an

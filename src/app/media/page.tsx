@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getArticles, getSquad, getStaff } from "@/lib/content";
+import { getArticles, getSquad, getStaff, getLeadership } from "@/lib/content";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { buildGalleryPhotos } from "@/lib/gallery";
 import { MediaGallery } from "./MediaGallery";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Media · Shaita Angels FC" };
 
 export default async function MediaPage() {
-  const [articles, players, staff] = await Promise.all([getArticles(), getSquad(), getStaff()]);
+  const [articles, players, staff, leaders] = await Promise.all([getArticles(), getSquad(), getStaff(), getLeadership()]);
   let uploads: { id: string | number; public_url: string; original_filename: string | null; uploaded_at: string }[] = [];
 
   if (getSupabaseConfig()) {
@@ -26,7 +26,7 @@ export default async function MediaPage() {
     uploads = data ?? [];
   }
 
-  const photos = buildGalleryPhotos({ articles, players, staff, uploads });
+  const photos = buildGalleryPhotos({ articles, players, staff, leaders, uploads });
 
   return <MediaGallery photos={photos} />;
 }

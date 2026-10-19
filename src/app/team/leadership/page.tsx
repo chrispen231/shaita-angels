@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getLeadership } from "@/lib/content";
+import LeadershipGrid from "@/components/LeadershipGrid";
 
 export const metadata: Metadata = { title: "Club Leadership" };
 
-export default function LeadershipPage() {
+export const dynamic = "force-dynamic";
+
+export default async function LeadershipPage() {
+  const leaders = await getLeadership();
+
   return (
     <>
       <nav className="team-subnav" aria-label="Club sections">
@@ -23,10 +29,7 @@ export default function LeadershipPage() {
         </div>
       </section>
       <main className="wrap page-content staff-page-content">
-        <div className="note-panel">
-          <strong>Leadership profiles coming soon</strong>
-          <p>We’ll publish the leadership team here once the club confirms the names and roles.</p>
-        </div>
+        <LeadershipGrid leaders={leaders} />
       </main>
     </>
   );

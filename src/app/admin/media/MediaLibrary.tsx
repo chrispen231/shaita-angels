@@ -23,7 +23,7 @@ export type MediaRow = {
   is_published: boolean;
 };
 
-const PURPOSES: UploadPurpose[] = ["sponsor", "news", "player", "opponent", "gallery"];
+const PURPOSES: UploadPurpose[] = ["sponsor", "news", "player", "opponent", "gallery", "leadership"];
 
 /**
  * Browses what has been uploaded, newest first.
@@ -153,7 +153,7 @@ export default function MediaLibrary({
       {visible.length === 0 ? (
         <p className={styles.empty}>
           {uploads.length === 0
-            ? "No images uploaded yet. Upload one from a sponsor, story, player or fixture form and it will appear here."
+            ? "No images uploaded yet. Upload one from a sponsor, story, player, leadership or fixture form and it will appear here."
             : "No images for that category."}
         </p>
       ) : (

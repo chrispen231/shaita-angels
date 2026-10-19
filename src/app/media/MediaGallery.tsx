@@ -10,6 +10,7 @@ const FILTERS: { value: GalleryCategory | "all"; label: string }[] = [
   { value: "stories", label: "News" },
   { value: "players", label: "Squad" },
   { value: "staff", label: "Staff" },
+  { value: "leadership", label: "Leadership" },
   { value: "gallery", label: "Gallery uploads" },
 ];
 
@@ -94,7 +95,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
       </div>
 
       {visiblePhotos.length === 0 ? (
-        <p className={styles.empty}>{photos.length === 0 ? "No published photos yet. Images added to published news, squad profiles, staff profiles, or the gallery will appear here." : "There are no photos in this category yet."}</p>
+        <p className={styles.empty}>{photos.length === 0 ? "No published photos yet. Images added to published news, squad profiles, staff profiles, leadership profiles, or the gallery will appear here." : "There are no photos in this category yet."}</p>
       ) : (
         <>
           <section className={styles.carouselSection} aria-labelledby="featured-moments-heading">

@@ -1,7 +1,7 @@
-import type { Article, SquadPlayer, StaffMember } from "@/lib/content";
+import type { Article, LeadershipMember, SquadPlayer, StaffMember } from "@/lib/content";
 import { photosForPlayer } from "@/lib/player-photos";
 
-export type GalleryCategory = "stories" | "players" | "staff" | "gallery";
+export type GalleryCategory = "stories" | "players" | "staff" | "leadership" | "gallery";
 export type GalleryPhoto = {
   id: string;
   public_url: string;
@@ -22,11 +22,13 @@ export function buildGalleryPhotos({
   articles,
   players,
   staff,
+  leaders,
   uploads,
 }: {
   articles: Article[];
   players: SquadPlayer[];
   staff: StaffMember[];
+  leaders: LeadershipMember[];
   uploads: UploadedGalleryPhoto[];
 }): GalleryPhoto[] {
   const photos: GalleryPhoto[] = [];
@@ -64,6 +66,11 @@ export function buildGalleryPhotos({
     }
     if (member.photoAlternate) {
       add({ id: `staff:${member.id}:alternate`, public_url: member.photoAlternate, alt: `${member.name}, alternate staff photo`, title: member.name, category: "staff", date: null });
+    }
+  }
+  for (const leader of leaders) {
+    if (leader.photo) {
+      add({ id: `leadership:${leader.id}`, public_url: leader.photo, alt: leader.photoAlt || `${leader.name}, ${leader.role}`, title: leader.name, category: "leadership", date: null });
     }
   }
   for (const upload of uploads) {
