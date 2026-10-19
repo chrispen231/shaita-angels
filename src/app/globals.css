@@ -135,3 +135,22 @@ body:has(.hero) .site-header{position:absolute;inset:0 0 auto;background:linear-
     .match-details a span{margin-left:6px}
     .note-panel a{display:inline-flex;align-items:center;min-height:44px}
   }
+
+/* Calm entrance motion for page sections; MotionEffects only marks content
+   when JavaScript is available, so the page remains visible without it. */
+.motion-reveal{opacity:0;transform:translateY(18px);transition:opacity .62s cubic-bezier(.2,.7,.2,1),transform .62s cubic-bezier(.2,.7,.2,1)}
+.motion-reveal.motion-visible{opacity:1;transform:translateY(0)}
+.hero-copy,.hero-actions{animation:club-arrive .72s cubic-bezier(.2,.7,.2,1) both}
+.hero-actions{animation-delay:.12s}
+@keyframes club-arrive{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.button,.nav-cta,.kit-order-btn{transition:transform .2s ease,box-shadow .2s ease,background .2s ease,color .2s ease,border-color .2s ease}
+@media(hover:hover){
+  .button:hover,.nav-cta:hover,.kit-order-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.16)}
+  .news-card,.player-card,.kit-product,.lead-story{transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s ease}
+  .news-card:hover,.player-card:hover,.kit-product:hover,.lead-story:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(11,11,12,.12)}
+}
+.button:focus-visible,.nav-cta:focus-visible,.kit-order-btn:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+@media(prefers-reduced-motion:reduce){
+  .motion-reveal,.hero-copy,.hero-actions{opacity:1;transform:none;animation:none;transition:none}
+  .button,.nav-cta,.kit-order-btn,.news-card,.player-card,.kit-product,.lead-story{transition:none}
+}

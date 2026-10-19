@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import SponsorBand from "@/components/SponsorBand";
+import MotionEffects from "@/components/MotionEffects";
 import { getActiveSponsors, getSiteSettings } from "@/lib/sponsors";
 import "./globals.css";
 
@@ -33,6 +34,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en">
       <body>
+        <MotionEffects />
         <a className="skip-link" href="#main-content">Skip to content</a>
         <Navbar />
         <main id="main-content">{children}</main>
