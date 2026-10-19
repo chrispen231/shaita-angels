@@ -12,7 +12,6 @@ function HonorsGroup({ honors, hidden = false }: { honors: Honor[]; hidden?: boo
         <span className={styles.item} key={`${honor.year}-${honor.name}-${index}`}>
           <span className={styles.year}>{honor.year}</span>
           <span>{honor.name}</span>
-          {honor.detail && <span className={styles.detail}>{honor.detail}</span>}
         </span>
       ))}
     </div>

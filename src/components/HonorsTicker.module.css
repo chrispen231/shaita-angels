@@ -54,12 +54,6 @@
   color: var(--gold);
 }
 
-.detail {
-  color: rgba(255, 255, 255, 0.76);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-}
-
 .toggle {
   position: absolute;
   z-index: 1;
@@ -89,7 +83,6 @@
   .ticker { height: 48px; }
   .group { gap: 24px; padding-right: 24px; }
   .item { font-size: 9px; }
-  .detail { font-size: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
