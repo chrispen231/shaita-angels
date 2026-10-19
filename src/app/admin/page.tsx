@@ -1,6 +1,20 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import {
+  ArrowRight,
+  CalendarDays,
+  ClipboardList,
+  Handshake,
+  Images,
+  Newspaper,
+  Settings2,
+  ShieldCheck,
+  Trophy,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { getAdminContext } from "@/lib/admin/roles";
-import AdminShell, { requireScreen } from "@/app/admin/AdminShell";
+import AdminShell from "@/app/admin/AdminShell";
 import {
   ROLE_DESCRIPTIONS,
   ROLE_LABELS,
@@ -14,82 +28,123 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Admin" };
 
-type Tile = { screen: ScreenKey; href: string; label: string; blurb: string };
+type Tile = { screen: ScreenKey; href: string; label: string; blurb: string; icon: LucideIcon };
 
 const TILES: Tile[] = [
-  { screen: "fixtures", href: "/admin/fixtures", label: "Fixtures", blurb: "Add and edit the match list." },
+  { screen: "fixtures", href: "/admin/fixtures", label: "Fixtures", blurb: "Add and edit the match list.", icon: CalendarDays },
   {
     screen: "matches",
     href: "/admin/matches",
     label: "Matches & lineups",
     blurb: "Lineups, goals, cards and reports.",
+    icon: ClipboardList,
   },
-  { screen: "news", href: "/admin/news", label: "News", blurb: "Stories and announcements." },
-  { screen: "squad", href: "/admin/squad", label: "Squad", blurb: "Players, numbers and photos." },
-  { screen: "leadership", href: "/admin/leadership", label: "Leadership", blurb: "Club leaders, bios and portraits." },
-  { screen: "honors", href: "/admin/honours", label: "Honours", blurb: "Trophies and milestones." },
-  { screen: "media", href: "/admin/media", label: "Media library", blurb: "Images used across the site." },
-  { screen: "sponsors", href: "/admin/sponsors", label: "Sponsors", blurb: "The band above the footer." },
+  { screen: "news", href: "/admin/news", label: "News", blurb: "Stories and announcements.", icon: Newspaper },
+  { screen: "squad", href: "/admin/squad", label: "Squad", blurb: "Players, numbers and photos.", icon: Users },
+  { screen: "leadership", href: "/admin/leadership", label: "Leadership", blurb: "Club leaders, bios and portraits.", icon: ShieldCheck },
+  { screen: "honors", href: "/admin/honours", label: "Honours", blurb: "Trophies and milestones.", icon: Trophy },
+  { screen: "media", href: "/admin/media", label: "Media library", blurb: "Images used across the site.", icon: Images },
+  { screen: "sponsors", href: "/admin/sponsors", label: "Sponsors", blurb: "The band above the footer.", icon: Handshake },
   {
     screen: "settings",
     href: "/admin/settings",
     label: "Social & contact",
     blurb: "Social links and contact details.",
+    icon: Settings2,
   },
-  { screen: "users", href: "/admin/users", label: "Administrators", blurb: "Who can manage this site." },
+  { screen: "users", href: "/admin/users", label: "Administrators", blurb: "Who can manage this site.", icon: ShieldCheck },
 ];
 
+type DashboardMetric = { label: string; value: number; href: string; icon: LucideIcon };
+
+async function readMetric(
+  label: string,
+  href: string,
+  icon: LucideIcon,
+  query: PromiseLike<{ count: number | null; error: unknown }>,
+): Promise<DashboardMetric | null> {
+  const { count, error } = await query;
+  return error ? null : { label, value: count ?? 0, href, icon };
+}
+
 export default async function AdminPage() {
-  const context = requireScreen(await getAdminContext(), "fixtures");
+  const context = await getAdminContext();
+  if (!context) redirect("/admin/login");
   const available = TILES.filter((tile) => canAccess(context.role, tile.screen));
 
-  let counts = { sponsors: 0, publishedSponsors: 0, fixtures: 0 };
-  if (canAccess(context.role, "sponsors") || canAccess(context.role, "fixtures")) {
-    const [sponsors, fixtures] = await Promise.all([
-      context.supabase.from("sponsors").select("id, is_published"),
-      context.supabase.from("fixtures").select("id", { count: "exact", head: true }),
-    ]);
-    const rows = sponsors.data ?? [];
-    counts = {
-      sponsors: rows.length,
-      publishedSponsors: rows.filter((row) => row.is_published).length,
-      fixtures: fixtures.count ?? 0,
-    };
+  const metricJobs: Promise<DashboardMetric | null>[] = [];
+  if (canAccess(context.role, "fixtures")) {
+    metricJobs.push(readMetric("Fixtures", "/admin/fixtures", CalendarDays,
+      context.supabase.from("fixtures").select("id", { count: "exact", head: true })));
   }
+  if (canAccess(context.role, "news")) {
+    metricJobs.push(readMetric("Stories", "/admin/news", Newspaper,
+      context.supabase.from("articles").select("id", { count: "exact", head: true })));
+  }
+  if (canAccess(context.role, "squad")) {
+    metricJobs.push(readMetric("Players", "/admin/squad", Users,
+      context.supabase.from("squad").select("id", { count: "exact", head: true })));
+  }
+  if (canAccess(context.role, "staff")) {
+    metricJobs.push(readMetric("Staff", "/admin/staff", Users,
+      context.supabase.from("staff").select("id", { count: "exact", head: true })));
+  }
+  if (canAccess(context.role, "leadership")) {
+    metricJobs.push(readMetric("Leaders", "/admin/leadership", ShieldCheck,
+      context.supabase.from("leadership").select("id", { count: "exact", head: true })));
+  }
+  if (canAccess(context.role, "sponsors")) {
+    metricJobs.push(readMetric("Sponsors", "/admin/sponsors", Handshake,
+      context.supabase.from("sponsors").select("id", { count: "exact", head: true })));
+  }
+  const metrics = (await Promise.all(metricJobs)).filter((item): item is DashboardMetric => item !== null);
+  const quickActions = [
+    { screen: "fixtures" as const, label: "Add a fixture", href: "/admin/fixtures", icon: CalendarDays },
+    { screen: "news" as const, label: "Write a story", href: "/admin/news", icon: Newspaper },
+    { screen: "leadership" as const, label: "Add a leader", href: "/admin/leadership", icon: Users },
+  ].filter((item) => canAccess(context.role, item.screen));
 
   return (
     <AdminShell
       context={context}
       title="Dashboard"
-      description={`Signed in as ${context.user.email}. You can reach ${available.length} of ${TILES.length} tools with the ${ROLE_LABELS[context.role]} role.`}
+      description={`Your ${ROLE_LABELS[context.role].toLowerCase()} workspace, with access to ${available.length} club tools.`}
     >
-      <section className={styles.stats}>
-        <div className={styles.stat}>
-          <span className={styles.statValue}>{counts.fixtures}</span>
-          <span className={styles.statLabel}>Fixtures</span>
-        </div>
-        {canAccess(context.role, "sponsors") && (
-          <>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>{counts.sponsors}</span>
-              <span className={styles.statLabel}>Sponsors</span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>{counts.publishedSponsors}</span>
-              <span className={styles.statLabel}>Published</span>
-            </div>
-          </>
-        )}
-      </section>
+      {metrics.length > 0 && (
+        <section className={styles.stats} aria-label="Workspace totals">
+          {metrics.map(({ label, value, href, icon: Icon }) => (
+            <Link className={styles.stat} href={href} key={label}>
+              <span className={styles.statIcon}><Icon size={18} aria-hidden="true" /></span>
+              <span className={styles.statValue}>{value}</span>
+              <span className={styles.statLabel}>{label}</span>
+            </Link>
+          ))}
+        </section>
+      )}
+
+      {quickActions.length > 0 && (
+        <section className={styles.quickSection} aria-labelledby="quick-actions-heading">
+          <h2 className={styles.sectionTitle} id="quick-actions-heading">Quick actions</h2>
+          <div className={styles.quickActions}>
+            {quickActions.map(({ href, label, icon: Icon }) => (
+              <Link className={styles.quickAction} href={href} key={href}>
+                <Icon size={17} aria-hidden="true" /><span>{label}</span><ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className={styles.sectionTitle}>Your tools</h2>
         <ul className={styles.tiles}>
-          {available.map((tile) => (
+          {available.map(({ icon: Icon, ...tile }) => (
             <li key={tile.href}>
               <Link className={styles.tile} href={tile.href}>
+                <span className={styles.tileIcon}><Icon size={19} aria-hidden="true" /></span>
                 <span className={styles.tileLabel}>{tile.label}</span>
                 <span className={styles.tileBlurb}>{tile.blurb}</span>
+                <ArrowRight className={styles.tileArrow} size={16} aria-hidden="true" />
               </Link>
             </li>
           ))}

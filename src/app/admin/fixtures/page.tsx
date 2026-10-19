@@ -3,7 +3,6 @@ import { getCompetitionsForAdmin } from "@/lib/reference-data.server";
 import { FIXTURE_COLUMNS } from "@/lib/fixtures";
 import AdminShell, { requireScreen } from "@/app/admin/AdminShell";
 import FixtureManager from "./FixtureManager";
-import { signOutAction } from "./actions";
 import type { Fixture } from "@/types/fixtures";
 import styles from "./page.module.css";
 
@@ -34,13 +33,6 @@ export default async function FixturesPage({
       active="fixtures"
       title="Fixtures"
       description="Fixtures publish to the match centre and the homepage rail. Unpublishing hides a fixture from the public site without deleting its record."
-      actions={
-        <form action={signOutAction}>
-          <button className={styles.signOut} type="submit">
-            Sign out
-          </button>
-        </form>
-      }
     >
       {saved === "1" && (
         <p className={styles.notice} role="status">
