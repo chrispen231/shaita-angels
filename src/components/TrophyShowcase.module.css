@@ -22,8 +22,7 @@
 .card { min-width: 0; background: linear-gradient(180deg, rgba(9,31,53,.6), rgba(18,54,87,.68)); }
 .cardMain { min-height: 220px; display: flex; align-items: center; justify-content: center; gap: clamp(12px, 2.2vw, 24px); padding: 20px 12px; }
 .trophy { flex: 0 0 auto; color: #e2c84e; fill: rgba(226,200,78,.12); }
-.photoPanel { position: relative; flex: 0 1 52%; width: 52%; min-width: 0; height: 190px; overflow: hidden; border-radius: 3px; background: rgba(255,255,255,.08); }
-.photo { object-fit: contain; }
+.trophyArt { width: 112px; height: 150px; flex: 0 0 auto; overflow: visible; filter: drop-shadow(0 8px 8px rgba(0,0,0,.28)); }
 .count { color: transparent; font: 800 clamp(60px, 7vw, 92px)/.9 var(--display); -webkit-text-stroke: 1.5px rgba(255,255,255,.92); }
 .cardLabel { min-height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 12px; border-top: 3px solid rgba(226,200,78,.68); background: rgba(3,18,34,.38); text-align: center; }
 .cardLabel span { font-size: 12px; font-weight: 800; letter-spacing: .07em; line-height: 1.2; text-transform: uppercase; }
@@ -37,7 +36,7 @@
   .heading > p:not(.eyebrow) { font-size: 12px; }
   .grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 155px), 1fr)); }
   .cardMain { min-height: 150px; gap: 8px; padding: 12px 7px; }
-  .photoPanel { height: 126px; flex-basis: 50%; width: 50%; }
+  .trophyArt { width: 82px; height: 120px; }
   .trophy { width: 48px; height: 48px; }
   .count { font-size: clamp(48px, 15vw, 68px); }
   .cardLabel { min-height: 62px; padding: 10px 6px; }
