@@ -2,34 +2,42 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { type GalleryCategory, type GalleryPhoto } from "@/lib/gallery";
 import styles from "./media.module.css";
 
-export type GalleryPhoto = {
-  id: string;
-  public_url: string;
-  original_filename: string | null;
-  uploaded_at: string;
-};
+const FILTERS: { value: GalleryCategory | "all"; label: string }[] = [
+  { value: "all", label: "All photos" },
+  { value: "stories", label: "News" },
+  { value: "players", label: "Squad" },
+  { value: "staff", label: "Staff" },
+  { value: "gallery", label: "Gallery uploads" },
+];
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("en-GB");
+function formatDate(value: string | null) {
+  if (!value) return "";
+  const date = value.slice(0, 10);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!match) return "";
+  return `${Number(match[3])} ${new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1)).toLocaleString("en-GB", { month: "short", timeZone: "UTC" })} ${match[1]}`;
 }
 
 export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
+  const [filter, setFilter] = useState<GalleryCategory | "all">("all");
+  const visiblePhotos = filter === "all" ? photos : photos.filter((photo) => photo.category === filter);
   // Index rather than the object itself, so prev/next can step through the set.
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const activePhoto = activeIndex === null ? null : photos[activeIndex];
+  const activePhoto = activeIndex === null ? null : visiblePhotos[activeIndex];
 
   const close = useCallback(() => setActiveIndex(null), []);
   const step = useCallback(
     (delta: number) => {
       setActiveIndex((current) => {
-        if (current === null || photos.length === 0) return current;
+        if (current === null || visiblePhotos.length === 0) return current;
         // Wrap around so the arrows never dead-end.
-        return (current + delta + photos.length) % photos.length;
+        return (current + delta + visiblePhotos.length) % visiblePhotos.length;
       });
     },
-    [photos.length],
+    [visiblePhotos.length],
   );
 
   // Escape closes; arrows step through. Bound only while the lightbox is open.
@@ -61,36 +69,51 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
           <p className="eyebrow">From the archive</p>
           <h2>Moments in red.</h2>
         </div>
-        <span className="data-note">{photos.length} {photos.length === 1 ? "photo" : "photos"}</span>
+        <span className="data-note">{visiblePhotos.length} {visiblePhotos.length === 1 ? "photo" : "photos"}</span>
       </div>
 
-      {photos.length === 0 ? (
-        <p className={styles.empty}>No gallery photos published yet. Check back soon.</p>
+      <div className={styles.filters} role="group" aria-label="Filter gallery by source">
+        {FILTERS.map((item) => {
+          const count = item.value === "all" ? photos.length : photos.filter((photo) => photo.category === item.value).length;
+          return (
+            <button
+              key={item.value}
+              type="button"
+              className={filter === item.value ? styles.filterActive : styles.filter}
+              onClick={() => { setFilter(item.value); setActiveIndex(null); }}
+              aria-pressed={filter === item.value}
+            >
+              {item.label}<span className={styles.filterCount}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {visiblePhotos.length === 0 ? (
+        <p className={styles.empty}>{photos.length === 0 ? "No published photos yet. Images added to published news, squad profiles, staff profiles, or the gallery will appear here." : "There are no photos in this category yet."}</p>
       ) : (
         <>
           <ul className={styles.grid}>
-            {photos.map((photo, index) => (
+            {visiblePhotos.map((photo, index) => (
               <li key={photo.id} className={styles.card}>
                 <button
                   type="button"
                   className={styles.figure}
                   onClick={() => setActiveIndex(index)}
-                  aria-label={`View ${photo.original_filename ?? "photo"} full size`}
+                  aria-label={`View ${photo.title} photo full size`}
                 >
                   <div className={styles.thumb}>
                     <Image
                       src={photo.public_url}
-                      alt={photo.original_filename ?? "Shaita Angels gallery photo"}
+                      alt={photo.alt}
                       fill
                       unoptimized
                       sizes="(max-width: 720px) 100vw, 33vw"
                     />
                   </div>
                   <figcaption className={styles.figcaption}>
-                    <span className={styles.caption}>Shaita Angels FC</span>
-                    <span className={styles.date}>
-                      {formatDate(photo.uploaded_at)}
-                    </span>
+                    <span className={styles.caption}>{photo.title}</span>
+                    <span className={styles.date}>{formatDate(photo.date)}</span>
                   </figcaption>
                 </button>
               </li>
@@ -102,7 +125,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
               className={styles.lightbox}
               role="dialog"
               aria-modal="true"
-              aria-label={activePhoto.original_filename ?? "Photo viewer"}
+              aria-label={`${activePhoto.title} photo viewer`}
               onClick={close}
             >
               <button
@@ -114,7 +137,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                 ×
               </button>
 
-              {photos.length > 1 && (
+              {visiblePhotos.length > 1 && (
                 <>
                   <button
                     type="button"
@@ -150,7 +173,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                       viewport-sized box while preserving its aspect ratio. */}
                   <Image
                     src={activePhoto.public_url}
-                    alt={activePhoto.original_filename ?? "Shaita Angels gallery photo"}
+                    alt={activePhoto.alt}
                     fill
                     unoptimized
                     sizes="92vw"
@@ -158,13 +181,11 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                   />
                 </div>
                 <figcaption className={styles.lightboxFigcaption}>
-                  <span className={styles.lightboxCaption}>Shaita Angels FC</span>
-                  <span className={styles.lightboxDate}>
-                    {formatDate(activePhoto.uploaded_at)}
-                  </span>
-                  {photos.length > 1 && (
+                  <span className={styles.lightboxCaption}>{activePhoto.title}</span>
+                  <span className={styles.lightboxDate}>{formatDate(activePhoto.date)}</span>
+                  {visiblePhotos.length > 1 && (
                     <span className={styles.lightboxCount}>
-                      {(activeIndex ?? 0) + 1} / {photos.length}
+                      {(activeIndex ?? 0) + 1} / {visiblePhotos.length}
                     </span>
                   )}
                 </figcaption>
@@ -174,10 +195,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
         </>
       )}
 
-      <p className="data-note gallery-note">
-        Photos supplied with the project. Dates and match captions will be added when confirmed by the
-        club.
-      </p>
+      <p className="data-note gallery-note">Published news, squad, and staff photos appear here automatically, alongside gallery uploads.</p>
     </>
   );
 }

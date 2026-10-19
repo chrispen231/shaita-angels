@@ -30,7 +30,7 @@ export default function StaffGrid({ staff }: { staff: StaffMember[] }) {
         <article className="player-card" key={member.id}>
           <div className="player-card-art">
             {member.photo ? (
-              <div className={`player-photo-set ${member.photoAlt ? "has-alternate" : ""}`}>
+              <div className={`player-photo-set ${member.photoAlternate ? "has-alternate" : ""}`}>
                 <Image
                   className="player-photo player-photo-primary"
                   src={member.photo}
@@ -38,10 +38,10 @@ export default function StaffGrid({ staff }: { staff: StaffMember[] }) {
                   fill
                   sizes="(max-width: 680px) 50vw, (max-width: 1000px) 33vw, 25vw"
                 />
-                {member.photoAlt && (
+                {member.photoAlternate && (
                   <Image
                     className="player-photo player-photo-alternate"
-                    src={member.photoAlt}
+                    src={member.photoAlternate}
                     alt={`${member.name}, alternate portrait`}
                     fill
                     sizes="(max-width: 680px) 50vw, (max-width: 1000px) 33vw, 25vw"

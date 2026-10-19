@@ -1,12 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import Image from "next/image";
-import { deleteImage, togglePublish, uploadImage, type UploadState } from "./actions";
-import { PURPOSE_LABEL, type UploadPurpose } from "@/lib/media";
+import { useRouter } from "next/navigation";
+import { deleteImage, togglePublish, type UploadState } from "./actions";
+import { PURPOSE_LABEL, checkFile, type UploadPurpose } from "@/lib/media";
+import { uploadMediaFile, type UploadResult } from "@/lib/media-upload";
 import styles from "./page.module.css";
 
 const initial: UploadState = { status: "idle", message: "", url: "", path: "" };
+const uploadInitial: UploadResult = { status: "error", message: "", url: "", path: "" };
 
 export type MediaRow = {
   id: string;
@@ -39,12 +42,43 @@ export default function MediaLibrary({
 }) {
   const [state, deleteAction] = useActionState(deleteImage, initial);
   const [publishState, publishAction, publishPending] = useActionState(togglePublish, initial);
-  const [uploadState, uploadAction] = useActionState(uploadImage, initial);
+  const [uploadState, setUploadState] = useState<UploadResult>(uploadInitial);
+  const [uploading, setUploading] = useState(false);
+  const uploadInput = useRef<HTMLInputElement>(null);
+  const router = useRouter();
   const [filter, setFilter] = useState<UploadPurpose | "all">("all");
   const [copied, setCopied] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
 
   const visible = filter === "all" ? uploads : uploads.filter((row) => row.purpose === filter);
+
+  async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const file = uploadInput.current?.files?.[0];
+    if (!file) {
+      setUploadState({ ...uploadInitial, message: "Choose an image to upload first." });
+      return;
+    }
+    const check = checkFile(file, "gallery");
+    if (!check.ok) {
+      setUploadState({ ...uploadInitial, message: check.message });
+      return;
+    }
+    setUploading(true);
+    try {
+      const result = await uploadMediaFile(file, "gallery");
+      setUploadState(result);
+      if (result.status === "success") {
+        if (uploadInput.current) uploadInput.current.value = "";
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Gallery upload failed", error);
+      setUploadState({ ...uploadInitial, message: "The upload failed. Check your connection and try again." });
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function copy(url: string) {
     try {
@@ -60,15 +94,16 @@ export default function MediaLibrary({
 
   return (
     <>
-      <form action={uploadAction} className={styles.uploadForm}>
-        <input type="hidden" name="purpose" value="gallery" />
+      <form onSubmit={handleUpload} className={styles.uploadForm}>
         <label className={styles.uploadLabel}>
           <span>Upload a gallery photo</span>
-          <input type="file" name="file_gallery" accept="image/png,image/jpeg,image/webp,image/avif" />
+          <input ref={uploadInput} type="file" name="file_gallery" accept="image/png,image/jpeg,image/webp,image/avif" />
         </label>
-        <button type="submit" className={styles.uploadBtn}>Upload</button>
+        <button type="submit" className={styles.uploadBtn} disabled={uploading}>
+          {uploading ? "Uploading…" : "Upload"}
+        </button>
         {uploadState.message && (
-          <p className={uploadState.status === "error" ? styles.formError : styles.formSuccess} role="status">
+          <p className={uploadState.status === "error" ? styles.formError : styles.formSuccess} role={uploadState.status === "error" ? "alert" : "status"}>
             {uploadState.message}
           </p>
         )}

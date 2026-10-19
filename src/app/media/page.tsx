@@ -1,26 +1,32 @@
 import { createClient } from "@/lib/supabase/server";
-import { MediaGallery, type GalleryPhoto } from "./MediaGallery";
+import { getArticles, getSquad, getStaff } from "@/lib/content";
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { buildGalleryPhotos } from "@/lib/gallery";
+import { MediaGallery } from "./MediaGallery";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Media · Shaita Angels FC" };
 
 export default async function MediaPage() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("media_uploads")
-    .select("id, public_url, original_filename, uploaded_at")
-    .eq("purpose", "gallery")
-    .eq("is_published", true)
-    .order("uploaded_at", { ascending: false })
-    .limit(200);
+  const [articles, players, staff] = await Promise.all([getArticles(), getSquad(), getStaff()]);
+  let uploads: { id: string | number; public_url: string; original_filename: string | null; uploaded_at: string }[] = [];
 
-  const photos: GalleryPhoto[] = (data ?? []).map((row) => ({
-    id: String(row.id),
-    public_url: String(row.public_url),
-    original_filename: row.original_filename === null ? null : String(row.original_filename),
-    uploaded_at: String(row.uploaded_at),
-  }));
+  if (getSupabaseConfig()) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("media_uploads")
+      .select("id, public_url, original_filename, uploaded_at")
+      .eq("purpose", "gallery")
+      .eq("is_published", true)
+      .order("uploaded_at", { ascending: false })
+      .limit(200);
+
+    if (error) console.error("Published gallery upload read failed", error.message);
+    uploads = data ?? [];
+  }
+
+  const photos = buildGalleryPhotos({ articles, players, staff, uploads });
 
   return <MediaGallery photos={photos} />;
 }

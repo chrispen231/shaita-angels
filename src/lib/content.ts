@@ -186,6 +186,7 @@ export type StaffMember = {
   bio: string | null;
   photo: string | null;
   photoAlt: string | null;
+  photoAlternate: string | null;
 };
 
 /**
@@ -218,7 +219,8 @@ export const getStaff = cache(async (): Promise<StaffMember[]> => {
     role: String(row.role),
     bio: row.bio === null ? null : String(row.bio),
     photo: row.photo_url === null ? null : String(row.photo_url),
-    photoAlt: row.photo_url_alt === null ? null : String(row.photo_url_alt),
+    photoAlt: row.photo_url === null ? null : `${String(row.full_name)}, ${String(row.role)} at Shaita Angels`,
+    photoAlternate: row.photo_url_alt === null ? null : String(row.photo_url_alt),
   }));
 });
 

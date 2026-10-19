@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import { uploadImage, type UploadState } from "@/app/admin/media/actions";
+import { uploadMediaFile, type UploadResult } from "@/lib/media-upload";
 import {
   allowedTypes,
   humanSize,
@@ -32,11 +32,11 @@ import styles from "./ImageField.module.css";
  * drops into the sponsor, news, player and fixture forms without changing their
  * server actions.
  *
- * Client-side validation is checked in src/lib/media.ts and shared with the server
- * action, so the two cannot disagree about what is acceptable.
+ * Client-side validation is checked in src/lib/media.ts. Supabase Storage enforces
+ * the same size and MIME restrictions at the bucket boundary.
  */
 
-const initial: UploadState = { status: "idle", message: "", url: "", path: "" };
+const initial: UploadResult = { status: "error", message: "", url: "", path: "" };
 
 export default function ImageField({
   name,
@@ -58,7 +58,8 @@ export default function ImageField({
   hint?: string;
   wide?: boolean;
 }) {
-  const [state, uploadAction] = useActionState(uploadImage, initial);
+  const [state, setState] = useState<UploadResult>(initial);
+  const [uploading, setUploading] = useState(false);
   const [manual, setManual] = useState<string | null>(null);
   const [library, setLibrary] = useState<string[]>([]);
   const [mode, setMode] = useState<"upload" | "url">("upload");
@@ -67,7 +68,7 @@ export default function ImageField({
 
   /*
    * The field's value is derived during render rather than copied into state from an
-   * effect. An upload is an event, not synchronisation: when the action returns a
+   * effect. An upload is an event, not synchronisation: when the browser upload returns a
    * URL, that URL becomes the value unless the user has since typed or picked one.
    *
    * Three sources, in priority order:
@@ -106,6 +107,29 @@ export default function ImageField({
     setLocalError("");
   }
 
+  async function uploadSelectedFile() {
+    const file = fileInput.current?.files?.[0];
+    if (!file) {
+      setLocalError("Choose an image to upload first.");
+      return;
+    }
+    const check = checkFile(file, purpose);
+    if (!check.ok) {
+      setLocalError(check.message);
+      return;
+    }
+    setLocalError("");
+    setUploading(true);
+    try {
+      setState(await uploadMediaFile(file, purpose));
+    } catch (error) {
+      console.error("Image upload failed", error);
+      setState({ status: "error", message: "The upload failed. Check your connection and try again.", url: "", path: "" });
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <div className={`${styles.field} ${wide ? styles.wide : ""}`}>
       <span className={styles.label}>{label}</span>
@@ -132,10 +156,6 @@ export default function ImageField({
       {mode === "upload" ? (
         <div className={styles.uploadBox}>
           <label className={styles.dropzone}>
-            {/* This is the input that submits. The button above carries
-                formAction={uploadAction}, so the browser posts this form with the
-                file to the upload action rather than to the surrounding record's
-                own action. */}
             <input
               ref={fileInput}
               type="file"
@@ -162,35 +182,14 @@ export default function ImageField({
             </p>
           )}
 
-          {/*
-            No <form> here, deliberately.
-
-            ImageField is rendered INSIDE the sponsor, news, player and fixture
-            forms, and HTML forbids nesting forms: the browser silently discards the
-            inner one. That made the upload button submit the OUTER form, so the
-            upload action never ran and the file silently went nowhere.
-
-            useActionState's dispatch can be handed to formAction on any form, so the
-            upload uses the surrounding form with a formAction override instead. That
-            keeps it one request with its own server action, and no nesting.
-          */}
-          {/* The server action needs to know which bucket to write to. Without
-              this, formData.get("purpose") is null and every upload is rejected
-              with "Unknown upload target" before the file is even checked.
-
-              It also names the field this button belongs to, so the server can
-              read the matching file_<name> input. Without that, a form with two
-              file inputs would pick whichever the browser serialised first --
-              so uploading the second field's file would read the first. */}
-          <input type="hidden" name="purpose" value={purpose} />
-          <input type="hidden" name="source" value={name} />
           <button
-            type="submit"
-            formAction={uploadAction}
+            type="button"
             className={styles.uploadButton}
+            onClick={uploadSelectedFile}
+            disabled={uploading}
             aria-label={`Upload ${PURPOSE_LABEL[purpose].toLowerCase()}`}
           >
-            Upload {PURPOSE_LABEL[purpose].toLowerCase()}
+            {uploading ? "Uploading…" : `Upload ${PURPOSE_LABEL[purpose].toLowerCase()}`}
           </button>
 
           {state.message && (

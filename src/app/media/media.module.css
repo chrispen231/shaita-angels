@@ -45,3 +45,7 @@
   .lightboxNext{right:6px}
   .lightboxClose{top:8px;right:8px}
 }
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.filter,.filterActive{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;background:var(--white);border:1px solid var(--line);font:700 10px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease}
+.filter:hover,.filterActive{background:var(--ink);border-color:var(--ink);color:white}
+.filterCount{font-size:9px;font-variant-numeric:tabular-nums;opacity:.7}
