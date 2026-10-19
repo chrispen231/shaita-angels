@@ -47,30 +47,36 @@
   gap: 10px;
 }
 
-.arrow,
-.pause {
-  width: 40px;
-  height: 40px;
+.arrow {
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  background: rgba(5, 6, 7, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   color: white;
-  font-size: 18px;
+  font-size: 25px;
+  font-family: Arial, sans-serif;
+  font-weight: 300;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.arrow:hover,
-.pause:hover {
-  background: rgba(5, 6, 7, 0.75);
+.arrow:hover {
+  background: white;
   border-color: white;
+  color: var(--ink);
+  transform: scale(1.06);
 }
 
-.pause {
-  font-size: 11px;
+.arrow:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 3px;
 }
 
 .dots {
@@ -146,8 +152,8 @@
   }
 
   /*
-   * Mobile layout requested by the club: prev pinned to the far left, next
-   * pinned to the far right with pause directly beneath it, dots between.
+   * On mobile, prev and next stay at opposite edges of the photo with the
+   * slide dots between them.
    *
    * The shared flex row is dissolved so each control can be positioned against
    * the photo box directly. .hero-photo is a relative block at this width, so
@@ -162,46 +168,31 @@
     display: contents;
   }
 
-  /*
-   * Vertical stack, measured from the bottom of the photo:
-   *   caption   10px .. ~41px  (clamped to two lines)
-   *   pause     52px ..  88px
-   *   arrows    96px .. 132px  (pause sits in the 8px gap below them)
-   * The first attempt put pause at 36px, which ran into the caption's second
-   * line by 5px, so these offsets are spaced off measured boxes rather than
-   * eyeballed.
-   */
+  /* Keep the controls clear of the two-line caption at the photo's bottom. */
   .arrowPrev {
     position: absolute;
     left: 18px;
-    bottom: 96px;
+    bottom: 68px;
   }
 
   .arrowNext {
     position: absolute;
     right: 18px;
-    bottom: 96px;
-  }
-
-  /* Sits directly under the next arrow, right-aligned to it. */
-  .pause {
-    position: absolute;
-    right: 18px;
-    bottom: 52px;
+    bottom: 68px;
   }
 
   .arrowPrev,
-  .arrowNext,
-  .pause {
+  .arrowNext {
     width: 36px;
     height: 36px;
+    font-size: 22px;
   }
 
   .dots {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    bottom: 96px;
+    bottom: 68px;
     gap: 4px;
   }
 

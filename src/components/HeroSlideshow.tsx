@@ -25,20 +25,12 @@ const ROTATE_MS = 6000;
  * - The club headline stays fixed; only the photo and a small "Latest" link
  *   change. A headline that swaps every six seconds stops being a message.
  * - Rotation pauses on hover, on keyboard focus, when the tab is hidden, and
- *   whenever the visitor has asked for reduced motion. Auto-advancing content
- *   that cannot be stopped fails WCAG 2.2.2.
+ *   whenever the visitor has asked for reduced motion.
  * - Controls are always present rather than appearing on hover, because touch
  *   devices have no hover.
  */
 export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
-  /*
-   * Hover/focus pausing and the explicit pause button are tracked separately.
-   * Sharing one flag made the button lie: hovering the controls already paused
-   * the rotation and flipped the label to "play", so the visitor's first click
-   * resumed instead of pausing. Only `userPaused` drives the button's state.
-   */
-  const [userPaused, setUserPaused] = useState(false);
   const [hoverPaused, setHoverPaused] = useState(false);
 
   // Refs let the interval read current values without re-subscribing each tick.
@@ -47,8 +39,8 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
   const count = slides.length;
 
   useEffect(() => {
-    pausedRef.current = userPaused || hoverPaused;
-  }, [userPaused, hoverPaused]);
+    pausedRef.current = hoverPaused;
+  }, [hoverPaused]);
 
   useEffect(() => {
     if (count < 2) return;
@@ -137,15 +129,6 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
               aria-label="Next featured story"
             >
               ›
-            </button>
-            <button
-              type="button"
-              className={styles.pause}
-              onClick={() => setUserPaused((value) => !value)}
-              aria-label={userPaused ? "Resume slideshow" : "Pause slideshow"}
-              aria-pressed={userPaused}
-            >
-              {userPaused ? "▶" : "❚❚"}
             </button>
           </div>
 
