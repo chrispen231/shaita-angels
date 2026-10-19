@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useState } from "react";
 import { type GalleryCategory, type GalleryPhoto } from "@/lib/gallery";
 import styles from "./media.module.css";
 
@@ -24,9 +24,13 @@ function formatDate(value: string | null) {
 export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
   const [filter, setFilter] = useState<GalleryCategory | "all">("all");
   const visiblePhotos = filter === "all" ? photos : photos.filter((photo) => photo.category === filter);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   // Index rather than the object itself, so prev/next can step through the set.
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const activePhoto = activeIndex === null ? null : visiblePhotos[activeIndex];
+  const carouselCount = Math.min(visiblePhotos.length, 5);
+  const carouselStart = -Math.floor((carouselCount - 1) / 2);
+  const carouselOffsets = Array.from({ length: carouselCount }, (_, index) => carouselStart + index);
 
   const close = useCallback(() => setActiveIndex(null), []);
   const step = useCallback(
@@ -80,7 +84,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
               key={item.value}
               type="button"
               className={filter === item.value ? styles.filterActive : styles.filter}
-              onClick={() => { setFilter(item.value); setActiveIndex(null); }}
+              onClick={() => { setFilter(item.value); setCarouselIndex(0); setActiveIndex(null); }}
               aria-pressed={filter === item.value}
             >
               {item.label}<span className={styles.filterCount}>{count}</span>
@@ -93,6 +97,85 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
         <p className={styles.empty}>{photos.length === 0 ? "No published photos yet. Images added to published news, squad profiles, staff profiles, or the gallery will appear here." : "There are no photos in this category yet."}</p>
       ) : (
         <>
+          <section className={styles.carouselSection} aria-labelledby="featured-moments-heading">
+            <div className={styles.carouselHeading}>
+              <div>
+                <p className="eyebrow">The club in pictures</p>
+                <h2 id="featured-moments-heading">Featured moments</h2>
+              </div>
+              <span className={styles.carouselCount} aria-live="polite">
+                {carouselIndex + 1} / {visiblePhotos.length}
+              </span>
+            </div>
+
+            <div className={styles.carousel} role="group" aria-label="Featured photo carousel">
+              <div className={styles.carouselStage}>
+                {carouselOffsets.map((offset) => {
+                  const index = (carouselIndex + offset + visiblePhotos.length) % visiblePhotos.length;
+                  const photo = visiblePhotos[index];
+                  const isActive = offset === 0;
+                  return (
+                    <button
+                      key={`${photo.id}-${offset}`}
+                      type="button"
+                      className={`${styles.carouselCard} ${isActive ? styles.carouselCardActive : ""}`}
+                      style={{
+                        "--carousel-scale": 1 - Math.abs(offset) * 0.11,
+                        "--carousel-opacity": 1 - Math.abs(offset) * 0.18,
+                        zIndex: 10 - Math.abs(offset),
+                      } as CSSProperties}
+                      data-offset={offset}
+                      onClick={() => {
+                        if (isActive) setActiveIndex(index);
+                        else setCarouselIndex(index);
+                      }}
+                      aria-label={isActive ? `Open ${photo.title} photo` : `Feature ${photo.title}`}
+                      aria-current={isActive ? "true" : undefined}
+                      tabIndex={Math.abs(offset) > 1 ? -1 : 0}
+                    >
+                      <Image
+                        src={photo.public_url}
+                        alt={photo.alt}
+                        fill
+                        unoptimized
+                        sizes="(max-width: 640px) 68vw, (max-width: 960px) 38vw, 280px"
+                        priority={isActive}
+                      />
+                      <span className={styles.carouselCaption}>
+                        <span>{photo.title}</span>
+                        <span>{isActive ? "View photo" : ""}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {visiblePhotos.length > 1 && (
+                <div className={styles.carouselControls}>
+                  <button
+                    type="button"
+                    className={styles.carouselControl}
+                    onClick={() => setCarouselIndex((index) => (index - 1 + visiblePhotos.length) % visiblePhotos.length)}
+                    aria-label="Previous featured photo"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.carouselControl}
+                    onClick={() => setCarouselIndex((index) => (index + 1) % visiblePhotos.length)}
+                    aria-label="Next featured photo"
+                  >
+                    →
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <div className={styles.archiveHeading}>
+            <h2>All moments</h2>
+            <span>{visiblePhotos.length} {visiblePhotos.length === 1 ? "photo" : "photos"}</span>
+          </div>
           <ul className={styles.grid}>
             {visiblePhotos.map((photo, index) => (
               <li key={photo.id} className={styles.card}>
