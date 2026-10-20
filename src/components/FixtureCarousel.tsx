@@ -56,12 +56,12 @@ export function orderFixtures(fixtures: Fixture[]): Fixture[] {
   const bySoonest = (a: Fixture, b: Fixture) => a.match_date.localeCompare(b.match_date);
   const byMostRecent = (a: Fixture, b: Fixture) => b.match_date.localeCompare(a.match_date);
 
-  // A live match is the first thing a fan opening the site wants to find, so it
-  // leads the rail rather than sitting in the upcoming bucket where it would be
-  // ordered by date beneath fixtures still to play.
-  const live = fixtures.filter((f) => f.status === "live").sort(bySoonest);
+  // A live or halftime match is the first thing a fan opening the site wants to
+  // find, so it leads the rail rather than sitting in the upcoming bucket where it
+  // would be ordered by date beneath fixtures still to play.
+  const live = fixtures.filter((f) => f.status === "live" || f.status === "halftime").sort(bySoonest);
   const upcoming = fixtures
-    .filter((f) => f.status !== "played" && f.status !== "live")
+    .filter((f) => f.status !== "played" && f.status !== "live" && f.status !== "halftime")
     .sort(bySoonest);
   const played = fixtures.filter((f) => f.status === "played").sort(byMostRecent);
 

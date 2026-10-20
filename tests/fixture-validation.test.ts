@@ -86,12 +86,35 @@ describe("venue type", () => {
 });
 
 describe("status", () => {
-  it.each(["scheduled", "live", "played", "postponed", "cancelled"])("accepts %s", (status) => {
+  it.each([
+    "scheduled",
+    "live",
+    "played",
+    "halftime",
+    "postponed",
+    "cancelled",
+  ])("accepts %s", (status) => {
     const input =
-      status === "played"
+      status === "played" || status === "halftime"
         ? valid
         : { ...valid, status, shaita_goals: null, opponent_goals: null };
     expect(validateFixture(input)).toBeNull();
+  });
+
+  it("allows a halftime match with no score yet", () => {
+    expect(
+      validateFixture({ ...valid, status: "halftime", shaita_goals: null, opponent_goals: null }),
+    ).toBeNull();
+  });
+
+  it("rejects half a scoreline on a halftime match", () => {
+    // One score without the other is always a mistake, never a state.
+    expect(
+      validateFixture({ ...valid, status: "halftime", opponent_goals: null }),
+    ).toMatch(/both scores or neither/i);
+    expect(
+      validateFixture({ ...valid, status: "halftime", shaita_goals: null }),
+    ).toMatch(/both scores or neither/i);
   });
 
   it.each(["", "played-extra", "PLANNED", "LIVE"])("rejects %o", (status) => {
@@ -111,7 +134,7 @@ describe("scores mirror the fixtures_scores_match_status constraint", () => {
 
   it("forbids scores on a status that is neither played nor live", () => {
     for (const status of ["scheduled", "postponed", "cancelled"] as const) {
-      expect(validateFixture({ ...valid, status })).toMatch(/played or live/i);
+      expect(validateFixture({ ...valid, status })).toMatch(/played, live or halftime/i);
     }
   });
 

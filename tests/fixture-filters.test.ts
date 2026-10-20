@@ -150,6 +150,7 @@ describe("hasScore", () => {
     expect(hasScore(make({ id: "a", status: "played", shaita_goals: 2, opponent_goals: 1 }))).toBe(true);
     expect(hasScore(make({ id: "b", status: "played", shaita_goals: 2, opponent_goals: null }))).toBe(false);
     expect(hasScore(make({ id: "c", status: "scheduled" }))).toBe(false);
+    expect(hasScore(make({ id: "d", status: "halftime", shaita_goals: 1, opponent_goals: 0 }))).toBe(false);
   });
 });
 

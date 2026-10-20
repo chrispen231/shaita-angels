@@ -98,13 +98,13 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(matchDate) || Number.isNaN(Date.parse(`${matchDate}T00:00:00Z`))) return { status: "error", message: "Enter a valid match date." };
   if (!(["home", "away", "neutral"] as const).includes(venueType as "home" | "away" | "neutral")) return { status: "error", message: "Choose a valid venue type." };
-  if (!( ["scheduled", "played", "live", "postponed", "cancelled"] as const).includes(status as "scheduled" | "played" | "live" | "postponed" | "cancelled")) return { status: "error", message: "Choose a valid match status." };
+  if (!( ["scheduled", "played", "live", "halftime", "postponed", "cancelled"] as const).includes(status as "scheduled" | "played" | "live" | "halftime" | "postponed" | "cancelled")) return { status: "error", message: "Choose a valid match status." };
 
   // A live match may carry a scoreline or none at all; every other non-played
   // status carries none. Mirrors fixtures_scores_match_status.
   let shaitaGoals: number | null = null;
   let opponentGoals: number | null = null;
-  if ((status === "played" || status === "live") && /^\d{1,2}$/.test(rawFor) && /^\d{1,2}$/.test(rawAgainst)) {
+  if ((status === "played" || status === "live" || status === "halftime") && /^\d{1,2}$/.test(rawFor) && /^\d{1,2}$/.test(rawAgainst)) {
     shaitaGoals = Number(rawFor);
     opponentGoals = Number(rawAgainst);
   }
@@ -198,3 +198,4 @@ export async function signOutAction() {
   await supabase.auth.signOut();
   redirect("/admin/login");
 }
+

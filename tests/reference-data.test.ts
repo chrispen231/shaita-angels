@@ -126,12 +126,13 @@ describe("closed sets", () => {
     expect(VENUE_TYPES.map((entry) => entry.value)).toEqual(["home", "away", "neutral"]);
   });
 
-  it("has the five match statuses the schema allows", () => {
-    // status CHECK in 20261005230000_live_status.sql
+  it("has the six match statuses the schema allows", () => {
+    // status CHECK in 20261005230000_live_status.sql and 20261020150000_halftime_status.sql
     expect(MATCH_STATUSES.map((entry) => entry.value)).toEqual([
       "scheduled",
       "live",
       "played",
+      "halftime",
       "postponed",
       "cancelled",
     ]);

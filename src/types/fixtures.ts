@@ -1,4 +1,4 @@
-export const fixtureStatuses = ["scheduled", "played", "live", "postponed", "cancelled"] as const;
+export const fixtureStatuses = ["scheduled", "played", "live", "halftime", "postponed", "cancelled"] as const;
 export type FixtureStatus = (typeof fixtureStatuses)[number];
 
 export type Fixture = {

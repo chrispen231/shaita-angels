@@ -66,7 +66,7 @@ function FixtureForm({
 }
 
 function FixtureRow({ fixture, competitions }: { fixture: Fixture; competitions: Competition[] }) {
-  const score = fixture.status === "played" ? `${fixture.shaita_goals}–${fixture.opponent_goals}` : fixture.status;
+  const score = (fixture.status === "played" || fixture.status === "halftime") ? `${fixture.shaita_goals}–${fixture.opponent_goals}` : fixture.status;
   // A match left live after everyone went home is the one failure mode of a manual
   // status. Flag it here rather than on the public site, where it would just look
   // wrong to a fan.

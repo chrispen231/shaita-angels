@@ -136,11 +136,12 @@ export function roundLabel(fixture: Fixture) {
   return match ? `Matchweek ${match[1]}` : null;
 }
 
-/** Full time, upcoming, live, postponed or cancelled, in the site's vocabulary. */
+/** Full time, upcoming, live, halftime, postponed or cancelled, in the site's vocabulary. */
 export const STATUS_LABEL: Record<Fixture["status"], string> = {
   scheduled: "Upcoming",
   live: "Live",
   played: "Full time",
+  halftime: "Halftime",
   postponed: "Postponed",
   cancelled: "Cancelled",
 };
@@ -165,7 +166,7 @@ export function hasScore(fixture: Fixture) {
  */
 export function hasScoreline(fixture: Fixture) {
   return (
-    (fixture.status === "played" || fixture.status === "live") &&
+    (fixture.status === "played" || fixture.status === "live" || fixture.status === "halftime") &&
     fixture.shaita_goals !== null &&
     fixture.opponent_goals !== null
   );
