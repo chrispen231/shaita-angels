@@ -1,6 +1,6 @@
 # Admin section — specification
 
-Status: **proposed, not built.** No code in this document has been written yet.
+Status: **phases 1–5 built.** Sections below were written as the proposal; delivered phases are marked DONE.
 Last updated: 2026-10-05.
 
 This is the plan for the `/admin` section. It is written for review before

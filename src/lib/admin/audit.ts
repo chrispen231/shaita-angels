@@ -1,6 +1,11 @@
-"use server";
-
 import { createClient } from "@/lib/supabase/server";
+
+/*
+ * Deliberately not a "use server" module. Exporting these from one would turn
+ * both into server actions any browser could call directly; as plain server
+ * functions they are reachable only through the admin actions and the audit
+ * route, which check the admin's role first.
+ */
 
 export interface AdminAuditEntry {
   actor_email: string;
@@ -11,13 +16,17 @@ export interface AdminAuditEntry {
   details?: Record<string, unknown>;
 }
 
+const DEFAULT_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 200;
+
 export async function logAdminAction(entry: AdminAuditEntry): Promise<{ error: string | null }> {
   const supabase = await createClient();
-  
+
+  // The insert policy compares actor_email with the lower-cased JWT email.
   const { error } = await supabase
     .from("admin_audit_log")
     .insert({
-      actor_email: entry.actor_email,
+      actor_email: entry.actor_email.toLowerCase(),
       actor_role: entry.actor_role,
       target_type: entry.target_type,
       target_id: entry.target_id,
@@ -44,19 +53,30 @@ export async function getAdminAuditLog(
   } = {}
 ): Promise<{ data: unknown[] | null; error: string | null; count: number }> {
   const supabase = await createClient();
-  
+
+  const limit = Math.min(Math.max(1, Math.trunc(options.limit ?? DEFAULT_PAGE_SIZE) || DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
+  const offset = Math.max(0, Math.trunc(options.offset ?? 0) || 0);
+
   let query = supabase
     .from("admin_audit_log")
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
-  if (options.actor_email) query = query.eq("actor_email", options.actor_email);
+  if (options.actor_email) query = query.eq("actor_email", options.actor_email.toLowerCase());
   if (options.target_type) query = query.eq("target_type", options.target_type);
   if (options.target_id) query = query.eq("target_id", options.target_id);
   if (options.from) query = query.gte("created_at", options.from);
-  if (options.to) query = query.lte("created_at", options.to);
-  if (options.limit) query = query.limit(options.limit);
-  if (options.offset) query = query.range(options.offset, options.offset + (options.limit ?? 50) - 1);
+  if (options.to) {
+    // A bare date from the filter form means "up to the end of that day".
+    if (/^\d{4}-\d{2}-\d{2}$/.test(options.to)) {
+      const nextDay = new Date(`${options.to}T00:00:00Z`);
+      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+      query = query.lt("created_at", nextDay.toISOString());
+    } else {
+      query = query.lte("created_at", options.to);
+    }
+  }
 
   const { data, error, count } = await query;
 

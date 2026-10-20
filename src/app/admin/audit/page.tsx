@@ -1,25 +1,26 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { getAdminContext } from "@/lib/admin/roles";
+import AdminShell, { requireScreen } from "@/app/admin/AdminShell";
 import AuditLog from "./AuditLog";
 
-export default async function AuditLogPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    redirect("/admin/login");
-  }
+export const dynamic = "force-dynamic";
 
-  // Check if user is super_admin
-  const { data: isSuperAdmin } = await supabase.rpc("has_role", { role_name: "super_admin" });
-  
-  if (!isSuperAdmin) {
-    redirect("/admin");
-  }
+export const metadata = { title: "Audit log" };
+
+export default async function AuditLogPage() {
+  const context = requireScreen(await getAdminContext(), "audit");
 
   return (
-    <main>
-      <AuditLog />
-    </main>
+    <AdminShell
+      context={context}
+      active="audit"
+      title="Audit log"
+      description="A record of admin changes: who did what, and when. Entries cannot be edited or deleted."
+    >
+      {/* AuditLog reads its initial filters from the URL. */}
+      <Suspense>
+        <AuditLog />
+      </Suspense>
+    </AdminShell>
   );
 }

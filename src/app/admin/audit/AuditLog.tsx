@@ -101,12 +101,7 @@ export default function AuditLog() {
   };
 
   return (
-    <section className={styles.container}>
-      <header className={styles.header}>
-        <h1>Admin Audit Log</h1>
-        <p className={styles.desc}>Immutable record of all admin actions. Super admin only.</p>
-      </header>
-
+    <section className={styles.container} aria-label="Audit log entries">
       <form onSubmit={handleFilterSubmit} className={styles.filters}>
         <div className={styles.filterGroup}>
           <label htmlFor="actor_email">Admin</label>

@@ -17,37 +17,34 @@
 
 ### Color Palette
 
+> **Source of truth:** the `:root` tokens at the top of `src/app/globals.css`.
+> This table mirrors them. The generated red/pink palette and Bebas Neue /
+> Source Sans pairing that were here originally were never used by the site.
+
 | Role | Hex | CSS Variable |
 |------|-----|--------------|
-| Primary | `#DC2626` | `--color-primary` |
-| On Primary | `#FFFFFF` | `--color-on-primary` |
-| Secondary | `#EF4444` | `--color-secondary` |
-| On Secondary | `#000000` | `--color-on-secondary` |
-| Accent/CTA | `#DC2626` | `--color-accent` |
-| On Accent/CTA | `#FFFFFF` | `--color-on-accent` |
-| Background | `#FEF2F2` | `--color-background` |
-| Foreground | `#7F1D1D` | `--color-foreground` |
-| Card | `#FFFFFF` | `--color-card` |
-| Card Foreground | `#7F1D1D` | `--color-card-foreground` |
-| Muted | `#F0EDF1` | `--color-muted` |
-| Muted Foreground | `#475569` | `--color-muted-foreground` |
-| Border | `#FECACA` | `--color-border` |
-| Destructive | `#DC2626` | `--color-destructive` |
-| On Destructive | `#FFFFFF` | `--color-on-destructive` |
-| Ring | `#DC2626` | `--color-ring` |
+| Primary (club red) | `#C8102E` | `--red` |
+| Primary, pressed/deep | `#A10E26` | `--red-deep` |
+| Accent (championship gold) | `#D6A74A` | `--gold` |
+| Ink (dark sections, text) | `#0B0B0C` | `--ink` |
+| Paper (page background) | `#F7F4EF` | `--paper` |
+| Card / white | `#FFFFFF` | `--white` |
+| Charcoal | `#242424` | `--charcoal` |
+| Muted text | `#6C6864` | `--muted` |
+| Border / rule | `#DEDAD3` | `--line` |
 
-**Color Notes:** Team red + championship gold [Accent adjusted from #FBBF24]
+**Color Notes:** Club red with gold accents on warm paper and ink. The trophy
+showcase uses the cup artwork's own deep navy and yellow (see README).
 
 ### Typography
 
-- **Heading Font:** Bebas Neue
-- **Body Font:** Source Sans 3
-- **Mood:** bold, impactful, strong, dramatic, modern, headlines
-- **Google Fonts:** [Bebas Neue + Source Sans 3](https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;500;600;700&display=swap)
+- **Display / headings:** Barlow Condensed (500–900), `--display`
+- **Body:** DM Sans (400–700), `--body`
+- **Mood:** bold, condensed, uppercase headlines
 
-**CSS Import:**
+**CSS Import (as in `globals.css`):**
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap');
 ```
 
 ### Spacing Variables
@@ -82,7 +79,7 @@
 ```css
 /* Primary Button */
 .btn-primary {
-  background: #DC2626;
+  background: var(--red);
   color: #FFFFFF;
   padding: 12px 24px;
   border-radius: 8px;
@@ -99,8 +96,8 @@
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #7F1D1D;
-  border: 2px solid #DC2626;
+  color: var(--ink);
+  border: 2px solid var(--red);
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -113,7 +110,7 @@
 
 ```css
 .card {
-  background: #FEF2F2;
+  background: var(--white);
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-md);
@@ -132,16 +129,16 @@
 ```css
 .input {
   padding: 12px 16px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--line);
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 200ms ease;
 }
 
 .input:focus {
-  border-color: #DC2626;
+  border-color: var(--red);
   outline: none;
-  box-shadow: 0 0 0 3px #DC262620;
+  box-shadow: 0 0 0 3px rgb(200 16 46 / 0.12);
 }
 ```
 
