@@ -53,9 +53,10 @@ export const articles = [
 ];
 
 export const honors = [
-  { year: "2026", name: "Orange Cup", detail: "Winners · beat World Girls 2–1" },
-  { year: "2024", name: "Orange Cup", detail: "Winners · 4–3 on penalties" },
+  { year: "2026", name: "FA Orange Cup", detail: "Winners · beat World Girls 2–1" },
+  { year: "2024", name: "FA Orange Cup", detail: "Winners · 4–3 on penalties" },
   { year: "2024–25", name: "LFA Women’s Super Cup", detail: "Winners · 1–1, won 4–3 on penalties" },
+  { year: "2026–27", name: "LFA Women’s Super Cup", detail: "Winners" },
   { year: "2022–23", name: "Women’s Lower League", detail: "Champions · promoted to the First Division" },
 ];
 

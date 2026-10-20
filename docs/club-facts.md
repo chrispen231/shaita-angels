@@ -15,6 +15,9 @@ This rebuild uses confirmed historical details where available and labels missin
 - 2024–25: won the LFA Women’s Super Cup against Determine Girls, 1–1 before a 4–3 penalty shootout.
 - 2025–26: LFA Women’s First Division runners-up after a final-day 0–0 draw with Determine Girls.
 - July 2026: beat World Girls 2–1 in the Orange Cup final at the SKD Sports Complex Practice Pitch, winning the trophy for a second time.
+- 2026–27: won the LFA Women’s Super Cup for a second time. The winners’ medal and the trophy plaque in the club’s own photograph both read “LFA Super Cup · Women’s Category · Champions · 2026–2027”. The score and opponent are not confirmed, so the site states the win without a scoreline.
+
+The two cups are listed on the site as “FA Orange Cup” (2024 and 2026) and “LFA Women’s Super Cup” (2024–25 and 2026–27).
 
 ## Player references
 

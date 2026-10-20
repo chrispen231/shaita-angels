@@ -25,6 +25,12 @@ const publicImages =
  */
 const loginVideos = "/videos/:file(login-bg-1.mp4|login-bg-2.mp4|login-bg-3.mp4|login-bg-4.mp4)";
 
+/*
+ * The club's cup artwork. Stable filenames, so the showcase does not
+ * re-download the two images on every visit.
+ */
+const trophyImages = "/trophies/:file(fa-orange-cup.png|lfa-super-cup.png)";
+
 const nextConfig: NextConfig = {
   // Next regenerates AGENTS.md / CLAUDE.md on every `next dev` unless this is
   // set. This project documents itself in README.md and docs/, so the stub files
@@ -76,6 +82,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: loginVideos,
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
+      {
+        source: trophyImages,
         headers: [
           { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
         ],

@@ -21,6 +21,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - Built with Next.js App Router, React, TypeScript, and Tailwind CSS 4.
 - Club imagery in `public/` is retained from the original project; generic starter graphics and legacy demo pages have been removed.
 - The 2026 Orange Cup result and historical honors are based on published reporting. Names shown on the team page are references from recent coverage, not a confirmed current roster.
+- The "Our trophies" showcase (`src/components/TrophyShowcase.tsx`) shows the club's own cup artwork from `public/trophies/`. Both pieces are flat yellow on deep navy, so the cards are painted the same navy and the images sit in the panel without a visible edge. The artwork is matched loosely on the honour name (`orange cup`, `super cup`) because the admin lets the club type the competition name by hand, and the count reads as `2X` / `1X`.
 - 2026–27 fixtures, official ticketing, and merchandise ordering should only be published once confirmed by the club.
 - `sitemap.xml` and `robots.txt` are generated from `src/app/sitemap.ts` and `src/app/robots.ts`; `/admin` and `/auth/` are disallowed from indexing.
 - The social preview card is generated at build time by `src/app/opengraph-image.tsx`. The crest is inlined from `src/app/og-crest.png`; regenerate that file with `node scripts/build-og-crest.mjs` after replacing the logo in `public/`.

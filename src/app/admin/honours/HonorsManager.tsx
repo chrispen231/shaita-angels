@@ -200,7 +200,7 @@ function HonorFields({ honor }: { honor?: HonorRow }) {
           required
           maxLength={120}
           defaultValue={honor?.name ?? ""}
-          placeholder="Orange Cup"
+          placeholder="FA Orange Cup"
         />
       </div>
 
