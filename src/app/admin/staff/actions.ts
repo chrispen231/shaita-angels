@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { logAdminAction } from "@/lib/admin/audit";
+import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -111,7 +112,12 @@ export async function updateStaff(
     const context = await getAdminContext();
     if (!context) return { status: "error", message: "Session expired." };
 
-    const { error: updateError } = await context.supabase
+    // Only overwrite the version the form was rendered with; updated_at is
+    // maintained by the staff_set_updated_at trigger.
+    const expectedUpdatedAt = readExpectedUpdatedAt(formData);
+    if (!expectedUpdatedAt) return { status: "error", message: staleFormMessage("staff profile") };
+
+    const { data: written, error: updateError } = await context.supabase
       .from("staff")
       .update({
         full_name: input.full_name,
@@ -121,7 +127,9 @@ export async function updateStaff(
         photo_url_alt: input.photo_url_alt,
         sort_order: input.sort_order === "" ? 0 : Number(input.sort_order),
       })
-      .eq("id", id);
+      .eq("id", id)
+      .eq("updated_at", expectedUpdatedAt)
+      .select("id");
 
     if (updateError) {
       if (updateError.code === "42501") {
@@ -130,6 +138,7 @@ export async function updateStaff(
       console.error("Staff update failed", updateError.message);
       return { status: "error", message: "Could not save changes." };
     }
+    if (updateWasRejected(written)) return { status: "error", message: conflictMessage("staff profile") };
 
     // Log the admin action
     await logAdminAction({

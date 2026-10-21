@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAdminContext } from "@/lib/admin/roles";
 import { logAdminAction } from "@/lib/admin/audit";
+import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -85,11 +86,20 @@ export async function saveSponsor(
     updated_at: new Date().toISOString(),
   };
 
-  const query = id
-    ? context.supabase.from("sponsors").update(values).eq("id", id)
-    : context.supabase.from("sponsors").insert({ ...values, created_at: new Date().toISOString() });
+  // Edits only land on the version the form was rendered with, so a second
+  // super admin's save is reported rather than overwritten.
+  const expectedUpdatedAt = readExpectedUpdatedAt(formData);
+  if (id && !expectedUpdatedAt) return { status: "error", message: staleFormMessage("sponsor") };
 
-  const { error } = await query;
+  const { data: written, error } = id
+    ? await context.supabase
+      .from("sponsors")
+      .update(values)
+      .eq("id", id)
+      .eq("updated_at", expectedUpdatedAt!)
+      .select("id")
+    : await context.supabase.from("sponsors").insert({ ...values, created_at: new Date().toISOString() });
+
     if (error) {
       console.error("Sponsor save failed", error.message);
       return {
@@ -97,6 +107,7 @@ export async function saveSponsor(
         message: "We couldn't save that sponsor. Check the details and try again.",
       };
     }
+    if (id && updateWasRejected(written)) return { status: "error", message: conflictMessage("sponsor") };
 
     // Log the admin action
     await logAdminAction({
@@ -234,19 +245,29 @@ export async function saveSettings(
     return { status: "error", message: "The social links could not be read. Check the format." };
   }
 
-  const { error } = await context.supabase
-      .from("site_settings")
-      .upsert(
-        {
-          id: true,
-          social_handles: handles,
-          contact_email: contactEmail || null,
-          phone_orders: phoneOrders || null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" },
-      );
+  const values = {
+    social_handles: handles,
+    contact_email: contactEmail || null,
+    phone_orders: phoneOrders || null,
+    updated_at: new Date().toISOString(),
+  };
 
+  // The singleton row is seeded by the migration, so this is normally an update
+  // conditional on the version the form saw. The insert only covers a database
+  // where the seed row is missing; its primary key rejects a concurrent second one.
+  const expectedUpdatedAt = readExpectedUpdatedAt(formData);
+  const { data: written, error } = expectedUpdatedAt
+    ? await context.supabase
+      .from("site_settings")
+      .update(values)
+      .eq("id", true)
+      .eq("updated_at", expectedUpdatedAt)
+      .select("id")
+    : await context.supabase.from("site_settings").insert({ id: true, ...values }).select("id");
+
+    if (error?.code === "23505" || (!error && updateWasRejected(written))) {
+      return { status: "error", message: conflictMessage("settings page") };
+    }
     if (error) {
       console.error("Site settings save failed", error.message);
       return { status: "error", message: "We couldn't save the settings." };

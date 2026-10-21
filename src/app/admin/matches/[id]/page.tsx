@@ -56,7 +56,7 @@ export default async function MatchEditorPage({
       .select("player_name, side, card, minute, added_stoppage_minutes, sort_order")
       .eq("fixture_id", id)
       .order("minute", { ascending: true }),
-    context.supabase.from("match_reports").select("body").eq("fixture_id", id).maybeSingle(),
+    context.supabase.from("match_reports").select("body, updated_at").eq("fixture_id", id).maybeSingle(),
     context.supabase.from("squad").select("full_name").order("full_name"),
   ]);
 
@@ -106,6 +106,7 @@ export default async function MatchEditorPage({
         goals={goalRows}
         cards={cardRows}
         report={report.data?.body ? String(report.data.body) : ""}
+        reportUpdatedAt={report.data?.updated_at ? String(report.data.updated_at) : null}
         squadNames={(squad.data ?? []).map((row) => String(row.full_name))}
       />
     </AdminShell>

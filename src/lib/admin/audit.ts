@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { auditDateBounds } from "@/lib/admin/audit-range";
 
 /*
  * Deliberately not a "use server" module. Exporting these from one would turn
@@ -66,17 +67,10 @@ export async function getAdminAuditLog(
   if (options.actor_email) query = query.eq("actor_email", options.actor_email.toLowerCase());
   if (options.target_type) query = query.eq("target_type", options.target_type);
   if (options.target_id) query = query.eq("target_id", options.target_id);
-  if (options.from) query = query.gte("created_at", options.from);
-  if (options.to) {
-    // A bare date from the filter form means "up to the end of that day".
-    if (/^\d{4}-\d{2}-\d{2}$/.test(options.to)) {
-      const nextDay = new Date(`${options.to}T00:00:00Z`);
-      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-      query = query.lt("created_at", nextDay.toISOString());
-    } else {
-      query = query.lte("created_at", options.to);
-    }
-  }
+  const bounds = auditDateBounds(options.from, options.to);
+  if (bounds.gte) query = query.gte("created_at", bounds.gte);
+  if (bounds.lt) query = query.lt("created_at", bounds.lt);
+  if (bounds.lte) query = query.lte("created_at", bounds.lte);
 
   const { data, error, count } = await query;
 

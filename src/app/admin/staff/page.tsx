@@ -12,7 +12,7 @@ export default async function StaffPage() {
 
   const { data } = await context.supabase
     .from("staff")
-    .select("id, full_name, role, bio, photo_url, photo_url_alt, sort_order, is_published")
+    .select("id, full_name, role, bio, photo_url, photo_url_alt, sort_order, is_published, updated_at")
     .order("sort_order", { ascending: true })
     .order("full_name", { ascending: true });
 
@@ -25,6 +25,7 @@ export default async function StaffPage() {
     photo_url_alt: row.photo_url_alt === null ? null : String(row.photo_url_alt),
     sort_order: Number(row.sort_order),
     is_published: Boolean(row.is_published),
+    updated_at: String(row.updated_at),
   }));
 
   const published = staff.filter((member) => member.is_published).length;

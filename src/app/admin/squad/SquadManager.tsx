@@ -6,6 +6,7 @@ import type { FixtureActionState } from "@/types/fixtures";
 import { FEET, isMinorFromDob } from "@/lib/matches/validation";
 import { POSITIONS } from "@/lib/reference-data";
 import ImageField from "@/app/admin/ImageField";
+import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import styles from "./SquadManager.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
@@ -24,6 +25,7 @@ export type SquadRow = {
   photo_url_alt: string | null;
   is_minor: boolean;
   is_published: boolean;
+  updated_at: string;
 };
 
 export default function SquadManager({ players }: { players: SquadRow[] }) {
@@ -118,6 +120,7 @@ export default function SquadManager({ players }: { players: SquadRow[] }) {
                   {isEditing && (
                     <form action={updateAction} className={styles.editForm}>
                       <input type="hidden" name="id" value={player.id} />
+                      <input type="hidden" name={EXPECTED_UPDATED_AT_FIELD} value={player.updated_at} />
                       <PlayerFields dobDraft={dobDraft} setDobDraft={setDobDraft} player={player} />
                       <div className={styles.actions}>
                         <button type="submit" disabled={updatePending}>

@@ -14,10 +14,11 @@ export default async function SettingsPage() {
   const configured = Boolean(getSupabaseConfig());
 
   let settings: SiteSettings = { social_handles: [], contact_email: null, phone_orders: null };
+  let updatedAt: string | null = null;
   if (configured) {
     const { data } = await context.supabase
       .from("site_settings")
-      .select("social_handles, contact_email, phone_orders")
+      .select("social_handles, contact_email, phone_orders, updated_at")
       .eq("id", true)
       .maybeSingle();
 
@@ -27,6 +28,7 @@ export default async function SettingsPage() {
         contact_email: data.contact_email ?? null,
         phone_orders: data.phone_orders ?? null,
       };
+      updatedAt = data.updated_at ? String(data.updated_at) : null;
     }
   }
 
@@ -43,7 +45,7 @@ export default async function SettingsPage() {
         </p>
       )}
 
-      <SettingsForm settings={settings} />
+      <SettingsForm settings={settings} updatedAt={updatedAt} />
     </AdminShell>
   );
 }

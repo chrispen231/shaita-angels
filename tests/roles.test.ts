@@ -69,6 +69,14 @@ describe("screen access", () => {
     expect(canAccess("fixtures", "sponsors")).toBe(false);
   });
 
+  it("restricts the audit log to super admin", () => {
+    // The page (requireScreen) and /api/admin/audit (canAccess) both read this.
+    expect(SCREEN_ACCESS.audit).toEqual(["super_admin"]);
+    expect(canAccess("super_admin", "audit")).toBe(true);
+    expect(canAccess("fixtures", "audit")).toBe(false);
+    expect(canAccess("content", "audit")).toBe(false);
+  });
+
   it("gives every non-super role the shared media library", () => {
     expect(canAccess("content", "media")).toBe(true);
     expect(canAccess("fixtures", "media")).toBe(true);

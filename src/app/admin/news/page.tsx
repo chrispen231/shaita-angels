@@ -12,7 +12,7 @@ export default async function NewsAdminPage() {
 
   const { data } = await context.supabase
     .from("articles")
-    .select("id, slug, category, published_on, title, excerpt, image_path, image_alt, body, is_featured, is_published")
+    .select("id, slug, category, published_on, title, excerpt, image_path, image_alt, body, is_featured, is_published, updated_at")
     .order("published_on", { ascending: false })
     .order("sort_order", { ascending: true });
 
@@ -28,6 +28,7 @@ export default async function NewsAdminPage() {
     body: Array.isArray(row.body) ? row.body.map(String) : [],
     is_featured: Boolean(row.is_featured),
     is_published: Boolean(row.is_published),
+    updated_at: String(row.updated_at),
   }));
 
   const live = articles.filter((article) => article.is_published).length;

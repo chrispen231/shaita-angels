@@ -11,6 +11,7 @@ import {
 import type { FixtureActionState } from "@/types/fixtures";
 import { slugify } from "@/lib/content-validation";
 import ImageField from "@/app/admin/ImageField";
+import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import { ARTICLE_CATEGORIES } from "@/lib/reference-data";
 import styles from "./NewsManager.module.css";
 
@@ -28,6 +29,7 @@ export type ArticleRow = {
   body: string[];
   is_featured: boolean;
   is_published: boolean;
+  updated_at: string;
 };
 
 export default function NewsManager({ articles }: { articles: ArticleRow[] }) {
@@ -165,6 +167,7 @@ export default function NewsManager({ articles }: { articles: ArticleRow[] }) {
                   {isEditing && (
                     <form action={saveAction} className={styles.editForm}>
                       <input type="hidden" name="id" value={article.id} />
+                      <input type="hidden" name={EXPECTED_UPDATED_AT_FIELD} value={article.updated_at} />
                       <ArticleFields
                         article={article}
                         slug={slug}

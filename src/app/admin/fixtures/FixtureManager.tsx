@@ -5,6 +5,7 @@ import type { Fixture, FixtureActionState } from "@/types/fixtures";
 import { saveFixture } from "./actions";
 import ImageField from "@/app/admin/ImageField";
 import { looksFinished } from "@/lib/fixtures/live-clock";
+import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import {
   VENUE_TYPES,
   MATCH_STATUSES,
@@ -27,6 +28,7 @@ function FixtureForm({
   const [state, action, pending] = useActionState(saveFixture, initial);
   return <form action={action} className={styles.form}>
     {fixture && <input type="hidden" name="id" value={fixture.id} />}
+    {fixture && <input type="hidden" name={EXPECTED_UPDATED_AT_FIELD} value={fixture.updated_at} />}
     <h3>{title}</h3>
     <div className={styles.fields}>
       <label>Opponent<input name="opponent" required maxLength={100} defaultValue={fixture?.opponent} /></label>
