@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { SiteSettings, Sponsor } from "@/types/sponsors";
 import { resolveSponsorLogo } from "@/lib/sponsors/logo-url";
+import SocialIcon from "./SocialIcon";
 import styles from "./SponsorBand.module.css";
 
 /**
@@ -23,16 +24,6 @@ import styles from "./SponsorBand.module.css";
 type Props = {
   sponsors: Sponsor[] | null;
   settings: SiteSettings | null;
-};
-
-/** Platform icons are stored once and referenced by slug, never uploaded per entry. */
-const SOCIAL_ICON: Record<string, string> = {
-  facebook: "/sponsors/social-facebook.png",
-  instagram: "/sponsors/social-instagram.png",
-  youtube: "/sponsors/social-youtube.png",
-  whatsapp: "/sponsors/social-whatsapp.png",
-  tiktok: "/sponsors/social-tiktok.png",
-  x: "/sponsors/social-x.png",
 };
 
 export default function SponsorBand({ sponsors, settings }: Props) {
@@ -68,19 +59,7 @@ export default function SponsorBand({ sponsors, settings }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {SOCIAL_ICON[handle.platform] ? (
-                      <Image
-                        src={SOCIAL_ICON[handle.platform]}
-                        alt=""
-                        width={28}
-                        height={28}
-                        className={styles.socialIcon}
-                      />
-                    ) : (
-                      <span className={styles.socialFallback} aria-hidden="true">
-                        {handle.label.slice(0, 2)}
-                      </span>
-                    )}
+                    <SocialIcon platform={handle.platform} label={handle.label} />
                     <span className={styles.srOnly}>
                       {handle.label} (opens in a new tab)
                     </span>

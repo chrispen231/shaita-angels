@@ -1,0 +1,19 @@
+/* One plate size for every platform, so the row reads as a set. */
+
+.icon,
+.fallback {
+  display: block;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  color: var(--ink);
+}
+
+.fallback {
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  border-radius: 6px;
+  color: white;
+  font: 800 10px var(--display);
+}

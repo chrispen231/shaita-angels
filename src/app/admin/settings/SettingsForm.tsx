@@ -6,6 +6,7 @@ import type { FixtureActionState } from "@/types/fixtures";
 import type { SiteSettings } from "@/types/sponsors";
 import { SOCIAL_PLATFORMS } from "@/types/sponsors";
 import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
+import SocialIcon from "@/components/SocialIcon";
 import styles from "./SettingsForm.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
@@ -137,6 +138,21 @@ export default function SettingsForm({
           </li>
         ))}
       </ul>
+
+      {handles.some((handle) => handle.is_published) && (
+        <div className={styles.socialPreview}>
+          <span className={styles.previewLabel}>Preview, at size</span>
+          <ul className={styles.previewIcons}>
+            {handles
+              .filter((handle) => handle.is_published)
+              .map((handle, index) => (
+                <li key={`${handle.platform}-${index}`}>
+                  <SocialIcon platform={handle.platform} label={handle.label} />
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
 
       <div className={styles.actions}>
         <button

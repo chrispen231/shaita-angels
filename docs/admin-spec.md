@@ -486,28 +486,23 @@ Social handles, supplied by the club:
 | Instagram | instagram.com/shaitaangelsfc | Supplied, 350×366 |
 | YouTube | youtube.com/@shaitaangelsfootballclub5487 | Supplied, 1600×838 |
 
-All three are transparent PNGs with transparent corners, and all clear AA against
-white (10.6:1, 21:1, 7.24:1). No social icon needs replacement.
+The supplied icons were stylistically inconsistent: Facebook and YouTube were
+solid filled plates (rounded square with the mark reversed out in white), while
+Instagram was a thin outline, so side by side Instagram read far lighter than its
+neighbours. YouTube was also a wide 53×28 mark, so in a 28×28 slot it rendered at
+half the height of the others.
 
-**The three icons are stylistically inconsistent.** Facebook and YouTube are
-solid filled plates (rounded square with the mark reversed out in white);
-Instagram is a thin outline. Set side by side at the same size they do not read as
-a set — Instagram appears far lighter than its neighbours.
+**Resolved (2026-10-21): all platforms render as filled plates.** The PNGs were
+replaced by one inline SVG set in `src/components/SocialIcon.tsx`: a 28px ink plate
+with the mark reversed out in white, the same variant for every platform. This
+also gives WhatsApp, TikTok and X real icons, which previously pointed at PNGs
+that did not exist, and keeps the icons sharp on high-density screens. Ink on the
+paper ground clears AA comfortably.
 
-Three options, in order of preference:
-
-1. **Ask for a filled Instagram glyph.** Most icon sets ship both variants, so
-   this is a quick ask and the cleanest fix.
-2. **Render all three as filled** by supplying the filled Instagram mark.
-3. **Render all three as outlines.** Instagram is already correct, so this needs
-   outline versions of Facebook and YouTube.
-
-Whichever is chosen, all three must be the same variant. The admin's preview
-should show them adjacent at true size so the mismatch is visible before
-publishing — that is exactly the case a live preview exists for.
-
-Platform icons are stored once as assets and referenced by slug from
-`site_settings.social_handles`, not uploaded per entry.
+The settings screen shows the published icons side by side at true size, so a
+mismatched or missing icon is visible before publishing. Platform icons live in
+code and are referenced by slug from `site_settings.social_handles`, never
+uploaded per entry.
 
 Tiering above is a proposal. The club knows the actual commercial hierarchy and
 should set it rather than inferring it from the logo filenames.

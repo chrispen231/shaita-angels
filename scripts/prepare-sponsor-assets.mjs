@@ -1,4 +1,8 @@
-// Prepare sponsor and social artwork for the public band.
+// Prepare sponsor artwork for the public band.
+//
+// Social icons are not prepared here: they are drawn as one SVG set in
+// src/components/SocialIcon.tsx, because the supplied files mixed filled and
+// outline variants that no amount of recolouring could make match.
 //
 // Logos arrive as whatever the sponsor sent: full-colour, unevenly padded, and
 // inconsistent in style. This script normalises them so the band renders as a
@@ -27,7 +31,6 @@ const outDir = path.join(process.cwd(), "public", "sponsors");
 /** Display height in CSS pixels, before the 2x that gets baked in. */
 const PRINCIPAL_HEIGHT = 92;
 const PARTNER_HEIGHT = 75;
-const SOCIAL_HEIGHT = 28;
 
 /** The ink tone used in the band. */
 const INK = { r: 16, g: 16, b: 20 };
@@ -42,9 +45,6 @@ const JOBS = [
   { src: "BETTOMAX logo.png", out: "bettomax.png", height: PRINCIPAL_HEIGHT },
   { src: "NEEV logo.png", out: "neev.png", height: PRINCIPAL_HEIGHT },
   { src: "Ambivert logo.png", out: "ambivert.png", height: PARTNER_HEIGHT },
-  { src: "facebook icon.png", out: "social-facebook.png", height: SOCIAL_HEIGHT },
-  { src: "Instagram logo.png", out: "social-instagram.png", height: SOCIAL_HEIGHT },
-  { src: "YouTube Logo.png", out: "social-youtube.png", height: SOCIAL_HEIGHT },
 ];
 
 /**

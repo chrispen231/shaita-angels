@@ -105,22 +105,6 @@
   opacity: 0.62;
 }
 
-.socialIcon {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-
-.socialFallback {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  background: var(--ink);
-  color: white;
-  font: 800 10px var(--display);
-}
-
 /* Visually hidden but available to assistive technology. */
 .srOnly {
   position: absolute;

@@ -184,6 +184,35 @@
   min-height: 1em;
 }
 
+/* Published icons side by side at true size, on the band's own ground, so a
+   mismatched icon is visible before it goes live. */
+.socialPreview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.previewLabel {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--charcoal);
+}
+
+.previewIcons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 @media (max-width: 860px) {
   .handle {
     flex-direction: column;
