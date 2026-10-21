@@ -20,6 +20,7 @@ import {
 } from "@/lib/fixtures/duplicates";
 import type { FixtureInput } from "@/lib/fixtures/validation";
 import type { FixtureActionState, FixtureSaveState } from "@/types/fixtures";
+import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 
 export async function signInAdmin(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -226,14 +227,25 @@ export async function saveFixture(_previous: FixtureSaveState, formData: FormDat
     wentLiveAt = new Date().toISOString();
   }
 
-  const query = id
-    ? context.supabase.from("fixtures").update({ ...values, went_live_at: wentLiveAt }).eq("id", id)
-    : context.supabase.from("fixtures").insert({ ...values, went_live_at: wentLiveAt, created_by: context.user.id });
-  const { error } = await query;
+  // An edit only lands if the row still carries the updated_at the form was
+  // rendered with; otherwise another admin saved first and this would overwrite
+  // their changes. See src/lib/admin/concurrency.ts.
+  const expectedUpdatedAt = readExpectedUpdatedAt(formData);
+  if (id && !expectedUpdatedAt) return { status: "error", message: staleFormMessage("fixture") };
+
+  const { data: written, error } = id
+    ? await context.supabase
+      .from("fixtures")
+      .update({ ...values, went_live_at: wentLiveAt })
+      .eq("id", id)
+      .eq("updated_at", expectedUpdatedAt!)
+      .select("id")
+    : await context.supabase.from("fixtures").insert({ ...values, went_live_at: wentLiveAt, created_by: context.user.id });
   if (error) {
     console.error("Fixture save failed", error.message);
     return { status: "error", message: "We couldn’t save that fixture. Check the details and try again." };
   }
+  if (id && updateWasRejected(written)) return { status: "error", message: conflictMessage("fixture") };
 
   // Log the admin action
   await logAdminAction({

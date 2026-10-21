@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { saveStaff, updateStaff, toggleStaffPublished, removeStaff } from "./actions";
 import type { FixtureActionState } from "@/types/fixtures";
 import ImageField from "@/app/admin/ImageField";
+import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import styles from "./StaffManager.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
@@ -17,6 +18,7 @@ export type StaffRow = {
   photo_url_alt: string | null;
   sort_order: number;
   is_published: boolean;
+  updated_at: string;
 };
 
 export default function StaffManager({ staff }: { staff: StaffRow[] }) {
@@ -85,6 +87,7 @@ export default function StaffManager({ staff }: { staff: StaffRow[] }) {
                   {isEditing && (
                     <form action={updateAction} className={styles.editForm}>
                       <input type="hidden" name="id" value={member.id} />
+                      <input type="hidden" name={EXPECTED_UPDATED_AT_FIELD} value={member.updated_at} />
                       <StaffFields member={member} />
                       <div className={styles.actions}>
                         <button type="submit" disabled={updatePending}>

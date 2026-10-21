@@ -8,6 +8,7 @@ import type { Sponsor } from "@/types/sponsors";
 import { SPONSOR_TIER_LABELS } from "@/types/sponsors";
 import { resolveSponsorLogo } from "@/lib/sponsors/logo-url";
 import ImageField from "@/app/admin/ImageField";
+import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import styles from "./SponsorForm.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
@@ -37,6 +38,7 @@ export default function SponsorForm({ sponsor }: { sponsor: Sponsor | null }) {
     <div className={styles.wrap}>
       <form action={action} className={styles.card}>
         {sponsor && <input type="hidden" name="id" value={sponsor.id} />}
+        {sponsor && <input type="hidden" name={EXPECTED_UPDATED_AT_FIELD} value={sponsor.updated_at} />}
 
         <div className={styles.preview}>
           {bundledPreview ? (

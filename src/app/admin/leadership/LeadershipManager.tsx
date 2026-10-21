@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import ImageField from "@/app/admin/ImageField";
+import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 import { addLeader, removeLeader, setLeaderPublished, updateLeader } from "./actions";
 import styles from "@/app/admin/staff/StaffManager.module.css";
@@ -17,6 +18,7 @@ export type LeaderRow = {
   photo_alt: string | null;
   sort_order: number;
   is_published: boolean;
+  updated_at: string;
 };
 
 export default function LeadershipManager({ leaders }: { leaders: LeaderRow[] }) {
@@ -62,6 +64,7 @@ export default function LeadershipManager({ leaders }: { leaders: LeaderRow[] })
                   {isEditing && (
                     <form action={editAction} className={styles.editForm}>
                       <input type="hidden" name="id" value={leader.id} />
+                      <input type="hidden" name={EXPECTED_UPDATED_AT_FIELD} value={leader.updated_at} />
                       <LeaderFields leader={leader} />
                       <div className={styles.actions}><button type="submit" disabled={editPending}>{editPending ? "Saving…" : "Save changes"}</button></div>
                     </form>

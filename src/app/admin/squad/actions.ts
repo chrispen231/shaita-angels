@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { validateSquad } from "@/lib/matches/validation";
 import { logAdminAction } from "@/lib/admin/audit";
+import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -112,7 +113,12 @@ export async function updatePlayer(
   const error = validateSquad(input);
   if (error) return { status: "error", message: error };
 
-  const { error: writeError } = await context.supabase
+  // Only overwrite the version the form was rendered with; updated_at is
+  // maintained by the squad_set_updated_at trigger.
+  const expectedUpdatedAt = readExpectedUpdatedAt(formData);
+  if (!expectedUpdatedAt) return { status: "error", message: staleFormMessage("player") };
+
+  const { data: written, error: writeError } = await context.supabase
     .from("squad")
     .update({
       full_name: input.full_name,
@@ -126,12 +132,15 @@ export async function updatePlayer(
       photo_url: emptyToNull(input.photo_url),
       photo_url_alt: emptyToNull(input.photo_url_alt),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("updated_at", expectedUpdatedAt)
+    .select("id");
 
   if (writeError) {
     console.error("Squad update failed", writeError.message);
     return { status: "error", message: "We couldn't update that player." };
   }
+  if (updateWasRejected(written)) return { status: "error", message: conflictMessage("player") };
 
   // Log the admin action
   await logAdminAction({

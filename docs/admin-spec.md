@@ -1,6 +1,6 @@
 # Admin section — specification
 
-Status: **phases 1, 3, 4 and 5 built; phase 2 partly built** (roles done; the fixtures-editor additions are not). Sections below were written as the proposal; delivered phases are marked DONE.
+Status: **phases 1–5 built.** Sections below were written as the proposal; delivered phases are marked DONE. Still open: the fixture delete question at the end.
 Last updated: 2026-10-05.
 
 This is the plan for the `/admin` section. It is written for review before

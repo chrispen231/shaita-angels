@@ -15,6 +15,7 @@ import {
   type LineupInput,
   type Side,
 } from "@/lib/matches/validation";
+import { conflictMessage, readExpectedUpdatedAt, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -362,14 +363,29 @@ export async function saveReport(
 
   const body = String(formData.get("body") ?? "").trim();
 
+  // The form carries the saved report's updated_at, or nothing when there was no
+  // report when it rendered. Every write below is conditional on that, so a
+  // report another admin wrote in the meantime is never overwritten or removed.
+  const expectedUpdatedAt = readExpectedUpdatedAt(formData);
+
   // An empty report means "remove it", which is a legitimate correction rather
   // than a deletion of history, so it is allowed and logged as such.
   if (body === "") {
-    const { error } = await context.supabase.from("match_reports").delete().eq("fixture_id", fixtureId);
+    // No report when the form rendered: there is nothing of this admin's to
+    // remove, and deleting by fixture alone could remove someone else's new one.
+    if (!expectedUpdatedAt) return { status: "success", message: "There is no report to remove." };
+
+    const { data: removed, error } = await context.supabase
+      .from("match_reports")
+      .delete()
+      .eq("fixture_id", fixtureId)
+      .eq("updated_at", expectedUpdatedAt)
+      .select("fixture_id");
     if (error) {
       console.error("Report removal failed", error.message);
       return { status: "error", message: "We couldn't remove the report." };
     }
+    if (updateWasRejected(removed)) return { status: "error", message: conflictMessage("report") };
     revalidatePath(`/admin/matches/${fixtureId}`);
     revalidatePath(`/match/${fixtureId}`);
     return { status: "success", message: "Report removed." };
@@ -378,14 +394,30 @@ export async function saveReport(
   const error = validateReport(body);
   if (error) return { status: "error", message: error };
 
-  // Upsert: one report per fixture, revised in place.
-  const { error: upsertError } = await context.supabase
-    .from("match_reports")
-    .upsert({ fixture_id: fixtureId, body }, { onConflict: "fixture_id" });
-
-  if (upsertError) {
-    console.error("Report save failed", upsertError.message);
-    return { status: "error", message: "We couldn't save the report." };
+  // One report per fixture, revised in place. Revising is conditional on the
+  // version the form saw; a first report is an insert, and the unique key on
+  // fixture_id rejects it if another admin created one first.
+  if (expectedUpdatedAt) {
+    const { data: written, error: updateError } = await context.supabase
+      .from("match_reports")
+      .update({ body })
+      .eq("fixture_id", fixtureId)
+      .eq("updated_at", expectedUpdatedAt)
+      .select("fixture_id");
+    if (updateError) {
+      console.error("Report save failed", updateError.message);
+      return { status: "error", message: "We couldn't save the report." };
+    }
+    if (updateWasRejected(written)) return { status: "error", message: conflictMessage("report") };
+  } else {
+    const { error: insertError } = await context.supabase
+      .from("match_reports")
+      .insert({ fixture_id: fixtureId, body });
+    if (insertError?.code === "23505") return { status: "error", message: conflictMessage("report") };
+    if (insertError) {
+      console.error("Report save failed", insertError.message);
+      return { status: "error", message: "We couldn't save the report." };
+    }
   }
 
   revalidatePath(`/admin/matches/${fixtureId}`);

@@ -12,6 +12,7 @@ import {
   type CardType,
   type Side,
 } from "@/lib/matches/validation";
+import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import styles from "./MatchEditor.module.css";
 
 /**
@@ -66,6 +67,7 @@ export default function MatchEditor({
   goals,
   cards,
   report,
+  reportUpdatedAt,
   squadNames,
 }: {
   fixtureId: string;
@@ -75,6 +77,8 @@ export default function MatchEditor({
   goals: GoalRow[];
   cards: CardRow[];
   report: string;
+  /** The saved report's updated_at, or null when there is no report yet. */
+  reportUpdatedAt: string | null;
   squadNames: string[];
 }) {
   const [lineupState, lineupAction, lineupPending] = useActionState(saveLineup, initial);
@@ -581,6 +585,7 @@ export default function MatchEditor({
 
         <form action={reportAction} className={styles.form}>
           <input type="hidden" name="fixture_id" value={fixtureId} />
+          {reportUpdatedAt && <input type="hidden" name={EXPECTED_UPDATED_AT_FIELD} value={reportUpdatedAt} />}
           <label className={styles.srOnly} htmlFor="report-body">
             Match report
           </label>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { validateLeadership, type LeadershipInput } from "@/lib/leadership-validation";
 import { logAdminAction } from "@/lib/admin/audit";
+import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -85,11 +86,22 @@ export async function updateLeader(_previous: FixtureActionState, formData: Form
     const invalid = validateLeadership(input);
     if (invalid) return { status: "error", message: invalid };
 
-    const { data, error } = await context.supabase.from("leadership").update(input).eq("id", id).select("id");
-    if (error || !data?.length) {
-      if (error) console.error("Leadership update failed", error.message);
+    // Only overwrite the version the form was rendered with; updated_at is
+    // maintained by the leadership_set_updated_at trigger.
+    const expectedUpdatedAt = readExpectedUpdatedAt(formData);
+    if (!expectedUpdatedAt) return { status: "error", message: staleFormMessage("leadership profile") };
+
+    const { data, error } = await context.supabase
+      .from("leadership")
+      .update(input)
+      .eq("id", id)
+      .eq("updated_at", expectedUpdatedAt)
+      .select("id");
+    if (error) {
+      console.error("Leadership update failed", error.message);
       return { status: "error", message: "Could not save changes. Check the profile still exists and the migration is applied." };
     }
+    if (updateWasRejected(data)) return { status: "error", message: conflictMessage("leadership profile") };
     
     // Log the admin action
     await logAdminAction({

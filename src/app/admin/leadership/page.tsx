@@ -11,7 +11,7 @@ export default async function LeadershipAdminPage() {
   const context = requireScreen(await getAdminContext(), "leadership");
   const { data, error } = await context.supabase
     .from("leadership")
-    .select("id, full_name, role, bio, photo_url, photo_alt, sort_order, is_published")
+    .select("id, full_name, role, bio, photo_url, photo_alt, sort_order, is_published, updated_at")
     .order("sort_order", { ascending: true })
     .order("full_name", { ascending: true });
 
@@ -24,6 +24,7 @@ export default async function LeadershipAdminPage() {
     photo_alt: row.photo_alt === null ? null : String(row.photo_alt),
     sort_order: Number(row.sort_order),
     is_published: Boolean(row.is_published),
+    updated_at: String(row.updated_at),
   }));
   const published = leaders.filter((leader) => leader.is_published).length;
 

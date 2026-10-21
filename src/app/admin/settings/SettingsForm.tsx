@@ -5,6 +5,7 @@ import { saveSettings } from "@/app/admin/sponsors/actions";
 import type { FixtureActionState } from "@/types/fixtures";
 import type { SiteSettings } from "@/types/sponsors";
 import { SOCIAL_PLATFORMS } from "@/types/sponsors";
+import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import styles from "./SettingsForm.module.css";
 
 const initial: FixtureActionState = { status: "idle", message: "" };
@@ -14,7 +15,14 @@ const initial: FixtureActionState = { status: "idle", message: "" };
  * column. Keeping order in the data means the club can lead with Facebook and
  * WhatsApp without a code change, which is the point of making this editable.
  */
-export default function SettingsForm({ settings }: { settings: SiteSettings }) {
+export default function SettingsForm({
+  settings,
+  updatedAt,
+}: {
+  settings: SiteSettings;
+  /** The settings row's updated_at, or null when the row does not exist yet. */
+  updatedAt: string | null;
+}) {
   const [state, action, pending] = useActionState(saveSettings, initial);
   const [handles, setHandles] = useState(settings.social_handles ?? []);
 
@@ -37,6 +45,7 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
   return (
     <form action={action} className={styles.card}>
       <input type="hidden" name="social_handles" value={JSON.stringify(handles)} />
+      {updatedAt && <input type="hidden" name={EXPECTED_UPDATED_AT_FIELD} value={updatedAt} />}
 
       <h2 className={styles.cardTitle}>Social links</h2>
       <p className={styles.hint}>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { validateArticle, validateHonor, splitParagraphs } from "@/lib/content-validation";
 import { logAdminAction } from "@/lib/admin/audit";
+import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -97,11 +98,19 @@ export async function saveArticle(
     is_published: publish,
   };
 
-  const query = id
-    ? context.supabase.from("articles").update(payload).eq("id", id)
-    : context.supabase.from("articles").insert(payload);
+  // An edit only lands on the version the form was rendered with; updated_at is
+  // maintained by the articles_set_updated_at trigger.
+  const expectedUpdatedAt = readExpectedUpdatedAt(formData);
+  if (id && !expectedUpdatedAt) return { status: "error", message: staleFormMessage("story") };
 
-  const { error: writeError } = await query;
+  const { data: written, error: writeError } = id
+    ? await context.supabase
+      .from("articles")
+      .update(payload)
+      .eq("id", id)
+      .eq("updated_at", expectedUpdatedAt!)
+      .select("id")
+    : await context.supabase.from("articles").insert(payload);
 
   if (writeError) {
     // articles_published_slug_unique is partial, so this fires only when the slug
@@ -115,6 +124,7 @@ export async function saveArticle(
     console.error("Article save failed", writeError.message);
     return { status: "error", message: "We couldn't save that story." };
   }
+  if (id && updateWasRejected(written)) return { status: "error", message: conflictMessage("story") };
 
   // Log the admin action
   await logAdminAction({
