@@ -312,7 +312,7 @@ Sponsor logos are monochrome on white, so contrast is the sponsor's problem, not
 ours — but the social icons and any text must meet AA. Verified by measurement on
 the rendered page, not by eye.
 
-## Phase 2 — Roles and the fixtures editor
+## Phase 2 — Roles and the fixtures editor — **DONE**
 
 `has_role()`, the `role` column, column-level grants, then the fixtures editor
 upgrade. Proves the security model before news and squad depend on it.
@@ -320,6 +320,23 @@ upgrade. Proves the security model before news and squad depend on it.
 Fixtures editor additions over the current form: bulk paste from a text block,
 recurring fixtures, and duplicate detection (same opponent, competition and date
 within a window).
+
+Delivered on `/admin/fixtures`, with no migration:
+
+- **Bulk paste** (`src/lib/fixtures/bulk-paste.ts`): one fixture per line,
+  `date | opponent | competition | kickoff | venue | venue type`, bar- or
+  tab-separated. The preview parses as the admin types and marks each bad line
+  with its error; the save action parses again on the server and saves nothing
+  while any line fails. Pasted fixtures are scheduled with no score.
+- **Recurring fixtures** (`src/lib/fixtures/recurrence.ts`): a first date, every
+  1–4 weeks, 2–52 matches. Dates are UTC day arithmetic, so a daylight-saving
+  change cannot move a match.
+- **Duplicate detection** (`src/lib/fixtures/duplicates.ts`): same opponent and
+  competition (round suffix ignored) within 3 days. A warning, not a rule: the
+  admin can save anyway or cancel. An edit is checked only when it changes the
+  opponent, competition or date.
+- Every row goes through `validateFixture`; a batch is one insert, so it saves
+  whole or not at all, and each created fixture gets its own audit entry.
 
 ## Phase 3 — Match editor — **DONE**
 

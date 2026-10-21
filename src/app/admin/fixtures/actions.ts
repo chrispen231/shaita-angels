@@ -6,7 +6,20 @@ import { getAdminContext } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { validateFixture } from "@/lib/fixtures/validation";
 import { logAdminAction } from "@/lib/admin/audit";
-import type { FixtureActionState } from "@/types/fixtures";
+import { canAccess, type AdminContext } from "@/lib/admin/roles";
+import { getCompetitionsForAdmin } from "@/lib/reference-data.server";
+import { parseBulkFixtures, MAX_BULK_LINES } from "@/lib/fixtures/bulk-paste";
+import { generateSeriesDates } from "@/lib/fixtures/recurrence";
+import {
+  duplicateSearchRange,
+  findBatchDuplicates,
+  findDuplicates,
+  hasAnyDuplicate,
+  type DuplicateCandidate,
+  type ExistingFixture,
+} from "@/lib/fixtures/duplicates";
+import type { FixtureInput } from "@/lib/fixtures/validation";
+import type { FixtureActionState, FixtureSaveState } from "@/types/fixtures";
 
 export async function signInAdmin(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -75,7 +88,27 @@ function field(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
-export async function saveFixture(_previous: FixtureActionState, formData: FormData): Promise<FixtureActionState> {
+/**
+ * Saved fixtures near the given dates, for the duplicate check. Read with the
+ * admin's own session, so RLS applies as it does everywhere else.
+ */
+async function nearbyFixtures(context: AdminContext, dates: string[]): Promise<ExistingFixture[]> {
+  const range = duplicateSearchRange(dates);
+  if (!range) return [];
+  const { data, error } = await context.supabase
+    .from("fixtures")
+    .select("id, opponent, competition, match_date")
+    .gte("match_date", range.from)
+    .lte("match_date", range.to);
+  if (error) console.error("Fixture duplicate check failed", error.message);
+  return (data ?? []) as ExistingFixture[];
+}
+
+function duplicateLabel(fixture: DuplicateCandidate) {
+  return `${fixture.opponent} (${fixture.competition}) on ${fixture.match_date}`;
+}
+
+export async function saveFixture(_previous: FixtureSaveState, formData: FormData): Promise<FixtureSaveState> {
   const context = await getAdminContext();
   if (!context) return { status: "error", message: "Your admin session is no longer valid. Sign in again." };
 
@@ -147,13 +180,35 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
    * the admin's own session, so RLS applies as it does everywhere else.
    */
   let wentLiveAt: string | null = null;
-  if (id) {
-    const { data: current } = await context.supabase
+  const { data: current } = id
+    ? await context.supabase
       .from("fixtures")
-      .select("status, went_live_at")
+      .select("status, went_live_at, opponent, competition, match_date")
       .eq("id", id)
-      .maybeSingle();
+      .maybeSingle()
+    : { data: null };
 
+  // Warn before saving what looks like a match that already exists. An edit is
+  // checked only when it changes who, what or when, so correcting the score of a
+  // fixture that was confirmed as a near-duplicate does not warn every time.
+  const identityChanged = !current ||
+    current.opponent !== opponent || current.competition !== competition || current.match_date !== matchDate;
+  if (identityChanged && formData.get("confirm_duplicate") !== "1") {
+    const duplicates = findDuplicates(
+      { opponent, competition, match_date: matchDate },
+      await nearbyFixtures(context, [matchDate]),
+      { excludeId: id || undefined },
+    );
+    if (duplicates.length > 0) {
+      return {
+        status: "duplicate",
+        message: "This looks like a fixture that already exists. Save it anyway?",
+        duplicates,
+      };
+    }
+  }
+
+  if (id) {
     const wasLive = current?.status === "live";
     const existing = current?.went_live_at ?? null;
 
@@ -191,6 +246,159 @@ export async function saveFixture(_previous: FixtureActionState, formData: FormD
   });
 
   redirect("/admin?saved=1");
+}
+
+/**
+ * Insert several new fixtures at once: a bulk paste or a recurring series.
+ *
+ * Every row has already passed validateFixture. Nothing is saved while any entry
+ * looks like a duplicate - of a saved fixture or of another entry in the batch -
+ * until the admin confirms. The rows go in as one insert, so a batch is saved
+ * whole or not at all, and each created fixture gets its own audit entry.
+ */
+async function insertFixtureBatch(
+  context: AdminContext,
+  inputs: FixtureInput[],
+  { published, confirmed, source }: { published: boolean; confirmed: boolean; source: string },
+): Promise<FixtureSaveState | null> {
+  if (!confirmed) {
+    const results = findBatchDuplicates(inputs, await nearbyFixtures(context, inputs.map((input) => input.match_date)));
+    if (hasAnyDuplicate(results)) {
+      const duplicates = results.flatMap((result) => result.existing);
+      const repeated = results.flatMap((result, index) => (result.earlier.length ? [inputs[index]] : []));
+      const parts = [
+        duplicates.length ? `${duplicates.length} look like fixtures that already exist` : "",
+        repeated.length ? `${repeated.map(duplicateLabel).join("; ")} ${repeated.length === 1 ? "repeats" : "repeat"} an earlier entry` : "",
+      ].filter(Boolean);
+      return {
+        status: "duplicate",
+        message: `Some entries may be duplicates: ${parts.join(", and ")}. Save anyway?`,
+        duplicates: [...new Map(duplicates.map((fixture) => [fixture.id, fixture])).values()],
+      };
+    }
+  }
+
+  const now = new Date().toISOString();
+  const rows = inputs.map((input) => ({
+    opponent: input.opponent,
+    competition: input.competition,
+    season: input.season,
+    match_date: input.match_date,
+    kickoff_time: input.kickoff_time || null,
+    opponent_logo_url: input.opponent_logo_url,
+    opponent_logo_alt: input.opponent_logo_alt,
+    venue: input.venue || null,
+    venue_type: input.venue_type,
+    status: input.status,
+    shaita_goals: null,
+    opponent_goals: null,
+    notes: input.notes || null,
+    is_published: published,
+    went_live_at: null,
+    updated_at: now,
+    created_by: context.user.id,
+  }));
+
+  const { data, error } = await context.supabase
+    .from("fixtures")
+    .insert(rows)
+    .select("id, opponent, competition, season, status, venue_type");
+  if (error) {
+    console.error("Fixture batch save failed", error.message);
+    return { status: "error", message: "We couldn’t save those fixtures. Nothing was saved. Check the details and try again." };
+  }
+
+  for (const created of data ?? []) {
+    await logAdminAction({
+      actor_email: context.user.email,
+      actor_role: context.role,
+      target_type: "fixture",
+      target_id: created.id,
+      action: "Created fixture",
+      details: {
+        opponent: created.opponent,
+        competition: created.competition,
+        season: created.season,
+        status: created.status,
+        venue_type: created.venue_type,
+        source,
+      },
+    });
+  }
+  return null;
+}
+
+async function fixturesEditor(): Promise<AdminContext | FixtureSaveState> {
+  const context = await getAdminContext();
+  if (!context) return { status: "error", message: "Your admin session is no longer valid. Sign in again." };
+  if (!canAccess(context.role, "fixtures")) return { status: "error", message: "Your role cannot manage fixtures." };
+  return context;
+}
+
+export async function saveFixtureBatch(_previous: FixtureSaveState, formData: FormData): Promise<FixtureSaveState> {
+  const context = await fixturesEditor();
+  if ("status" in context) return context;
+
+  // Parsed again here rather than trusting the preview the browser showed.
+  const lines = parseBulkFixtures(
+    String(formData.get("lines") ?? ""),
+    { season: field(formData, "season"), competition: field(formData, "competition"), venue_type: field(formData, "venue_type") },
+    await getCompetitionsForAdmin(),
+  );
+  if (lines.length === 0) return { status: "error", message: "Paste at least one fixture, one per line." };
+  if (lines.length > MAX_BULK_LINES) return { status: "error", message: `Paste at most ${MAX_BULK_LINES} fixtures at a time.` };
+  const failed = lines.filter((line) => line.error);
+  if (failed.length > 0) {
+    return { status: "error", message: `Nothing was saved. Fix line ${failed.map((line) => line.line).join(", ")} and preview again.` };
+  }
+
+  const failure = await insertFixtureBatch(context, lines.map((line) => line.input as FixtureInput), {
+    published: formData.get("is_published") === "on",
+    confirmed: formData.get("confirm_duplicate") === "1",
+    source: "bulk paste",
+  });
+  if (failure) return failure;
+  redirect(`/admin/fixtures?created=${lines.length}`);
+}
+
+export async function saveFixtureSeries(_previous: FixtureSaveState, formData: FormData): Promise<FixtureSaveState> {
+  const context = await fixturesEditor();
+  if ("status" in context) return context;
+
+  const series = generateSeriesDates(
+    field(formData, "first_date"),
+    Number(field(formData, "every_weeks")),
+    Number(field(formData, "count")),
+  );
+  if (series.error !== null) return { status: "error", message: series.error };
+
+  const base = {
+    opponent: field(formData, "opponent"),
+    competition: field(formData, "competition"),
+    season: field(formData, "season"),
+    kickoff_time: field(formData, "kickoff_time"),
+    venue: field(formData, "venue"),
+    venue_type: field(formData, "venue_type"),
+    status: "scheduled",
+    shaita_goals: null,
+    opponent_goals: null,
+    notes: field(formData, "notes"),
+    opponent_logo_url: emptyToNull(field(formData, "opponent_logo_url")),
+    opponent_logo_alt: emptyToNull(field(formData, "opponent_logo_alt")),
+  };
+  const inputs: FixtureInput[] = series.dates.map((date) => ({ ...base, match_date: date }));
+  for (const input of inputs) {
+    const invalid = validateFixture(input);
+    if (invalid) return { status: "error", message: invalid };
+  }
+
+  const failure = await insertFixtureBatch(context, inputs, {
+    published: formData.get("is_published") === "on",
+    confirmed: formData.get("confirm_duplicate") === "1",
+    source: "recurring series",
+  });
+  if (failure) return failure;
+  redirect(`/admin/fixtures?created=${inputs.length}`);
 }
 
 export async function signOutAction() {
