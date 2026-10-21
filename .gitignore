@@ -48,3 +48,6 @@ next-env.d.ts
 supabase/.temp
 
 .vercel
+
+# Launch / pitch video renders and their working files
+/brag-output*/
