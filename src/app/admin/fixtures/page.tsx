@@ -13,10 +13,10 @@ export const metadata = { title: "Fixtures" };
 export default async function FixturesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; created?: string }>;
 }) {
   const context = requireScreen(await getAdminContext(), "fixtures");
-  const [{ data, error }, { saved }, competitions] = await Promise.all([
+  const [{ data, error }, { saved, created }, competitions] = await Promise.all([
     context.supabase
       .from("fixtures")
       .select(FIXTURE_COLUMNS)
@@ -26,6 +26,7 @@ export default async function FixturesPage({
   ]);
 
   const fixtures = (data ?? []) as Fixture[];
+  const createdCount = Number(created);
 
   return (
     <AdminShell
@@ -37,6 +38,11 @@ export default async function FixturesPage({
       {saved === "1" && (
         <p className={styles.notice} role="status">
           Fixture saved.
+        </p>
+      )}
+      {Number.isInteger(createdCount) && createdCount > 0 && (
+        <p className={styles.notice} role="status">
+          {createdCount === 1 ? "1 fixture created." : `${createdCount} fixtures created.`}
         </p>
       )}
       {error && (

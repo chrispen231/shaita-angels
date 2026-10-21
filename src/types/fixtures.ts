@@ -37,3 +37,22 @@ export type FixtureActionState = {
   status: "idle" | "success" | "error";
   message: string;
 };
+
+/** An existing fixture a new or edited one looks like a duplicate of. */
+export type FixtureDuplicate = {
+  id: string;
+  opponent: string;
+  competition: string;
+  match_date: string;
+};
+
+/**
+ * State for the fixtures editor's save actions. "duplicate" means nothing was
+ * saved because the entry looks like a fixture that already exists; the form
+ * shows the matches and offers to save anyway.
+ */
+export type FixtureSaveState = {
+  status: FixtureActionState["status"] | "duplicate";
+  message: string;
+  duplicates?: FixtureDuplicate[];
+};
