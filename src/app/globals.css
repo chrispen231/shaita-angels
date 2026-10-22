@@ -168,3 +168,12 @@ html.launching #launch-splash img{width:168px;height:168px;animation:launch-cres
 
 /* Offline notice (ServiceWorker.tsx). */
 .offline-notice{position:fixed;left:16px;right:16px;bottom:max(16px,env(safe-area-inset-bottom));z-index:60;margin:0 auto;max-width:560px;padding:12px 16px;background:var(--ink);color:var(--paper);font-size:14px;line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.25);border-left:4px solid var(--gold)}
+
+/*
+ * Full-bleed sections (TrophyShowcase, FixtureCarousel) break out of the page
+ * column with 100vw, which includes the vertical scrollbar on desktop. The
+ * overhang is exactly the scrollbar's width and sits under it, but it still
+ * gave every page a horizontal scrollbar. clip (unlike hidden) creates no scroll
+ * container, so sticky positioning and vertical scrolling are unaffected.
+ */
+#main-content{overflow-x:clip}
