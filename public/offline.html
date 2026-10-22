@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0b0b0c">
+  <title>Offline | Shaita Angels FC</title>
+  <style>
+    :root { --red: #c8102e; --ink: #0b0b0c; --paper: #f7f4ef; --muted: #b9b4ad; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: "DM Sans", Arial, sans-serif;
+      text-align: center;
+    }
+    main { max-width: 360px; }
+    img { width: 112px; height: 112px; }
+    h1 {
+      margin: 24px 0 8px;
+      font: 800 34px/1.05 "Barlow Condensed", "Arial Narrow", sans-serif;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    p { margin: 0 0 28px; color: var(--muted); line-height: 1.55; }
+    .actions { display: flex; flex-direction: column; gap: 12px; }
+    button, a {
+      display: block;
+      padding: 14px 18px;
+      font: 700 13px/1 "DM Sans", Arial, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    button { border: 0; background: var(--red); color: #fff; }
+    a { border: 1px solid rgba(247, 244, 239, .28); color: var(--paper); }
+    button:focus-visible, a:focus-visible { outline: 3px solid #d6a74a; outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/icons/icon-512.png" alt="Shaita Angels FC crest" width="112" height="112">
+    <h1>You're offline</h1>
+    <p>This page hasn't been saved on your phone yet. Pages you've opened before still work, and this one will load as soon as you're back online.</p>
+    <div class="actions">
+      <button type="button" onclick="location.reload()">Try again</button>
+      <a href="/">Home</a>
+      <a href="/matches">Matches</a>
+    </div>
+  </main>
+  <script>
+    // Reload as soon as the connection comes back, so nobody is left on this page.
+    window.addEventListener("online", function () { location.reload(); });
+  </script>
+</body>
+</html>

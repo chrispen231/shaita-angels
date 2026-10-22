@@ -157,3 +157,14 @@ body:has(.hero) .site-header{position:absolute;inset:0 0 auto;background:linear-
   .motion-reveal,.hero-copy,.hero-actions{opacity:1;transform:none;animation:none;transition:none}
   .button,.nav-cta,.kit-order-btn,.news-card,.player-card,.kit-product,.lead-story{transition:none}
 }
+
+/* Launch splash (installed app only; see launchSplashScript in layout.tsx). */
+#launch-splash{display:none}
+html.launching #launch-splash{display:flex;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:var(--ink);cursor:pointer;animation:launch-splash-out .32s ease-in .78s forwards}
+html.launching #launch-splash img{width:168px;height:168px;animation:launch-crest-in .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes launch-crest-in{from{opacity:0;transform:scale(.86) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes launch-splash-out{to{opacity:0;visibility:hidden}}
+@media (prefers-reduced-motion:reduce){html.launching #launch-splash{display:none}}
+
+/* Offline notice (ServiceWorker.tsx). */
+.offline-notice{position:fixed;left:16px;right:16px;bottom:max(16px,env(safe-area-inset-bottom));z-index:60;margin:0 auto;max-width:560px;padding:12px 16px;background:var(--ink);color:var(--paper);font-size:14px;line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.25);border-left:4px solid var(--gold)}
