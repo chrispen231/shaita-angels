@@ -39,6 +39,18 @@ function readSupport(): Support {
   return ios && !standalone ? "ios-install" : "unsupported";
 }
 
+/*
+ * Android starts web alerts quietly in the notification shade; pop-up ("heads-up")
+ * display is a per-site or per-app setting only the fan can turn on. Where that
+ * setting lives depends on whether the site is open in Chrome or installed.
+ */
+type AndroidMode = "browser" | "installed" | null;
+
+function readAndroidMode(): AndroidMode {
+  if (!/Android/i.test(navigator.userAgent)) return null;
+  return window.matchMedia("(display-mode: standalone)").matches ? "installed" : "browser";
+}
+
 function readSavedTopics(): string {
   try {
     return window.localStorage.getItem(STORAGE_KEY) ?? "";
@@ -82,6 +94,7 @@ async function getRegistration() {
 export default function MatchAlerts({ tone = "dark" }: { tone?: "dark" | "light" }) {
   const support = useSyncExternalStore(noopSubscribe, readSupport, () => "pending" as Support);
   const saved = useSyncExternalStore(subscribeToSaved, readSavedTopics, () => "");
+  const android = useSyncExternalStore(noopSubscribe, readAndroidMode, () => null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
@@ -238,6 +251,23 @@ export default function MatchAlerts({ tone = "dark" }: { tone?: "dark" | "light"
           <p className={message?.kind === "error" ? styles.error : styles.status} role="status">
             {message?.text}
           </p>
+          {isOn && android && (
+            <p className={styles.tip}>
+              <strong>Want alerts to pop up on screen?</strong> Android shows them quietly at first.{" "}
+              {android === "installed" ? (
+                <>
+                  Long-press the Shaita Angels icon, tap <b>App info</b> then <b>Notifications</b>, and turn on{" "}
+                  <b>Pop on screen</b>.
+                </>
+              ) : (
+                <>
+                  Open your phone&rsquo;s <b>Settings</b>, then <b>Apps</b>, <b>Chrome</b>, <b>Notifications</b>. Find this site
+                  and turn on <b>Pop on screen</b>.
+                </>
+              )}{" "}
+              On Samsung it&rsquo;s called <b>Pop-up</b>.
+            </p>
+          )}
         </div>
       )}
     </div>

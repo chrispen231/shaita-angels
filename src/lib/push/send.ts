@@ -44,7 +44,13 @@ export async function sendToTopic(client: SupabaseClient, topic: PushTopic, mess
     return result;
   }
 
-  const payload = JSON.stringify({ title: message.title, body: message.body, url: message.url, tag: message.tag });
+  const payload = JSON.stringify({
+    title: message.title,
+    body: message.body,
+    url: message.url,
+    tag: message.tag,
+    ...(message.vibrate ? { vibrate: message.vibrate } : {}),
+  });
   const options = {
     TTL: message.ttl,
     urgency: message.urgency,

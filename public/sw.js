@@ -128,9 +128,11 @@ async function staleWhileRevalidate(event, request, cacheName, max) {
 }
 
 /*
- * Match alerts. The server sends { title, body, url, tag }. The tag is per match
- * (or per story), so a goal replaces the kick-off alert on the lock screen
- * instead of stacking, and renotify makes the replacement still buzz.
+ * Match alerts. The server sends { title, body, url, tag, vibrate? }. The tag is
+ * per match (or per story), so a goal replaces the kick-off alert on the lock
+ * screen instead of stacking, and renotify makes the replacement still buzz.
+ * vibrate is a short Android pattern for goals and kick-off; anything malformed
+ * is dropped so the phone falls back to its default.
  */
 self.addEventListener("push", (event) => {
   let data = {};
@@ -147,10 +149,20 @@ self.addEventListener("push", (event) => {
       renotify: Boolean(data.tag),
       icon: "/icons/icon-192.png",
       badge: "/icons/badge-96.png",
+      ...(safeVibration(data.vibrate) ? { vibrate: data.vibrate } : {}),
       data: { url: safeUrl(data.url) },
     }),
   );
 });
+
+function safeVibration(pattern) {
+  return (
+    Array.isArray(pattern) &&
+    pattern.length > 0 &&
+    pattern.length <= 10 &&
+    pattern.every((ms) => Number.isInteger(ms) && ms >= 0 && ms <= 1000)
+  );
+}
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();

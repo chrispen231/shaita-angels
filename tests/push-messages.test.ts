@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildMatchMessage, buildNewsMessage, scoreKey, type AlertFixture } from "@/lib/push/messages";
+import {
+  buildMatchMessage,
+  buildNewsMessage,
+  GOAL_VIBRATION,
+  KICKOFF_VIBRATION,
+  scoreKey,
+  type AlertFixture,
+} from "@/lib/push/messages";
 
 const ID = "11111111-1111-4111-8111-111111111111";
 
@@ -122,5 +129,19 @@ describe("news and helpers", () => {
   it("scoreKey is null until both scores exist", () => {
     expect(scoreKey({ shaita_goals: 2, opponent_goals: 1 })).toBe("2-1");
     expect(scoreKey({ shaita_goals: null, opponent_goals: 1 })).toBeNull();
+  });
+});
+
+describe("vibration", () => {
+  it("gives goals a long pattern and kick-off a short double buzz", () => {
+    expect(buildMatchMessage("score", fixture({ shaita_goals: 1 }))?.vibrate).toEqual(GOAL_VIBRATION);
+    expect(buildMatchMessage("kickoff_reminder", fixture({ status: "scheduled" }))?.vibrate).toEqual(KICKOFF_VIBRATION);
+    expect(buildMatchMessage("live_start", fixture({ status: "live" }))?.vibrate).toEqual(KICKOFF_VIBRATION);
+  });
+
+  it("leaves half time, full time and news on the phone's default", () => {
+    expect(buildMatchMessage("halftime", fixture({ status: "halftime" }))?.vibrate).toBeUndefined();
+    expect(buildMatchMessage("fulltime", fixture({ status: "played", shaita_goals: 2, opponent_goals: 1 }))?.vibrate).toBeUndefined();
+    expect(buildNewsMessage({ id: "a1", slug: "story", title: "Story", is_published: true })?.vibrate).toBeUndefined();
   });
 });

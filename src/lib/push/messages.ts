@@ -23,7 +23,17 @@ export type PushMessage = {
   /** Seconds the push service keeps an undelivered alert. A stale goal is noise. */
   ttl: number;
   urgency: "very-low" | "low" | "normal" | "high";
+  /** Android vibration pattern in ms (buzz, pause, buzz…). Omitted means the phone's default. */
+  vibrate?: number[];
 };
+
+/*
+ * Goals get a distinct long pattern so a fan can tell one from a reminder without
+ * looking; kick-off gets a short double buzz. Android may ignore these when the
+ * site's notification channel has vibration turned off.
+ */
+export const GOAL_VIBRATION = [300, 100, 300, 100, 600];
+export const KICKOFF_VIBRATION = [200, 100, 200];
 
 export type AlertFixture = {
   id: string;
@@ -92,6 +102,7 @@ export function buildMatchMessage(kind: MatchAlertKind, fixture: AlertFixture): 
         body: `${CLUB} vs ${fixture.opponent} kicks off${time}${where}.`,
         ttl: 3600,
         urgency: "normal",
+        vibrate: KICKOFF_VIBRATION,
       });
     }
     case "live_start": {
@@ -103,6 +114,7 @@ export function buildMatchMessage(kind: MatchAlertKind, fixture: AlertFixture): 
         body: `${CLUB} vs ${fixture.opponent} is underway.`,
         ttl: 600,
         urgency: "high",
+        vibrate: KICKOFF_VIBRATION,
       });
     }
     case "score": {
@@ -113,7 +125,14 @@ export function buildMatchMessage(kind: MatchAlertKind, fixture: AlertFixture): 
       const shaitaScored = fixture.shaita_goals! > previousFor && fixture.opponent_goals === previousAgainst;
       const opponentScored = fixture.opponent_goals! > previousAgainst && fixture.shaita_goals === previousFor;
       const title = shaitaScored ? "GOAL!" : opponentScored ? `${fixture.opponent} score` : "Score update";
-      return matchMessage(fixture, { topic: "goals", title, body: scoreline(fixture), ttl: 600, urgency: "high" });
+      return matchMessage(fixture, {
+        topic: "goals",
+        title,
+        body: scoreline(fixture),
+        ttl: 600,
+        urgency: "high",
+        vibrate: GOAL_VIBRATION,
+      });
     }
     case "halftime": {
       if (fixture.status !== "halftime" || fixture.halftime_alert_sent_at) return null;

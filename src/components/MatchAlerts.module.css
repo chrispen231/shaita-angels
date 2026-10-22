@@ -61,14 +61,18 @@
 .error { color: #ff8a8a; }
 
 .hint { margin: 0; max-width: 340px; font-size: 13px; line-height: 1.5; }
+.tip { margin: 12px 0 0; padding: 10px 12px; border-left: 3px solid var(--gold); font-size: 12.5px; line-height: 1.5; }
+.tip strong { display: block; margin-bottom: 2px; }
 
 /* On ink (the footer). */
 .dark { color: #fff; }
 .dark .panel { background: #17171a; color: #fff; }
+.dark .tip { background: rgba(255, 255, 255, .06); color: rgba(255, 255, 255, .85); }
 .dark.hint { color: rgba(255, 255, 255, .7); }
 
 /* On paper (the match page header). */
 .light { color: var(--ink); }
 .light .panel { background: var(--white); color: var(--ink); }
+.light .tip { background: var(--paper); color: var(--charcoal); }
 .light .error { color: var(--red-deep); }
 .light.hint { color: var(--muted); }

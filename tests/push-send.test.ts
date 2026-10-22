@@ -55,6 +55,16 @@ describe("sendToTopic", () => {
     expect(options).toMatchObject({ TTL: 600, urgency: "high", vapidDetails: { subject: "mailto:club@example.org" } });
   });
 
+  it("includes the vibration pattern in the payload only when the message has one", async () => {
+    fake.respond({ table: "push_subscriptions", op: "select" }, { data: [subscriber("s1")], error: null });
+    push.sendNotification.mockResolvedValue({ statusCode: 201 });
+
+    await sendToTopic(fake.client as unknown as SupabaseClient, "goals", { ...MESSAGE, vibrate: [300, 100, 600] });
+
+    const [, payload] = push.sendNotification.mock.calls[0];
+    expect(JSON.parse(payload).vibrate).toEqual([300, 100, 600]);
+  });
+
   it("deletes subscriptions the push service says are gone (404/410)", async () => {
     fake.respond({ table: "push_subscriptions", op: "select" }, { data: [subscriber("gone"), subscriber("expired")], error: null });
     push.sendNotification
