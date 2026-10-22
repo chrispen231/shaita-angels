@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { liveClock, elapsedMinutes, looksFinished } from "@/lib/fixtures/live-clock";
+import { liveClock, elapsedMinutes, looksFinished, secondHalfStart } from "@/lib/fixtures/live-clock";
 
 /**
  * The live match clock.
@@ -50,12 +50,13 @@ describe("liveClock", () => {
     expect(liveClock(T0, at(44))?.label).toBe("45'");
   });
 
-  it("shows HT for the interval", () => {
-    // 45 minutes played, then the break. The club has no whistle feed, so the
-    // interval is inferred from the clock.
-    expect(liveClock(T0, at(45))?.label).toBe("HT");
-    expect(liveClock(T0, at(52))?.label).toBe("HT");
-    expect(liveClock(T0, at(59))?.label).toBe("HT");
+  it("shows first-half stoppage after 45 instead of guessing half time", () => {
+    // Half time is the explicit "halftime" status. A match still live after 45
+    // minutes is in first-half stoppage.
+    expect(liveClock(T0, at(45))?.label).toBe("45+1'");
+    expect(liveClock(T0, at(47))?.label).toBe("45+3'");
+    expect(liveClock(T0, at(59))?.label).toBe("45+15'");
+    expect(liveClock(T0, at(52))?.over).toBe(false);
   });
 
   it("restarts the football minute at 46 for the second half", () => {
@@ -89,6 +90,17 @@ describe("liveClock", () => {
     const a = liveClock(T0, at(30));
     const b = liveClock(T0, at(30));
     expect(a).toEqual(b);
+  });
+});
+
+describe("secondHalfStart", () => {
+  it("restarts the clock at 46' when a match comes back from halftime", () => {
+    // However long the first half and the break ran, the second half begins at 46'.
+    const resumedAt = at(73);
+    const start = secondHalfStart(resumedAt);
+    expect(liveClock(start, resumedAt)?.label).toBe("46'");
+    expect(liveClock(start, new Date(resumedAt.getTime() + 10 * 60_000))?.label).toBe("56'");
+    expect(liveClock(start, new Date(resumedAt.getTime() + 45 * 60_000))?.label).toBe("90+1'");
   });
 });
 

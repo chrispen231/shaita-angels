@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { type CSSProperties, useCallback, useEffect, useState } from "react";
-import { type GalleryCategory, type GalleryPhoto } from "@/lib/gallery";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { canOptimizeImage, type GalleryCategory, type GalleryPhoto } from "@/lib/gallery";
 import styles from "./media.module.css";
 
 const FILTERS: { value: GalleryCategory | "all"; label: string }[] = [
@@ -33,6 +33,10 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
   const carouselStart = -Math.floor((carouselCount - 1) / 2);
   const carouselOffsets = Array.from({ length: carouselCount }, (_, index) => carouselStart + index);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const isOpen = activeIndex !== null;
+
   const close = useCallback(() => setActiveIndex(null), []);
   const step = useCallback(
     (delta: number) => {
@@ -45,27 +49,52 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
     [visiblePhotos.length],
   );
 
-  // Escape closes; arrows step through. Bound only while the lightbox is open.
+  // Escape closes; arrows step through; Tab cycles inside the dialog so keyboard
+  // users cannot land on the page hidden behind it. Bound only while open.
   useEffect(() => {
-    if (activeIndex === null) return;
+    if (!isOpen) return;
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") close();
       else if (event.key === "ArrowRight") step(1);
       else if (event.key === "ArrowLeft") step(-1);
+      else if (event.key === "Tab") {
+        const buttons = Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>("button") ?? []);
+        if (buttons.length === 0) return;
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        const inside = dialogRef.current?.contains(document.activeElement) ?? false;
+        if (event.shiftKey && (document.activeElement === first || !inside)) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && (document.activeElement === last || !inside)) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [activeIndex, close, step]);
+  }, [isOpen, close, step]);
+
+  // Move focus into the dialog on open and hand it back to whatever opened it
+  // on close. Keyed on open/closed, not the index, so stepping photos doesn't
+  // reset focus to the close button.
+  useEffect(() => {
+    if (!isOpen) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeButtonRef.current?.focus();
+    return () => opener?.focus();
+  }, [isOpen]);
 
   // Stop the page behind the lightbox from scrolling.
   useEffect(() => {
-    if (activeIndex === null) return;
+    if (!isOpen) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previous;
     };
-  }, [activeIndex]);
+  }, [isOpen]);
 
   return (
     <>
@@ -138,7 +167,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                         src={photo.public_url}
                         alt={photo.alt}
                         fill
-                        unoptimized
+                        unoptimized={!canOptimizeImage(photo.public_url)}
                         sizes="(max-width: 640px) 68vw, (max-width: 960px) 38vw, 280px"
                         priority={isActive}
                       />
@@ -191,14 +220,16 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                       src={photo.public_url}
                       alt={photo.alt}
                       fill
-                      unoptimized
+                      unoptimized={!canOptimizeImage(photo.public_url)}
                       sizes="(max-width: 720px) 100vw, 33vw"
                     />
                   </div>
-                  <figcaption className={styles.figcaption}>
+                  {/* A span, not <figcaption>: a figcaption is only valid inside a
+                      <figure>, and a button may contain phrasing content only. */}
+                  <span className={styles.figcaption}>
                     <span className={styles.caption}>{photo.title}</span>
                     <span className={styles.date}>{formatDate(photo.date)}</span>
-                  </figcaption>
+                  </span>
                 </button>
               </li>
             ))}
@@ -206,6 +237,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
 
           {activePhoto && (
             <div
+              ref={dialogRef}
               className={styles.lightbox}
               role="dialog"
               aria-modal="true"
@@ -213,6 +245,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
               onClick={close}
             >
               <button
+                ref={closeButtonRef}
                 type="button"
                 className={styles.lightboxClose}
                 onClick={close}
@@ -259,7 +292,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                     src={activePhoto.public_url}
                     alt={activePhoto.alt}
                     fill
-                    unoptimized
+                    unoptimized={!canOptimizeImage(activePhoto.public_url)}
                     sizes="92vw"
                     priority
                   />

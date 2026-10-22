@@ -24,6 +24,30 @@ describe("validateArticle", () => {
     expect(validateArticle(base)).toBeNull();
   });
 
+  it("rejects an impossible publication date", () => {
+    expect(validateArticle({ ...base, published_on: "2026-02-30" })).toMatch(/not a real date/);
+    expect(validateArticle({ ...base, published_on: "2026-06-31" })).toMatch(/not a real date/);
+  });
+
+  it("accepts a story image from public/ or Supabase storage, or none", () => {
+    expect(validateArticle({ ...base, image_path: "" })).toBeNull();
+    expect(validateArticle({ ...base, image_path: "/gallery-3.jpg" })).toBeNull();
+    expect(
+      validateArticle({ ...base, image_path: "https://abc.supabase.co/storage/v1/object/public/news/a.jpg" }),
+    ).toBeNull();
+  });
+
+  it("rejects a story image next/image cannot render", () => {
+    for (const image_path of [
+      "https://example.com/a.jpg",
+      "http://abc.supabase.co/storage/v1/object/public/news/a.jpg",
+      "//example.com/a.jpg",
+      "javascript:alert(1)",
+    ]) {
+      expect(validateArticle({ ...base, image_path })).toMatch(/Upload the story image/);
+    }
+  });
+
   it("requires a body", () => {
     expect(validateArticle({ ...base, body: "" })).toMatch(/Write the story body/);
     // Whitespace on either side of the break is still one blank paragraph.

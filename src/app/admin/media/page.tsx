@@ -3,6 +3,7 @@ import AdminShell, { requireScreen } from "@/app/admin/AdminShell";
 import MediaLibrary, { type MediaRow } from "./MediaLibrary";
 import { getCompetitionsForAdmin } from "@/lib/reference-data.server";
 import { builtInCompetitions, POSITIONS } from "@/lib/reference-data";
+import { publicUrlFor, type MediaBucket } from "@/lib/media";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,9 @@ export default async function MediaPage() {
     id: String(row.id),
     bucket: String(row.bucket),
     object_path: String(row.object_path),
-    public_url: String(row.public_url),
+    // Rebuilt rather than trusted, so a super admin previews the object that
+    // would actually be published, not a URL the uploader supplied.
+    public_url: publicUrlFor(String(row.bucket) as MediaBucket, String(row.object_path)) ?? String(row.public_url),
     purpose: String(row.purpose),
     original_filename: row.original_filename === null ? null : String(row.original_filename),
     uploaded_by: String(row.uploaded_by),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGalleryPhotos } from "@/lib/gallery";
+import { buildGalleryPhotos, canOptimizeImage, uploadTitle } from "@/lib/gallery";
 import type { Article, LeadershipMember, SquadPlayer, StaffMember } from "@/lib/content";
 
 const article: Article = {
@@ -69,5 +69,40 @@ describe("buildGalleryPhotos", () => {
     expect(photos).toEqual([expect.objectContaining({
       id: "leadership:leader-1", public_url: leader.photo, category: "leadership", title: leader.name,
     })]);
+  });
+});
+
+describe("uploadTitle", () => {
+  it("cleans a descriptive filename into a title", () => {
+    expect(uploadTitle("orange-cup_final.jpg")).toBe("orange cup final");
+  });
+
+  it("returns null for camera and phone filenames", () => {
+    for (const name of ["IMG_2034.jpg", "DSC00123.JPG", "PXL_20261019_101500.jpg", "WhatsApp Image 2026-10-19 at 10.15.00.jpeg", "20261019.jpg"]) {
+      expect(uploadTitle(name)).toBeNull();
+    }
+    expect(uploadTitle(null)).toBeNull();
+  });
+
+  it("never uses a raw filename as alt text", () => {
+    const [photo] = buildGalleryPhotos({
+      articles: [], players: [], staff: [], leaders: [],
+      uploads: [{ id: "u", public_url: "/u.jpg", original_filename: "IMG_2034.jpg", uploaded_at: "2026-10-19T10:00:00Z" }],
+    });
+    expect(photo.alt).toBe("Shaita Angels gallery photo");
+    expect(photo.title).toBe("Shaita Angels FC");
+  });
+});
+
+describe("canOptimizeImage", () => {
+  it("accepts local paths and public Supabase storage", () => {
+    expect(canOptimizeImage("/gallery-3.jpg")).toBe(true);
+    expect(canOptimizeImage("https://abc.supabase.co/storage/v1/object/public/gallery/a.jpg")).toBe(true);
+  });
+
+  it("rejects other hosts and protocol-relative URLs", () => {
+    expect(canOptimizeImage("https://cdn.example.com/a.jpg")).toBe(false);
+    expect(canOptimizeImage("http://abc.supabase.co/storage/v1/object/public/gallery/a.jpg")).toBe(false);
+    expect(canOptimizeImage("//evil.example/a.jpg")).toBe(false);
   });
 });

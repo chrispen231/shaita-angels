@@ -74,8 +74,15 @@ export function buildGalleryPhotos({
     }
   }
   for (const upload of uploads) {
-    const title = upload.original_filename?.replace(/\.[^.]+$/, "") || "Shaita Angels FC";
-    add({ id: `gallery:${upload.id}`, public_url: upload.public_url, alt: upload.original_filename || "Shaita Angels gallery photo", title, category: "gallery", date: upload.uploaded_at });
+    const name = uploadTitle(upload.original_filename);
+    add({
+      id: `gallery:${upload.id}`,
+      public_url: upload.public_url,
+      alt: name ? `${name}, Shaita Angels gallery photo` : "Shaita Angels gallery photo",
+      title: name ?? "Shaita Angels FC",
+      category: "gallery",
+      date: upload.uploaded_at,
+    });
   }
 
   return photos.sort((a, b) => {
@@ -84,4 +91,30 @@ export function buildGalleryPhotos({
     if (b.date) return 1;
     return a.title.localeCompare(b.title);
   });
+}
+
+// Names cameras and phones give files, which describe nothing to a reader:
+// "IMG_2034", "DSC00123", "PXL_20261019_101500", "WhatsApp Image 2026-10-19".
+const CAMERA_FILENAME = /^(img|dsc|dscn|dscf|pxl|photo|image|screenshot|whatsapp image|signal)[\s_-]*\d/i;
+
+/**
+ * A readable title from an uploaded file's name, or null when the name says
+ * nothing about the photo. Gallery uploads carry no caption field, so the
+ * filename is the only source, and a raw "IMG_2034.jpg" must not become alt text.
+ */
+export function uploadTitle(filename: string | null): string | null {
+  if (!filename) return null;
+  const name = filename.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!/[a-z]{2}/i.test(name) || CAMERA_FILENAME.test(name)) return null;
+  return name;
+}
+
+/**
+ * Whether next/image can optimise this source. Local files and this project's
+ * public Supabase storage match next.config.ts remotePatterns; anything else
+ * (a pasted article image URL) would fail in the optimiser, so it is served as is.
+ */
+export function canOptimizeImage(url: string): boolean {
+  if (url.startsWith("/") && !url.startsWith("//")) return true;
+  return /^https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/public\//.test(url);
 }

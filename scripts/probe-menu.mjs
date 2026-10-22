@@ -1,4 +1,4 @@
-import { chromium, devices } from "playwright-core";
+import { chromium } from "playwright-core";
 
 const b = await chromium.launch();
 const page = await b.newPage();

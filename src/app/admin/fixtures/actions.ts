@@ -4,12 +4,13 @@ import { redirect } from "next/navigation";
 import { getSiteUrl } from "@/lib/supabase/config";
 import { getAdminContext } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { validateFixture } from "@/lib/fixtures/validation";
+import { isRealIsoDate, validateFixture } from "@/lib/fixtures/validation";
 import { logAdminAction } from "@/lib/admin/audit";
 import { canAccess, type AdminContext } from "@/lib/admin/roles";
 import { getCompetitionsForAdmin } from "@/lib/reference-data.server";
 import { parseBulkFixtures, MAX_BULK_LINES } from "@/lib/fixtures/bulk-paste";
 import { generateSeriesDates } from "@/lib/fixtures/recurrence";
+import { secondHalfStart } from "@/lib/fixtures/live-clock";
 import {
   duplicateSearchRange,
   findBatchDuplicates,
@@ -130,7 +131,7 @@ export async function saveFixture(_previous: FixtureSaveState, formData: FormDat
   if (!opponent || opponent.length > 100 || !competition || competition.length > 120 || !season || season.length > 30) {
     return { status: "error", message: "Check opponent, competition, and season. One or more fields are empty or too long." };
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(matchDate) || Number.isNaN(Date.parse(`${matchDate}T00:00:00Z`))) return { status: "error", message: "Enter a valid match date." };
+  if (!isRealIsoDate(matchDate)) return { status: "error", message: "Enter a valid match date." };
   if (!(["home", "away", "neutral"] as const).includes(venueType as "home" | "away" | "neutral")) return { status: "error", message: "Choose a valid venue type." };
   if (!( ["scheduled", "played", "live", "halftime", "postponed", "cancelled"] as const).includes(status as "scheduled" | "played" | "live" | "halftime" | "postponed" | "cancelled")) return { status: "error", message: "Choose a valid match status." };
 
@@ -173,6 +174,7 @@ export async function saveFixture(_previous: FixtureSaveState, formData: FormDat
    * The live clock's start point.
    *
    * went_live_at is stamped on the transition INTO live and left alone after that.
+   * Halftime keeps it; going live again from halftime restarts it at 46'.
    * Editing a live fixture - correcting the score, fixing a typo in the venue -
    * must not restart the minute counter, which it would if this wrote a fresh
    * timestamp on every save.
@@ -211,15 +213,23 @@ export async function saveFixture(_previous: FixtureSaveState, formData: FormDat
 
   if (id) {
     const wasLive = current?.status === "live";
+    const wasHalftime = current?.status === "halftime";
     const existing = current?.went_live_at ?? null;
 
     if (status === "live") {
-      // Keep the original start time when the match was already live; otherwise
-      // start the clock now.
-      wentLiveAt = wasLive && existing ? existing : new Date().toISOString();
+      // Keep the original start time when the match was already live. Coming
+      // back from halftime starts the second half at 46'. Otherwise start the
+      // clock now.
+      if (wasLive && existing) wentLiveAt = existing;
+      else if (wasHalftime) wentLiveAt = secondHalfStart(new Date());
+      else wentLiveAt = new Date().toISOString();
+    } else if (status === "halftime") {
+      // The clock pauses at halftime but is not lost; it is restarted at 46'
+      // when the match goes live again.
+      wentLiveAt = existing;
     } else {
-      // Leaving live clears it, so a match re-marked live later starts a fresh
-      // clock rather than resuming a stale one.
+      // Any other status clears it, so a match re-marked live later starts a
+      // fresh clock rather than resuming a stale one.
       wentLiveAt = null;
     }
   } else if (status === "live") {

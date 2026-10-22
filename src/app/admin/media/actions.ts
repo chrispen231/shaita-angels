@@ -115,11 +115,33 @@ export async function deleteImage(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.storage.from(bucketRaw).remove([objectPath]);
+  const { data: removed, error } = await supabase.storage.from(bucketRaw).remove([objectPath]);
 
   if (error) {
     console.error("Image delete failed", error.message);
     return { status: "error", message: "We couldn't delete that image.", url: "", path: "" };
+  }
+  // Storage reports no error when RLS blocks the delete or the object is already
+  // gone; it just returns no removed objects.
+  if (!removed || !removed.some((object) => object.name === objectPath)) {
+    return {
+      status: "error",
+      message: "That image wasn't deleted. It may already be gone, or your role cannot delete it.",
+      url: "",
+      path: "",
+    };
+  }
+
+  // The upload record is kept as the audit trail, but a published gallery photo
+  // whose file is gone would show as a broken image on /media, so unpublish it.
+  if (bucketRaw === "gallery") {
+    const { error: unpublishError } = await supabase
+      .from("media_uploads")
+      .update({ is_published: false })
+      .eq("bucket", bucketRaw)
+      .eq("object_path", objectPath)
+      .eq("purpose", "gallery");
+    if (unpublishError) console.error("Unpublishing deleted gallery photo failed", unpublishError.message);
   }
 
   // Log the admin action
@@ -133,5 +155,6 @@ export async function deleteImage(
   });
 
   revalidatePath("/admin/media");
+  revalidatePath("/media");
   return { status: "success", message: "Image deleted. Records still pointing at it will show a gap.", url: "", path: "" };
 }

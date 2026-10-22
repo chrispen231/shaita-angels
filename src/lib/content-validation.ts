@@ -7,6 +7,8 @@
  * in src/lib/content/ because src/lib/content.ts already occupies that name.
  */
 
+import { isAllowedImageUrl, isRealIsoDate } from "@/lib/fixtures/validation";
+
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -52,8 +54,15 @@ export function validateArticle(input: ArticleInput): string | null {
   if (!ISO_DATE.test(input.published_on.trim())) {
     return "Enter the publication date as YYYY-MM-DD.";
   }
-  if (Number.isNaN(Date.parse(`${input.published_on.trim()}T00:00:00Z`))) {
+  if (!isRealIsoDate(input.published_on.trim())) {
     return "That publication date is not a real date.";
+  }
+
+  // The image is optional. When present it is rendered through next/image, so it
+  // must be a site path or an uploaded image in Supabase storage.
+  const imagePath = input.image_path.trim();
+  if (imagePath !== "" && !isAllowedImageUrl(imagePath, { allowSitePath: true })) {
+    return "Upload the story image rather than pasting a link from another site.";
   }
 
   // article_image_alt_length: <= 200 when present

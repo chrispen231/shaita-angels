@@ -30,12 +30,44 @@ const VENUE_TYPES = ["home", "away", "neutral"] as const;
 const STATUSES = ["scheduled", "played", "live", "halftime", "postponed", "cancelled"] as const;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-// A logo URL is rendered into an image src, so it must be an absolute http(s) URL.
-// A javascript: or data: value here would be stored and later rendered into that
-// src, so the scheme is checked rather than assumed.
-const HTTP_URL = /^https?:\/\/[^\s]+$/i;
 const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const SCORE = /^\d{1,2}$/;
+
+/**
+ * True for a YYYY-MM-DD string naming a real calendar day. Date.parse alone
+ * accepts 2026-02-30 and rolls it into March, so the parsed date must also
+ * round-trip to the same string.
+ */
+export function isRealIsoDate(value: string): boolean {
+  if (!ISO_DATE.test(value)) return false;
+  const parsed = Date.parse(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed) && new Date(parsed).toISOString().slice(0, 10) === value;
+}
+
+/**
+ * True for an image address next/image will render: an https URL in a Supabase
+ * public storage bucket, matching remotePatterns in next.config.ts, or, with
+ * allowSitePath, a path to a file in public/. Anything else (http://, another
+ * host, javascript:, data:) would be stored and then fail or be unsafe when
+ * rendered into an image src.
+ */
+export function isAllowedImageUrl(value: string, { allowSitePath = false } = {}): boolean {
+  if (/\s/.test(value)) return false;
+  if (value.startsWith("/")) {
+    // Site-relative, but not protocol-relative ("//host/..." or "/\host/...").
+    return allowSitePath && !value.startsWith("//") && !value.startsWith("/\\");
+  }
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      url.hostname.endsWith(".supabase.co") &&
+      url.pathname.startsWith("/storage/v1/object/public/")
+    );
+  } catch {
+    return false;
+  }
+}
 
 export function validateFixture(input: FixtureInput): string | null {
   const { opponent, competition, season } = input;
@@ -51,7 +83,7 @@ export function validateFixture(input: FixtureInput): string | null {
     return "Check opponent, competition, and season. One or more fields are empty or too long.";
   }
 
-  if (!ISO_DATE.test(input.match_date) || Number.isNaN(Date.parse(`${input.match_date}T00:00:00Z`))) {
+  if (!isRealIsoDate(input.match_date)) {
     return "Enter a valid match date.";
   }
 
@@ -97,11 +129,11 @@ export function validateFixture(input: FixtureInput): string | null {
     return "Enter kickoff time in 24-hour HH:MM format.";
   }
 
-  // An opponent logo is optional. When present it must be an absolute http(s) URL,
-  // because it is rendered straight into an image src.
+  // An opponent logo is optional. When present it must be an address the site's
+  // image pipeline will render, because it goes straight into an image src.
   if (input.opponent_logo_url !== null) {
-    if (!HTTP_URL.test(input.opponent_logo_url)) {
-      return "The opponent logo must be a full http:// or https:// address. Upload the image rather than pasting a link.";
+    if (!isAllowedImageUrl(input.opponent_logo_url)) {
+      return "Upload the opponent logo rather than pasting a link from another site.";
     }
     if (input.opponent_logo_url.length > 500) return "That logo address is too long.";
     if (input.opponent_logo_alt !== null && input.opponent_logo_alt.length > 200) {

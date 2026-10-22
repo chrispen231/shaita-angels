@@ -20,7 +20,6 @@ const files = (await fs.readdir(dir)).filter((f) => f.endsWith(".png")).sort();
 const rows = [];
 for (const file of files) {
   const full = path.join(dir, file);
-  const meta = await sharp(full).metadata();
 
   const { data, info } = await sharp(full).flatten({ background: "#ffffff" }).raw().toBuffer({ resolveWithObject: true });
 

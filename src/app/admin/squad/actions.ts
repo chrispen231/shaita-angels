@@ -10,8 +10,8 @@ import type { FixtureActionState } from "@/types/fixtures";
 /**
  * Squad writes.
  *
- * Fixture editors and super admins, matching the squad policy in
- * 20261005150000_match_content.sql.
+ * Content editors and super admins, matching the squad policy in
+ * 20261021120000_security_fixes.sql.
  *
  * date_of_birth is handled as confidential throughout: it is validated here,
  * written here, and never sent to the public pages. is_minor is maintained by a
@@ -22,7 +22,7 @@ import type { FixtureActionState } from "@/types/fixtures";
 async function requireEditor() {
   const context = await getAdminContext();
   if (!context) throw new Error("Sign in to manage the squad.");
-  if (context.role !== "super_admin" && context.role !== "fixtures") {
+  if (context.role !== "super_admin" && context.role !== "content") {
     throw new Error("Your role does not include squad editing.");
   }
   return context;
@@ -165,15 +165,17 @@ export async function togglePlayerPublished(
   const publish = field(formData, "publish") === "true";
   if (!/^[0-9a-f-]{36}$/i.test(id)) return { status: "error", message: "Unknown player." };
 
-  const { error } = await context.supabase
+  const { data: written, error } = await context.supabase
     .from("squad")
     .update({ is_published: publish })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
 
   if (error) {
     console.error("Squad publish toggle failed", error.message);
     return { status: "error", message: "We couldn't change that player's visibility." };
   }
+  if (updateWasRejected(written)) return { status: "error", message: "That player no longer exists or you can't change it. Reload the page." };
 
   // Log the admin action
   await logAdminAction({
@@ -211,11 +213,12 @@ export async function removePlayer(
     .eq("id", id)
     .maybeSingle();
 
-  const { error } = await context.supabase.from("squad").delete().eq("id", id);
+  const { data: deleted, error } = await context.supabase.from("squad").delete().eq("id", id).select("id");
   if (error) {
     console.error("Squad delete failed", error.message);
     return { status: "error", message: "We couldn't remove that player." };
   }
+  if (updateWasRejected(deleted)) return { status: "error", message: "That player no longer exists or you can't change it. Reload the page." };
 
   // Log the admin action
   await logAdminAction({

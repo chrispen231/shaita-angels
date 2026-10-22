@@ -16,12 +16,6 @@ function srgbToLinear(c) {
 function luminance(r, g, b) {
   return 0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
 }
-function contrast(r1, g1, b1, r2, g2, b2) {
-  const a = luminance(r1, g1, b1);
-  const b = luminance(r2, g2, b2);
-  const [hi, lo] = a > b ? [a, b] : [b, a];
-  return (hi + 0.05) / (lo + 0.05);
-}
 
 await fs.mkdir(out, { recursive: true });
 

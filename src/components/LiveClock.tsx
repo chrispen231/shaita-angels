@@ -1,52 +1,58 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { liveClock } from "@/lib/fixtures/live-clock";
 
 /**
  * The live minute, ticking.
  *
- * A client component because the minute has to advance without a reload. The
- * server renders the first value (so the badge is correct before hydration and
- * for a reader with JavaScript off), then this takes over.
+ * A client component because the minute has to advance without a reload.
  *
- * The tick is aligned to the wall clock rather than a fixed interval: a 60s
- * setInterval started at 12:00:47 would show a new minute 47 seconds late. This
- * waits for the next minute boundary, then every 60 seconds after it, so the
- * displayed minute matches the real one.
+ * The label is read through useSyncExternalStore with the clock as the external
+ * store. The server renders a plain "LIVE" (the server snapshot), and hydration
+ * renders the same, so the two cannot disagree; the browser then swaps in the
+ * minute straight after hydrating. Rendering the minute on the server instead
+ * would mismatch whenever the server and browser clocks fall either side of a
+ * minute boundary.
+ *
+ * The tick is aligned to went_live_at rather than a fixed interval: the minute
+ * changes 60 seconds after the match went live, not on the wall clock's minute,
+ * so the timer waits for that boundary each time.
  *
  * The value is computed from went_live_at on every tick, never incremented, so a
  * laptop that sleeps for ten minutes wakes up showing the right minute instead of
  * ten minutes behind.
  */
 export default function LiveClock({ wentLiveAt }: { wentLiveAt: string | null }) {
-  const [now, setNow] = useState(() => new Date());
+  const subscribe = useCallback(
+    (onTick: () => void) => {
+      const started = wentLiveAt ? Date.parse(wentLiveAt) : NaN;
+      let timeout: ReturnType<typeof setTimeout>;
 
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined;
-    let cancelled = false;
+      const schedule = () => {
+        const sinceStart = Number.isNaN(started) ? Date.now() : Date.now() - started;
+        const msToNextMinute = 60_000 - (((sinceStart % 60_000) + 60_000) % 60_000);
+        // A hair past the boundary, to avoid re-reading the old minute.
+        timeout = setTimeout(() => {
+          onTick();
+          schedule();
+        }, msToNextMinute + 50);
+      };
 
-    // First tick lands on the next minute boundary, so the change is not late.
-    const msToNextMinute = 60_000 - (Date.now() % 60_000);
-    const timeout = setTimeout(() => {
-      if (cancelled) return;
-      setNow(new Date());
-      interval = setInterval(() => setNow(new Date()), 60_000);
-    }, msToNextMinute + 50); // a hair past the boundary, to avoid re-reading the old minute
+      schedule();
+      return () => clearTimeout(timeout);
+    },
+    [wentLiveAt],
+  );
 
-    return () => {
-      cancelled = true;
-      clearTimeout(timeout);
-      if (interval) clearInterval(interval);
-    };
-  }, []);
+  const readLabel = () => liveClock(wentLiveAt, new Date())?.label ?? null;
+  const label = useSyncExternalStore(subscribe, readLabel, () => null);
 
-  const clock = liveClock(wentLiveAt, now);
-  if (!clock) return <span className="live-minute">LIVE</span>;
+  if (label === null) return <span className="live-minute">LIVE</span>;
 
   return (
-    <span className="live-minute" aria-label={`${clock.label} played`}>
-      {clock.label}
+    <span className="live-minute" aria-label={`${label} played`}>
+      {label}
     </span>
   );
 }

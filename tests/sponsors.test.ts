@@ -4,27 +4,8 @@ import {
   SPONSOR_TIER_LABELS,
   SOCIAL_PLATFORMS,
   type SocialHandle,
-  type Sponsor,
   type SponsorTier,
 } from "@/types/sponsors";
-
-function makeSponsor(overrides: Partial<Sponsor> = {}): Sponsor {
-  return {
-    id: "a",
-    name: "BETTOMAX",
-    tier: 1,
-    url: "https://bettomax-lbr.com",
-    logo_path: null,
-    alt_text: null,
-    starts_on: null,
-    ends_on: null,
-    sort_order: 10,
-    is_published: true,
-    created_at: "2026-10-05T00:00:00Z",
-    updated_at: "2026-10-05T00:00:00Z",
-    ...overrides,
-  };
-}
 
 describe("sponsorLogoUrl", () => {
   const original = process.env.NEXT_PUBLIC_SUPABASE_URL;

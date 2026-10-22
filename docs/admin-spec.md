@@ -364,7 +364,10 @@ withheld from `anon` and `authenticated` by column-level grant — RLS operates 
 rows and cannot restrict one column. Verified on the live database: reading the
 column as `anon` fails with `42501 permission denied for table squad`, while
 `full_name` and `is_minor` read fine. A public query that asked for it would error
-rather than leak a minor's birth date.
+rather than leak a minor's birth date. Until `20261021120000_security_fixes.sql`
+the column was still granted to `authenticated`, so any signed-in account could
+read it; the admin squad screen now reads it through `squad_dates_of_birth()`,
+which returns rows only to content editors and super admins.
 
 `is_minor` is maintained by a trigger rather than a stored generated column,
 because a generated column must be IMMUTABLE and `current_date` is not — deriving

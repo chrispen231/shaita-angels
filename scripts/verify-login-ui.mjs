@@ -4,8 +4,9 @@
 //
 // Chromium, not WebKit: the background clips are H.264, which WebKit's bundled
 // build cannot decode, so video playback would "fail" for a codec reason rather
-// than a code reason. WebKit is still used for the touch/mobile layout pass.
-import { chromium, webkit, devices } from "playwright-core";
+// than a code reason. The touch/mobile layout pass also runs in Chromium, with a
+// device descriptor.
+import { chromium, devices } from "playwright-core";
 
 const BASE = "http://localhost:3000/admin/login";
 const results = [];

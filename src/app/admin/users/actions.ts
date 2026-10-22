@@ -5,6 +5,7 @@ import { getAdminContext } from "@/lib/admin/roles";
 import { ROLES, type Role } from "@/lib/admin/roles";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { logAdminAction } from "@/lib/admin/audit";
+import { updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
 /**
@@ -83,25 +84,43 @@ async function createAuthUser(email: string): Promise<"created" | "exists" | nul
   );
 
   if (result === null) {
-    const existing = await managementApi<{ users?: { email: string }[] }>(
-      "GET",
-      `users?email=${encodeURIComponent(email)}`,
-    );
-    if (existing?.users?.length) return "exists";
-    return null;
+    return (await findAuthUserId(email)) ? "exists" : null;
   }
   return "created";
+}
+
+const USERS_PER_PAGE = 1000;
+const MAX_USER_PAGES = 20;
+
+/**
+ * Find a Supabase Auth user's id by exact email.
+ *
+ * The admin users endpoint has no exact-email lookup: an `email` parameter is
+ * ignored and the endpoint returns every user. Each page is therefore searched
+ * for an exact, case-insensitive match, so a lookup never resolves to some other
+ * account. Returns null when no account matches or the API is unavailable.
+ */
+async function findAuthUserId(email: string): Promise<string | null> {
+  const target = email.toLowerCase();
+
+  for (let page = 1; page <= MAX_USER_PAGES; page += 1) {
+    const result = await managementApi<{ users?: { id: string; email?: string | null }[] }>(
+      "GET",
+      `users?page=${page}&per_page=${USERS_PER_PAGE}`,
+    );
+    const users = result?.users ?? [];
+    const match = users.find((user) => user.email?.toLowerCase() === target);
+    if (match) return match.id;
+    if (users.length < USERS_PER_PAGE) return null;
+  }
+  return null;
 }
 
 /**
  * Delete a Supabase Auth user by email. Best effort.
  */
 async function deleteAuthUser(email: string): Promise<void> {
-  const existing = await managementApi<{ users?: { id: string; email: string }[] }>(
-    "GET",
-    `users?email=${encodeURIComponent(email)}`,
-  );
-  const userId = existing?.users?.[0]?.id;
+  const userId = await findAuthUserId(email);
   if (!userId) return;
 
   await managementApi("DELETE", `users/${userId}`);
@@ -159,7 +178,7 @@ export async function addAdmin(
     revalidatePath("/admin/users");
     const authMessage =
       authResult === "created"
-        ? " A confirmation email has been sent to them."
+        ? " They set their password from “Forgot or need to set your password?” on the sign-in page."
         : " They already had a sign-in account.";
     return {
       status: "success",
@@ -183,7 +202,11 @@ export async function changeAdminRole(
     return { status: "error", message: "Choose a role for that administrator." };
   }
 
-  const { error } = await context.supabase.from("site_admins").update({ role }).eq("email", email);
+  const { data: written, error } = await context.supabase
+    .from("site_admins")
+    .update({ role })
+    .eq("email", email)
+    .select("email");
   if (error) {
     // The trigger raises 42501 when this would remove the last super admin.
     if (error.code === "42501") {
@@ -195,6 +218,7 @@ export async function changeAdminRole(
     console.error("Admin role change failed", error.message);
     return { status: "error", message: "We couldn't change that role." };
   }
+  if (updateWasRejected(written)) return { status: "error", message: "That administrator no longer exists or you can't change it. Reload the page." };
 
   // Log the admin action
   await logAdminAction({
@@ -227,7 +251,11 @@ export async function removeAdmin(
       };
     }
 
-    const { error } = await context.supabase.from("site_admins").delete().eq("email", email);
+    const { data: deleted, error } = await context.supabase
+      .from("site_admins")
+      .delete()
+      .eq("email", email)
+      .select("email");
     if (error) {
       if (error.code === "42501") {
         return {
@@ -238,6 +266,9 @@ export async function removeAdmin(
       console.error("Admin delete failed", error.message);
       return { status: "error", message: "We couldn't remove that administrator." };
     }
+    // Without this check a blocked delete would fall through and still remove
+    // their sign-in account below.
+    if (updateWasRejected(deleted)) return { status: "error", message: "That administrator no longer exists or you can't change it. Reload the page." };
 
     // Log the admin action
     await logAdminAction({

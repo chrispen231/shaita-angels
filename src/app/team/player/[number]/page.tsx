@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { getSquadPlayer } from "@/lib/content";
 import { pad, singular } from "@/lib/format";
 import { photosForPlayer } from "@/lib/player-photos";
@@ -35,6 +35,8 @@ export default async function PlayerProfilePage({
   // Guard the segment before it reaches the database: Number("") is 0 and
   // Number("abc") is NaN, and neither should produce a lookup.
   if (!/^\d{1,2}$/.test(number)) notFound();
+  // "07" would otherwise serve the same page as "7" under a second URL.
+  if (number !== String(Number(number))) permanentRedirect(`/team/player/${Number(number)}`);
 
   const player = await getSquadPlayer(Number(number));
   if (!player) notFound();

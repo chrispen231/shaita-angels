@@ -120,7 +120,7 @@ export async function saveSponsor(
     });
 
     revalidatePath("/admin/sponsors");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { status: "success", message: id ? "Sponsor updated." : "Sponsor added." };
 }
 
@@ -134,15 +134,17 @@ export async function setSponsorPublished(
   const published = formData.get("is_published") === "on";
   if (!id) return { status: "error", message: "Missing sponsor." };
 
-  const { error } = await context.supabase
+  const { data: written, error } = await context.supabase
       .from("sponsors")
       .update({ is_published: published, updated_at: new Date().toISOString() })
-      .eq("id", id);
+      .eq("id", id)
+      .select("id");
 
     if (error) {
       console.error("Sponsor publish toggle failed", error.message);
       return { status: "error", message: "We couldn't update that sponsor." };
     }
+    if (updateWasRejected(written)) return { status: "error", message: "That sponsor no longer exists or you can't change it. Reload the page." };
 
     // Log the admin action
     await logAdminAction({
@@ -155,7 +157,7 @@ export async function setSponsorPublished(
     });
 
     revalidatePath("/admin/sponsors");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { status: "success", message: published ? "Sponsor published." : "Sponsor unpublished." };
 }
 
@@ -191,11 +193,12 @@ export async function deleteSponsor(
     };
   }
 
-  const { error } = await context.supabase.from("sponsors").delete().eq("id", id);
+  const { data: deleted, error } = await context.supabase.from("sponsors").delete().eq("id", id).select("id");
     if (error) {
       console.error("Sponsor delete failed", error.message);
       return { status: "error", message: "We couldn't remove that sponsor." };
     }
+    if (updateWasRejected(deleted)) return { status: "error", message: "That sponsor no longer exists or you can't change it. Reload the page." };
 
     // Log the admin action
     await logAdminAction({
@@ -208,7 +211,7 @@ export async function deleteSponsor(
     });
 
     revalidatePath("/admin/sponsors");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { status: "success", message: `${sponsor.name} removed.` };
 }
 
@@ -284,6 +287,6 @@ export async function saveSettings(
     });
 
     revalidatePath("/admin/settings");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { status: "success", message: "Settings saved." };
 }

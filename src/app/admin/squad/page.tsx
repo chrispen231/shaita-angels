@@ -10,22 +10,32 @@ export const metadata = { title: "Squad" };
 export default async function SquadPage() {
   const context = requireScreen(await getAdminContext(), "squad");
 
-  // date_of_birth IS selected here, and only here. This screen runs as an
-  // authenticated fixture editor, which is the one role with a grant on that
-  // column; anon has none at all. Public pages use a separate query that never
-  // asks for it.
-  const { data } = await context.supabase
-    .from("squad")
-    .select(
-      "id, full_name, date_of_birth, position, preferred_foot, height_cm, weight_kg, shirt_number, bio, photo_url, photo_url_alt, is_minor, is_published, updated_at",
-    )
-    .order("shirt_number", { ascending: true, nullsFirst: false })
-    .order("full_name", { ascending: true });
+  // date_of_birth is read here, and only here. No role has a column grant on it;
+  // squad_dates_of_birth() returns it only to content editors and super admins.
+  // Public pages never ask for it.
+  const [{ data }, { data: birthDates, error: birthDateError }] = await Promise.all([
+    context.supabase
+      .from("squad")
+      .select(
+        "id, full_name, position, preferred_foot, height_cm, weight_kg, shirt_number, bio, photo_url, photo_url_alt, is_minor, is_published, updated_at",
+      )
+      .order("shirt_number", { ascending: true, nullsFirst: false })
+      .order("full_name", { ascending: true }),
+    context.supabase.rpc("squad_dates_of_birth"),
+  ]);
+
+  if (birthDateError) console.error("Squad date of birth read failed", birthDateError.message);
+  const birthDateById = new Map(
+    ((birthDates ?? []) as { id: string; date_of_birth: string | null }[]).map((row) => [
+      String(row.id),
+      row.date_of_birth,
+    ]),
+  );
 
   const players: SquadRow[] = (data ?? []).map((row) => ({
     id: String(row.id),
     full_name: String(row.full_name),
-    date_of_birth: row.date_of_birth === null ? null : String(row.date_of_birth),
+    date_of_birth: birthDateById.get(String(row.id)) ?? null,
     position: row.position === null ? null : String(row.position),
     preferred_foot: row.preferred_foot === null ? null : String(row.preferred_foot),
     height_cm: row.height_cm === null ? null : Number(row.height_cm),

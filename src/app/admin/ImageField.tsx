@@ -67,28 +67,12 @@ export default function ImageField({
   const fileInput = useRef<HTMLInputElement>(null);
 
   /*
-   * The field's value is derived during render rather than copied into state from an
-   * effect. An upload is an event, not synchronisation: when the browser upload returns a
-   * URL, that URL becomes the value unless the user has since typed or picked one.
-   *
-   * Three sources, in priority order:
-   *   1. manual   - the user typed a URL or clicked a library thumbnail
-   *   2. state.url - the most recent successful upload
-   *   3. the record's existing value from the server
+   * manual holds the latest explicit choice: a typed URL, a picked thumbnail, a
+   * fresh upload, or "" after "Remove image". null means no choice yet, so the
+   * record's existing value stands. The most recent action always wins, so an
+   * upload after a typed URL replaces it, and removing really submits nothing.
    */
-  const value = manual ?? (state.status === "success" ? state.url : defaultValue ?? "");
-
-  /*
-   * Newly uploaded URLs are folded into the recent list. Doing it during render
-   * would be a side effect, so the list is keyed off the last URL seen and only
-   * extended when that key changes.
-   */
-  const lastUploaded = state.status === "success" ? state.url : "";
-  if (lastUploaded && library[0] !== lastUploaded) {
-    setLibrary((current) =>
-      current[0] === lastUploaded ? current : [lastUploaded, ...current].slice(0, 12),
-    );
-  }
+  const value = manual ?? defaultValue ?? "";
 
   const bucket = PURPOSE_BUCKET[purpose];
   const limit = SIZE_LIMIT[bucket];
@@ -121,7 +105,14 @@ export default function ImageField({
     setLocalError("");
     setUploading(true);
     try {
-      setState(await uploadMediaFile(file, purpose));
+      const result = await uploadMediaFile(file, purpose);
+      setState(result);
+      if (result.status === "success" && result.url) {
+        setManual(result.url);
+        setLibrary((current) =>
+          current[0] === result.url ? current : [result.url, ...current].slice(0, 12),
+        );
+      }
     } catch (error) {
       console.error("Image upload failed", error);
       setState({ status: "error", message: "The upload failed. Check your connection and try again.", url: "", path: "" });
@@ -159,7 +150,6 @@ export default function ImageField({
             <input
               ref={fileInput}
               type="file"
-              name={`file_${name}`}
               accept={accept}
               className={styles.fileInput}
               onChange={onFileChosen}
@@ -226,7 +216,7 @@ export default function ImageField({
           type="url"
           className={styles.urlInput}
           placeholder="https://example.com/image.jpg"
-          value={mode === "url" ? (manual ?? state.url ?? defaultValue ?? "") : ""}
+          value={value}
           onChange={(event) => setManual(event.target.value)}
           aria-label={`${label}: image URL`}
         />
@@ -247,8 +237,7 @@ export default function ImageField({
               type="button"
               className={styles.clear}
               onClick={() => {
-                setManual(null);
-                setLibrary([]);
+                setManual("");
               }}
             >
               Remove image

@@ -69,7 +69,7 @@ export default function AuditLog() {
       }
     })();
     return () => { cancelled = true; };
-  }, [page, filters.actor_email, filters.target_type, filters.target_id, filters.from, filters.to]);
+  }, [page, filters]);
 
   const handleFilterChange = (key: keyof AuditLogFilters, value: string) => {
     setFilters((f) => ({ ...f, [key]: value }));

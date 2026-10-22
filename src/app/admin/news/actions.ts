@@ -17,10 +17,12 @@ import type { FixtureActionState } from "@/types/fixtures";
  * defaulting to published, because a half-written story that appears on the
  * homepage is worse than a draft the club has to notice and finish.
  *
- * An article is never deleted from here. Unpublishing is the correction, for the
- * same reason fixtures are never deleted: a URL that has been shared should keep
- * working, or at least keep saying clearly that the story is gone. Only the
- * honours screen allows removal, and that is a judgement call the UI confirms.
+ * Retracting (unpublishing) is the usual correction, because a URL that has been
+ * shared should keep working, or at least keep saying clearly that the story is
+ * gone. Deleting a story is also possible, and the UI confirms it first.
+ *
+ * Updates and deletes select the affected rows back: RLS, or a row someone else
+ * already removed, makes them match nothing without raising an error.
  */
 
 async function requireContentEditor() {
@@ -49,6 +51,10 @@ function emptyToNull(value: string) {
 }
 
 const UUID = /^[0-9a-f-]{36}$/i;
+
+function missingMessage(noun: string) {
+  return `That ${noun} no longer exists or you can't change it. Reload the page.`;
+}
 
 function articleIdFrom(formData: FormData) {
   const id = field(formData, "id");
@@ -160,11 +166,17 @@ export async function toggleArticlePublished(
   if (!UUID.test(id)) return { status: "error", message: "Unknown story." };
   const publish = field(formData, "publish") === "true";
 
-  const { error } = await context.supabase.from("articles").update({ is_published: publish }).eq("id", id);
+  const { data: written, error } = await context.supabase
+    .from("articles")
+    .update({ is_published: publish })
+    .eq("id", id)
+    .select("id, slug");
   if (error) {
     console.error("Article publish toggle failed", error.message);
     return { status: "error", message: "We couldn't change that story's visibility." };
   }
+  if (updateWasRejected(written)) return { status: "error", message: missingMessage("story") };
+  const slug = String(written[0].slug);
 
   // Log the admin action
   await logAdminAction({
@@ -173,11 +185,12 @@ export async function toggleArticlePublished(
     target_type: "news",
     target_id: id,
     action: publish ? "Published article" : "Unpublished article",
-    details: { slug: field(formData, "slug") || "unknown" },
+    details: { slug },
   });
 
   revalidatePath("/admin/news");
   revalidatePath("/news");
+  revalidatePath(`/news/${slug}`);
   revalidatePath("/");
   return { status: "success", message: publish ? "Story published." : "Story unpublished." };
 }
@@ -194,18 +207,32 @@ export async function retractArticle(
   const id = field(formData, "id");
   if (!UUID.test(id)) return { status: "error", message: "Unknown story." };
 
-  const { error } = await context.supabase
+  const { data: written, error } = await context.supabase
     .from("articles")
     .update({ is_published: false, is_featured: false })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id, slug");
 
   if (error) {
     console.error("Article retract failed", error.message);
     return { status: "error", message: "We couldn't retract that story." };
   }
+  if (updateWasRejected(written)) return { status: "error", message: missingMessage("story") };
+  const slug = String(written[0].slug);
+
+  // Log the admin action
+  await logAdminAction({
+    actor_email: context.user.email,
+    actor_role: context.role,
+    target_type: "news",
+    target_id: id,
+    action: "Retracted article",
+    details: { slug },
+  });
 
   revalidatePath("/admin/news");
   revalidatePath("/news");
+  revalidatePath(`/news/${slug}`);
   revalidatePath("/");
   return { status: "success", message: "Story retracted. It is kept as a draft." };
 }
@@ -222,12 +249,18 @@ export async function deleteArticle(
   const id = field(formData, "id");
   if (!UUID.test(id)) return { status: "error", message: "Unknown story." };
 
-  const { error } = await context.supabase.from("articles").delete().eq("id", id);
+  const { data: deleted, error } = await context.supabase
+    .from("articles")
+    .delete()
+    .eq("id", id)
+    .select("id, slug");
 
   if (error) {
     console.error("Article delete failed", error.message);
     return { status: "error", message: "We couldn't delete that story." };
   }
+  if (updateWasRejected(deleted)) return { status: "error", message: missingMessage("story") };
+  const slug = String(deleted[0].slug);
 
   // Log the admin action
   await logAdminAction({
@@ -236,11 +269,12 @@ export async function deleteArticle(
     target_type: "news",
     target_id: id,
     action: "Deleted article",
-    details: { slug: field(formData, "slug") || "unknown" },
+    details: { slug },
   });
 
   revalidatePath("/admin/news");
   revalidatePath("/news");
+  revalidatePath(`/news/${slug}`);
   revalidatePath("/");
   return { status: "success", message: "Story deleted." };
 }
@@ -271,15 +305,18 @@ export async function saveHonor(
     detail: emptyToNull(input.detail),
   };
 
+  // honors has no updated_at, so there is no optimistic lock here. Selecting the
+  // row back at least catches an honour someone else removed in the meantime.
   const query = id
-    ? context.supabase.from("honors").update(payload).eq("id", id)
-    : context.supabase.from("honors").insert({ ...payload, is_published: true });
+    ? context.supabase.from("honors").update(payload).eq("id", id).select("id")
+    : context.supabase.from("honors").insert({ ...payload, is_published: true }).select("id");
 
-  const { error: writeError } = await query;
+  const { data: written, error: writeError } = await query;
   if (writeError) {
     console.error("Honour save failed", writeError.message);
     return { status: "error", message: "We couldn't save that honour." };
   }
+  if (updateWasRejected(written)) return { status: "error", message: missingMessage("honour") };
 
   // Log the admin action
   await logAdminAction({
@@ -306,11 +343,12 @@ export async function removeHonor(
   const id = field(formData, "id");
   if (!UUID.test(id)) return { status: "error", message: "Unknown honour." };
 
-  const { error } = await context.supabase.from("honors").delete().eq("id", id);
+  const { data: deleted, error } = await context.supabase.from("honors").delete().eq("id", id).select("id");
   if (error) {
     console.error("Honour delete failed", error.message);
     return { status: "error", message: "We couldn't remove that honour." };
   }
+  if (updateWasRejected(deleted)) return { status: "error", message: missingMessage("honour") };
 
   // Log the admin action
   await logAdminAction({
@@ -342,12 +380,9 @@ export async function moveHonor(
     return { status: "error", message: "Unknown direction." };
   }
 
-  // Every column needed for the upsert is selected, not just id and sort_order.
-  // An upsert with a partial row would write NULL into the columns left out and
-  // wipe the honour's name and year.
   const { data, error } = await context.supabase
     .from("honors")
-    .select("id, year_label, name, detail, is_published, sort_order")
+    .select("id, sort_order")
     .order("sort_order", { ascending: true });
 
   if (error || !data || data.length === 0) {
@@ -371,20 +406,21 @@ export async function moveHonor(
   }
 
   // Swap the two sort_order values rather than renumbering the whole list, so
-  // two admins reordering at once cannot corrupt every row between them.
-  const { error: swapError } = await context.supabase
-    .from("honors")
-    .upsert(
-      [
-        { ...current, sort_order: other.sort_order },
-        { ...other, sort_order: current.sort_order },
-      ],
-      { onConflict: "id" },
-    );
+  // two admins reordering at once cannot corrupt every row between them. Only
+  // sort_order is written: upserting whole rows would revert an edit made since
+  // the read, or re-insert an honour deleted since the read.
+  const [first, second] = await Promise.all([
+    context.supabase.from("honors").update({ sort_order: other.sort_order }).eq("id", current.id).select("id"),
+    context.supabase.from("honors").update({ sort_order: current.sort_order }).eq("id", other.id).select("id"),
+  ]);
 
+  const swapError = first.error ?? second.error;
   if (swapError) {
     console.error("Honour reorder failed", swapError.message);
     return { status: "error", message: "We couldn't reorder the honours." };
+  }
+  if (updateWasRejected(first.data) || updateWasRejected(second.data)) {
+    return { status: "error", message: "The list changed while you were reordering. Reload and try again." };
   }
 
   revalidatePath("/admin/honours");

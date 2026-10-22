@@ -27,7 +27,9 @@ import type { FixtureActionState } from "@/types/fixtures";
  * Two conventions across every action:
  *
  *   * Lineups, goals and cards are replaced wholesale rather than diffed row by
- *     row. The editor submits the whole set it is showing, so a delete is an
+ *     row, through the replace_* functions in
+ *     20261022120000_match_content_transactions.sql so the delete and insert
+ *     commit or fail together. The editor submits the whole set it is showing, so a delete is an
  *     explicit removal by the contributor rather than an inferred side effect.
  *     It also keeps the shirt-number uniqueness check meaningful: a diff would
  *     let number 7 move between players without ever conflicting.
@@ -73,6 +75,7 @@ function rows(formData: FormData, prefix: string) {
       minute: at("minute"),
       added_stoppage: at("stoppage") === "on" || at("stoppage") === "true",
       is_own_goal: at("own_goal") === "on" || at("own_goal") === "true",
+      is_starter: at("starter") === "on",
       card: at("card"),
       assist_note: at("note"),
       sort_order: index,
@@ -95,15 +98,17 @@ export async function saveLineup(
   const players = await context.supabase.from("squad").select("id, full_name");
 
   // Rows with no name are empty inputs from the "add player" button, not errors.
+  // The starter flag is read in rows(), by the row's index in the whole form, so
+  // a blank row above a player cannot shift the flag onto the wrong one.
   const filled = submitted.filter((row) => row.player_name.length > 0);
 
-  const input: LineupInput[] = filled.map((row, index) => ({
+  const input: LineupInput[] = filled.map((row) => ({
     player_name: row.player_name,
     shirt_number: row.shirt_number,
     position: row.position,
     pitch_x: row.pitch_x,
     pitch_y: row.pitch_y,
-    is_starter: formData.get(`lineup_starter_${index}`) === "on",
+    is_starter: row.is_starter,
   }));
 
   // Sort order comes from the submitted row order, not from LineupInput, which
@@ -121,21 +126,10 @@ export async function saveLineup(
     (players.data ?? []).map((player) => [String(player.full_name).trim().toLowerCase(), player.id]),
   );
 
-  const { error: deleteError } = await context.supabase
-    .from("lineups")
-    .delete()
-    .eq("fixture_id", fixtureId);
-
-  if (deleteError) {
-    console.error("Lineup clear failed", deleteError.message);
-    return { status: "error", message: "We couldn't replace the lineup. Try again." };
-  }
-
   const payload = input.map((row) => {
     const trimmed = row.player_name.trim();
     const matched = byName.get(trimmed.toLowerCase());
     return {
-      fixture_id: fixtureId,
       player_id: matched ?? null,
       player_name: trimmed,
       shirt_number: row.shirt_number === "" ? null : Number(row.shirt_number),
@@ -147,14 +141,18 @@ export async function saveLineup(
     };
   });
 
-  const { error: insertError } = await context.supabase.from("lineups").insert(payload);
+  // One transaction: if the insert fails, the old lineup is kept.
+  const { error: writeError } = await context.supabase.rpc("replace_lineups", {
+    p_fixture_id: fixtureId,
+    p_rows: payload,
+  });
 
-  if (insertError) {
+  if (writeError) {
     // 23505 is the partial unique index on (fixture_id, shirt_number).
-    if (insertError.code === "23505") {
+    if (writeError.code === "23505") {
       return { status: "error", message: "Two players share a shirt number in this match." };
     }
-    console.error("Lineup insert failed", insertError.message);
+    console.error("Lineup save failed", writeError.message);
     return { status: "error", message: "We couldn't save the lineup." };
   }
 
@@ -195,25 +193,9 @@ export async function saveGoals(
     (players.data ?? []).map((player) => [String(player.full_name).trim().toLowerCase(), player.id]),
   );
 
-  const { error: deleteError } = await context.supabase
-    .from("match_goals")
-    .delete()
-    .eq("fixture_id", fixtureId);
-  if (deleteError) {
-    console.error("Goal clear failed", deleteError.message);
-    return { status: "error", message: "We couldn't replace the goals. Try again." };
-  }
-
-  if (filled.length === 0) {
-    revalidatePath(`/admin/matches/${fixtureId}`);
-    revalidatePath(`/match/${fixtureId}`);
-    return { status: "success", message: "All goals removed." };
-  }
-
   const payload = filled.map((row) => {
     const matched = byName.get(row.player_name.trim().toLowerCase());
     return {
-      fixture_id: fixtureId,
       player_id: matched ?? null,
       player_name: row.player_name.trim(),
       side: row.side as Side,
@@ -225,14 +207,19 @@ export async function saveGoals(
     };
   });
 
-  const { error: insertError } = await context.supabase.from("match_goals").insert(payload);
-  if (insertError) {
-    console.error("Goal insert failed", insertError.message);
+  // One transaction: if the insert fails, the old goals are kept.
+  const { error: writeError } = await context.supabase.rpc("replace_match_goals", {
+    p_fixture_id: fixtureId,
+    p_rows: payload,
+  });
+  if (writeError) {
+    console.error("Goal save failed", writeError.message);
     return { status: "error", message: "We couldn't save the goals." };
   }
 
   revalidatePath(`/admin/matches/${fixtureId}`);
   revalidatePath(`/match/${fixtureId}`);
+  if (payload.length === 0) return { status: "success", message: "All goals removed." };
   return { status: "success", message: `Saved ${payload.length} ${payload.length === 1 ? "goal" : "goals"}.` };
 }
 
@@ -268,23 +255,7 @@ export async function saveCards(
     (players.data ?? []).map((player) => [String(player.full_name).trim().toLowerCase(), player.id]),
   );
 
-  const { error: deleteError } = await context.supabase
-    .from("match_cards")
-    .delete()
-    .eq("fixture_id", fixtureId);
-  if (deleteError) {
-    console.error("Card clear failed", deleteError.message);
-    return { status: "error", message: "We couldn't replace the cards. Try again." };
-  }
-
-  if (filled.length === 0) {
-    revalidatePath(`/admin/matches/${fixtureId}`);
-    revalidatePath(`/match/${fixtureId}`);
-    return { status: "success", message: "All cards removed." };
-  }
-
   const payload = filled.map((row) => ({
-    fixture_id: fixtureId,
     player_id: byName.get(row.player_name.trim().toLowerCase()) ?? null,
     player_name: row.player_name.trim(),
     side: row.side as Side,
@@ -294,14 +265,19 @@ export async function saveCards(
     sort_order: row.sort_order,
   }));
 
-  const { error: insertError } = await context.supabase.from("match_cards").insert(payload);
-  if (insertError) {
-    console.error("Card insert failed", insertError.message);
+  // One transaction: if the insert fails, the old cards are kept.
+  const { error: writeError } = await context.supabase.rpc("replace_match_cards", {
+    p_fixture_id: fixtureId,
+    p_rows: payload,
+  });
+  if (writeError) {
+    console.error("Card save failed", writeError.message);
     return { status: "error", message: "We couldn't save the cards." };
   }
 
   revalidatePath(`/admin/matches/${fixtureId}`);
   revalidatePath(`/match/${fixtureId}`);
+  if (payload.length === 0) return { status: "success", message: "All cards removed." };
   return { status: "success", message: `Saved ${payload.length} ${payload.length === 1 ? "card" : "cards"}.` };
 }
 

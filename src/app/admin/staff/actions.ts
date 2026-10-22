@@ -171,15 +171,17 @@ export async function toggleStaffPublished(
     const context = await getAdminContext();
     if (!context) return { status: "error", message: "Session expired." };
 
-    const { error } = await context.supabase
+    const { data: written, error } = await context.supabase
       .from("staff")
       .update({ is_published: publish })
-      .eq("id", id);
+      .eq("id", id)
+      .select("id");
 
     if (error) {
       console.error("Staff toggle failed", error.message);
       return { status: "error", message: "Could not change visibility." };
     }
+    if (updateWasRejected(written)) return { status: "error", message: "That staff member no longer exists or you can't change it. Reload the page." };
 
     // Log the admin action
     await logAdminAction({
@@ -211,12 +213,13 @@ export async function removeStaff(
     const context = await getAdminContext();
     if (!context) return { status: "error", message: "Session expired." };
 
-    const { error } = await context.supabase.from("staff").delete().eq("id", id);
+    const { data: deleted, error } = await context.supabase.from("staff").delete().eq("id", id).select("id");
 
     if (error) {
       console.error("Staff delete failed", error.message);
       return { status: "error", message: "Could not remove staff member." };
     }
+    if (updateWasRejected(deleted)) return { status: "error", message: "That staff member no longer exists or you can't change it. Reload the page." };
 
     // Log the admin action
     await logAdminAction({

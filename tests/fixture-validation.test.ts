@@ -58,7 +58,16 @@ describe("match date", () => {
 
   it("accepts a well-formed ISO date", () => {
     expect(validateFixture({ ...valid, match_date: "2026-09-30" })).toBeNull();
+    expect(validateFixture({ ...valid, match_date: "2028-02-29" })).toBeNull();
   });
+
+  it.each(["2026-02-30", "2026-02-29", "2026-04-31", "2026-13-01", "2026-00-10"])(
+    "rejects the impossible date %o rather than rolling it over",
+    (match_date) => {
+      // Date.parse turns 2026-02-30 into 2 March; Postgres would reject it.
+      expect(validateFixture({ ...valid, match_date })).toMatch(/valid match date/i);
+    },
+  );
 });
 
 describe("kickoff time", () => {
@@ -200,39 +209,42 @@ describe("opponent logo", () => {
     expect(validateFixture(withLogo(null))).toBeNull();
   });
 
-  it("accepts an absolute https url", () => {
-    expect(
-      validateFixture(withLogo("https://abc.supabase.co/storage/v1/object/public/opponents/a.png")),
-    ).toBeNull();
+  const STORAGE = "https://abc.supabase.co/storage/v1/object/public/opponents";
+
+  it("accepts an uploaded logo in Supabase public storage", () => {
+    expect(validateFixture(withLogo(`${STORAGE}/a.png`))).toBeNull();
   });
 
-  it("accepts an absolute http url", () => {
-    expect(validateFixture(withLogo("http://example.com/a.png"))).toBeNull();
+  it("rejects addresses next/image is not configured to render", () => {
+    // remotePatterns in next.config.ts allows only https Supabase public storage,
+    // so anything else would break the crest on MatchCard.
+    expect(validateFixture(withLogo("http://abc.supabase.co/storage/v1/object/public/opponents/a.png"))).toMatch(/Upload the opponent logo/);
+    expect(validateFixture(withLogo("https://example.com/a.png"))).toMatch(/Upload the opponent logo/);
+    expect(validateFixture(withLogo("https://abc.supabase.co/rest/v1/a.png"))).toMatch(/Upload the opponent logo/);
+    expect(validateFixture(withLogo("https://supabase.co.evil.com/storage/v1/object/public/a.png"))).toMatch(/Upload the opponent logo/);
   });
 
   it("rejects a relative path", () => {
     // It is rendered into an image src, so a bare path would resolve against the
     // admin origin and 404 rather than show the crest.
-    expect(validateFixture(withLogo("/opponents/a.png"))).toMatch(/full http/);
+    expect(validateFixture(withLogo("/opponents/a.png"))).toMatch(/Upload the opponent logo/);
   });
 
   it("rejects a script url", () => {
-    expect(validateFixture(withLogo("javascript:alert(1)"))).toMatch(/full http/);
-    expect(validateFixture(withLogo("data:image/png;base64,AAA"))).toMatch(/full http/);
+    expect(validateFixture(withLogo("javascript:alert(1)"))).toMatch(/Upload the opponent logo/);
+    expect(validateFixture(withLogo("data:image/png;base64,AAA"))).toMatch(/Upload the opponent logo/);
   });
 
   it("rejects a url with whitespace", () => {
-    expect(validateFixture(withLogo("https://example.com/a b.png"))).toMatch(/full http/);
+    expect(validateFixture(withLogo(`${STORAGE}/a b.png`))).toMatch(/Upload the opponent logo/);
   });
 
   it("caps the description at 200 characters", () => {
-    expect(validateFixture(withLogo("https://example.com/a.png", "a".repeat(200)))).toBeNull();
-    expect(validateFixture(withLogo("https://example.com/a.png", "a".repeat(201)))).toMatch(
-      /under 200/,
-    );
+    expect(validateFixture(withLogo(`${STORAGE}/a.png`, "a".repeat(200)))).toBeNull();
+    expect(validateFixture(withLogo(`${STORAGE}/a.png`, "a".repeat(201)))).toMatch(/under 200/);
   });
 
   it("rejects an over-long url", () => {
-    expect(validateFixture(withLogo(`https://example.com/${"a".repeat(600)}`))).toMatch(/too long/);
+    expect(validateFixture(withLogo(`${STORAGE}/${"a".repeat(600)}`))).toMatch(/too long/);
   });
 });

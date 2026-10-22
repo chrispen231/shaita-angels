@@ -60,7 +60,9 @@ export default async function HomePage() {
 
     <section className="section wrap latest-section">
       <div className="section-topline"><div><p className="eyebrow">The latest</p><h2>News from the Angels.</h2></div><Link className="text-link" href="/news">All stories <span aria-hidden="true">↗</span></Link></div>
-      <div className="lead-story"><Link className="lead-image" href={`/news/${lead.slug}`} aria-label={`Read: ${lead.title}`}><Image src={lead.image ?? "/news-featured.jpg"} alt={lead.imageAlt ?? lead.title} fill sizes="(max-width: 780px) 100vw, 58vw" /></Link><article className="lead-copy"><div className="news-meta"><span>{lead.category}</span><time>{formatArticleDate(lead.date)}</time></div><h3><Link href={`/news/${lead.slug}`}>{lead.title}</Link></h3><p>{lead.excerpt}</p><Link className="text-link" href={`/news/${lead.slug}`}>Read the story <span aria-hidden="true">↗</span></Link></article></div>
+      {/* Nothing published (every story unpublished, or none written yet) shows
+          the fallback cup photo rather than throwing on articles[0]. */}
+      {lead ? <div className="lead-story"><Link className="lead-image" href={`/news/${lead.slug}`} aria-label={`Read: ${lead.title}`}><Image src={lead.image ?? "/news-featured.jpg"} alt={lead.imageAlt ?? lead.title} fill sizes="(max-width: 780px) 100vw, 58vw" /></Link><article className="lead-copy"><div className="news-meta"><span>{lead.category}</span><time>{formatArticleDate(lead.date)}</time></div><h3><Link href={`/news/${lead.slug}`}>{lead.title}</Link></h3><p>{lead.excerpt}</p><Link className="text-link" href={`/news/${lead.slug}`}>Read the story <span aria-hidden="true">↗</span></Link></article></div> : <div className="lead-story"><div className="lead-image"><Image src={FALLBACK_SLIDE.image} alt={FALLBACK_SLIDE.imageAlt} fill sizes="(max-width: 780px) 100vw, 58vw" /></div><article className="lead-copy"><h3>New stories are on the way.</h3><p>The club hasn’t published any news yet. Check back soon for match reports and updates from Careysburg.</p></article></div>}
     </section>
 
     <TrophyShowcase

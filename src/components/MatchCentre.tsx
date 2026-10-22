@@ -185,7 +185,7 @@ export default function MatchCentre({
               <span>
                 {list.filter(hasScore).length > 0 && (
                   <span className={styles.monthSplit}>
-                    {list.filter((f) => !hasScore(f) && f.status !== "live" && f.status !== "halftime").length} to play · {list.filter(hasScore).length} played
+                    {list.filter((f) => !hasScore(f) && f.status !== "live" && f.status !== "halftime" && f.status !== "postponed" && f.status !== "cancelled").length} to play · {list.filter(hasScore).length} played
                   </span>
                 )}
               </span>
