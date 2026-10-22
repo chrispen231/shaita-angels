@@ -1,9 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  COMPETITIONS,
   competitionBadge,
-  isCompetitionSlug,
-  matchCompetition,
+  competitionKind,
   monthKey,
   monthLabel,
   daysUntil,
@@ -12,6 +10,7 @@ import {
   opponentInitials,
   formatMatchDateLong,
 } from "@/lib/fixtures";
+import { builtInCompetitions, competitionBySlug, matchCompetition } from "@/lib/reference-data";
 import { parseMatchFilters } from "@/components/SectionPage";
 import type { Fixture } from "@/types/fixtures";
 
@@ -39,51 +38,75 @@ function make(overrides: Partial<Fixture> & { id: string }): Fixture {
   };
 }
 
-describe("matchCompetition", () => {
+const competitions = builtInCompetitions();
+const slugOf = (stored: string) => matchCompetition(competitions, stored)?.slug ?? null;
+
+describe("matchCompetition (public filter)", () => {
   it("maps each known competition to its slug", () => {
-    expect(matchCompetition("LFA Women's First Division")).toBe("lfa-womens-first-division");
-    expect(matchCompetition("Women’s Orange Cup")).toBe("womens-orange-cup");
-    expect(matchCompetition("Club Friendlies")).toBe("club-friendlies");
+    expect(slugOf("LFA Women's First Division")).toBe("lfa-womens-first-division");
+    expect(slugOf("Women’s Orange Cup")).toBe("womens-orange-cup");
+    expect(slugOf("Club Friendlies")).toBe("club-friendlies");
   });
 
   it("matches a competition that carries a stage suffix", () => {
     // The live row reads "Women's Orange Cup · Final".
-    expect(matchCompetition("Women’s Orange Cup · Final")).toBe("womens-orange-cup");
-    expect(matchCompetition("LFA Women's First Division · Matchday 4")).toBe("lfa-womens-first-division");
+    expect(slugOf("Women’s Orange Cup · Final")).toBe("womens-orange-cup");
+    expect(slugOf("LFA Women's First Division · Matchday 4")).toBe("lfa-womens-first-division");
   });
 
   it("handles straight and curly apostrophes", () => {
-    expect(matchCompetition("LFA Women's First Division")).toBe("lfa-womens-first-division");
-    expect(matchCompetition("LFA Women’s First Division")).toBe("lfa-womens-first-division");
+    expect(slugOf("LFA Women's First Division")).toBe("lfa-womens-first-division");
+    expect(slugOf("LFA Women’s First Division")).toBe("lfa-womens-first-division");
   });
 
   it("is case insensitive", () => {
-    expect(matchCompetition("club friendlies")).toBe("club-friendlies");
+    expect(slugOf("club friendlies")).toBe("club-friendlies");
+  });
+
+  it("finds a competition from a longer name containing its short name", () => {
+    expect(slugOf("LFA Women’s Super Cup")).toBe("lfa-super-cup");
+    expect(slugOf("Friendly")).toBe("club-friendlies");
+    expect(slugOf("Pre-season friendly")).toBe("club-friendlies");
   });
 
   it("returns null for an unknown competition rather than hiding the fixture", () => {
-    expect(matchCompetition("LFA Women’s Super Cup")).toBe("lfa-super-cup");
-    expect(matchCompetition("")).toBeNull();
+    expect(slugOf("County Shield")).toBeNull();
+    expect(slugOf("")).toBeNull();
   });
 
   it("covers all four club competitions", () => {
-    for (const entry of COMPETITIONS) {
-      expect(matchCompetition(entry.label)).toBe(entry.slug);
+    for (const entry of competitions) {
+      expect(slugOf(entry.name)).toBe(entry.slug);
     }
+  });
+
+  it("uses whatever list it is given, so a competition added in the admin gets a filter", () => {
+    const withNew = [...competitions, { slug: "county-shield", name: "County Shield", short: "Shield" }];
+    expect(matchCompetition(withNew, "County Shield · Semi-final")?.slug).toBe("county-shield");
   });
 });
 
-describe("isCompetitionSlug", () => {
+describe("competitionBySlug", () => {
   it("accepts the four known slugs", () => {
-    for (const entry of COMPETITIONS) {
-      expect(isCompetitionSlug(entry.slug)).toBe(true);
+    for (const entry of competitions) {
+      expect(competitionBySlug(competitions, entry.slug)).toBe(entry);
     }
   });
 
   it("rejects anything else", () => {
-    expect(isCompetitionSlug("")).toBe(false);
-    expect(isCompetitionSlug("nonsense")).toBe(false);
-    expect(isCompetitionSlug("LFA Women's First Division")).toBe(false);
+    expect(competitionBySlug(competitions, "")).toBeNull();
+    expect(competitionBySlug(competitions, undefined)).toBeNull();
+    expect(competitionBySlug(competitions, "nonsense")).toBeNull();
+    expect(competitionBySlug(competitions, "LFA Women's First Division")).toBeNull();
+  });
+});
+
+describe("competitionKind", () => {
+  it("describes cups and leagues from the name, and nothing else", () => {
+    expect(competitionKind("Women’s Orange Cup · Final")).toBe("cup");
+    expect(competitionKind("LFA Super Cup")).toBe("cup");
+    expect(competitionKind("LFA Women's First Division")).toBe("league");
+    expect(competitionKind("Club Friendlies")).toBeNull();
   });
 });
 
@@ -98,6 +121,12 @@ describe("parseMatchFilters", () => {
 
   it("drops an unknown competition instead of erroring", () => {
     expect(parseMatchFilters({ competition: "not-a-competition" }).competition).toBeNull();
+  });
+
+  it("validates the competition against the list it is given", () => {
+    const fromDatabase = [{ slug: "county-shield", name: "County Shield", short: "Shield" }];
+    expect(parseMatchFilters({ competition: "county-shield" }, fromDatabase).competition).toBe("county-shield");
+    expect(parseMatchFilters({ competition: "womens-orange-cup" }, fromDatabase).competition).toBeNull();
   });
 
   it("drops a malformed period", () => {

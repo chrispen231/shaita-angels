@@ -147,6 +147,7 @@ describe("squad validation", () => {
     // then read false for a minor.
     expect(validateSquad({ ...baseSquad, date_of_birth: "05/10/2010" })).toMatch(/YYYY-MM-DD/);
     expect(validateSquad({ ...baseSquad, date_of_birth: "2010-13-45" })).toMatch(/not a real date/);
+    expect(validateSquad({ ...baseSquad, date_of_birth: "2010-02-30" })).toMatch(/not a real date/);
   });
 
   it("rejects an implausible age", () => {

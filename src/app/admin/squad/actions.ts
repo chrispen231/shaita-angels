@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { validateSquad } from "@/lib/matches/validation";
-import { logAdminAction } from "@/lib/admin/audit";
 import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
@@ -84,16 +83,6 @@ export async function savePlayer(
     return { status: "error", message: "We couldn't add that player." };
   }
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "squad",
-    target_id: input.full_name,
-    action: "Added player",
-    details: { full_name: input.full_name, position: input.position, shirt_number: input.shirt_number },
-  });
-
   revalidatePath("/admin/squad");
   return {
     status: "success",
@@ -142,16 +131,6 @@ export async function updatePlayer(
   }
   if (updateWasRejected(written)) return { status: "error", message: conflictMessage("player") };
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "squad",
-    target_id: id,
-    action: "Updated player",
-    details: { full_name: input.full_name, position: input.position, shirt_number: input.shirt_number },
-  });
-
   revalidatePath("/admin/squad");
   return { status: "success", message: `${input.full_name} updated.` };
 }
@@ -176,16 +155,6 @@ export async function togglePlayerPublished(
     return { status: "error", message: "We couldn't change that player's visibility." };
   }
   if (updateWasRejected(written)) return { status: "error", message: "That player no longer exists or you can't change it. Reload the page." };
-
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "squad",
-    target_id: id,
-    action: publish ? "Published player" : "Unpublished player",
-    details: {},
-  });
 
   revalidatePath("/admin/squad");
   return { status: "success", message: publish ? "Player published." : "Player unpublished." };
@@ -219,16 +188,6 @@ export async function removePlayer(
     return { status: "error", message: "We couldn't remove that player." };
   }
   if (updateWasRejected(deleted)) return { status: "error", message: "That player no longer exists or you can't change it. Reload the page." };
-
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "squad",
-    target_id: id,
-    action: "Removed player",
-    details: { full_name: player?.full_name ?? "unknown" },
-  });
 
   revalidatePath("/admin/squad");
   return {

@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { createClient } from "@/lib/supabase/server";
-import { logAdminAction } from "@/lib/admin/audit";
 
 export type UploadState = {
   status: "idle" | "success" | "error";
@@ -63,16 +62,6 @@ export async function togglePublish(
     };
   }
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "media",
-    target_id: id,
-    action: publish ? "Published gallery photo" : "Unpublished gallery photo",
-    details: { purpose: "gallery" },
-  });
-
   revalidatePath("/admin/media");
   revalidatePath("/media");
   return {
@@ -86,9 +75,9 @@ export async function togglePublish(
 /**
  * Deletes a stored image.
  *
- * Super admin only, matching the single delete policy. The audit row is kept: the
- * record that an image existed and who put it there is more useful than the image,
- * and the log is what makes "who removed the sponsor logo" answerable in Phase 5.
+ * Super admin only, matching the storage and media_uploads delete policies. The
+ * upload record is deleted with the file; the audit trigger keeps a copy of it,
+ * so "who removed the sponsor logo" stays answerable.
  */
 export async function deleteImage(
   _previous: UploadState,
@@ -132,29 +121,26 @@ export async function deleteImage(
     };
   }
 
-  // The upload record is kept as the audit trail, but a published gallery photo
-  // whose file is gone would show as a broken image on /media, so unpublish it.
-  if (bucketRaw === "gallery") {
-    const { error: unpublishError } = await supabase
-      .from("media_uploads")
-      .update({ is_published: false })
-      .eq("bucket", bucketRaw)
-      .eq("object_path", objectPath)
-      .eq("purpose", "gallery");
-    if (unpublishError) console.error("Unpublishing deleted gallery photo failed", unpublishError.message);
-  }
-
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "media",
-    target_id: objectPath,
-    action: "Deleted image",
-    details: { bucket: bucketRaw, path: objectPath },
-  });
+  // The file is gone, so its upload record goes too: otherwise the Media Library
+  // keeps listing it and a published gallery photo shows as broken on /media.
+  // The audit trigger records the deleted row, so who uploaded it is not lost.
+  const { error: recordError } = await supabase
+    .from("media_uploads")
+    .delete()
+    .eq("bucket", bucketRaw)
+    .eq("object_path", objectPath);
 
   revalidatePath("/admin/media");
   revalidatePath("/media");
+
+  if (recordError) {
+    console.error("Deleting upload record failed", recordError.message);
+    return {
+      status: "error",
+      message: "The image was deleted, but its Media Library entry could not be removed.",
+      url: "",
+      path: "",
+    };
+  }
   return { status: "success", message: "Image deleted. Records still pointing at it will show a gap.", url: "", path: "" };
 }

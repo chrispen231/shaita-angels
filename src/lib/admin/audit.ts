@@ -1,17 +1,21 @@
 import { createClient } from "@/lib/supabase/server";
 import { auditDateBounds } from "@/lib/admin/audit-range";
+import type { AuditActorRole, AuditTargetType } from "@/lib/admin/audit-types";
 
 /*
- * Deliberately not a "use server" module. Exporting these from one would turn
- * both into server actions any browser could call directly; as plain server
- * functions they are reachable only through the admin actions and the audit
- * route, which check the admin's role first.
+ * Deliberately not a "use server" module, so the reader below is not a server
+ * action any browser could call; only the audit route, which checks the role,
+ * uses it.
+ *
+ * Nothing in the app writes to the log. Database triggers do, through
+ * audit_write() (20261022130000_audit_triggers.sql), so an entry cannot be
+ * skipped or attributed to someone else.
  */
 
 export interface AdminAuditEntry {
   actor_email: string;
-  actor_role: "super_admin" | "fixtures" | "content";
-  target_type: "fixture" | "match_content" | "news" | "sponsor" | "site_settings" | "user" | "media" | "staff" | "honour" | "squad";
+  actor_role: AuditActorRole;
+  target_type: AuditTargetType;
   target_id: string;
   action: string;
   details?: Record<string, unknown>;
@@ -19,28 +23,6 @@ export interface AdminAuditEntry {
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
-
-export async function logAdminAction(entry: AdminAuditEntry): Promise<{ error: string | null }> {
-  const supabase = await createClient();
-
-  // The insert policy compares actor_email with the lower-cased JWT email.
-  const { error } = await supabase
-    .from("admin_audit_log")
-    .insert({
-      actor_email: entry.actor_email.toLowerCase(),
-      actor_role: entry.actor_role,
-      target_type: entry.target_type,
-      target_id: entry.target_id,
-      action: entry.action,
-      details: entry.details ?? null,
-    });
-
-  if (error) {
-    console.error("admin_audit_log insert failed:", error);
-    return { error: "Failed to record audit log" };
-  }
-  return { error: null };
-}
 
 export async function getAdminAuditLog(
   options: {

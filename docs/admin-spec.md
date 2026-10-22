@@ -436,6 +436,17 @@ each other; with six, you want to know who corrected a score or removed a
 sponsor. This also directly serves the standing rule that deletions require
 approval.
 
+**The log is written by the database, not the app.** Since
+`20261022130000_audit_triggers.sql`, row triggers on every admin-managed table
+(fixtures, squad, staff, leadership, articles, honours, sponsors, site settings,
+site admins, competitions, match reports, and publish/delete on media uploads)
+call `audit_write()`, which takes the actor from the JWT. Lineups, goals and cards
+change only through the `replace_*` functions, which log one entry per save.
+Updates record only the changed columns (old and new values); `date_of_birth` is
+recorded as "(withheld)". No client role can insert into `admin_audit_log` or
+execute `audit_write()`, so an entry can neither be skipped by writing through the
+REST API nor fabricated.
+
 ## Cross-cutting requirements
 
 **Concurrency.** Fixtures are currently last-write-wins. With six admins logging

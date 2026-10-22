@@ -9,7 +9,6 @@ import {
   MATCH_STATUSES,
   ARTICLE_CATEGORIES,
 } from "@/lib/reference-data";
-import { COMPETITIONS } from "@/lib/fixtures";
 
 /**
  * The dropdown values. These are the closed sets an admin picks from instead of
@@ -17,23 +16,6 @@ import { COMPETITIONS } from "@/lib/fixtures";
  */
 
 describe("competitions", () => {
-  it("matches the fixture filter list exactly", () => {
-    /*
-     * src/lib/fixtures.ts drives /matches?competition=... and the badge text. The
-     * two lists are deliberately duplicated - the reference list cannot import
-     * fixtures.ts, because that module reaches next/headers and this one is used by
-     * client components. That makes this assertion the thing that keeps the
-     * duplication honest: if either side gains or renames a competition, this fails.
-     */
-    const fromReference = builtInCompetitions();
-    expect(fromReference).toHaveLength(COMPETITIONS.length);
-    fromReference.forEach((competition, index) => {
-      expect(competition.slug).toBe(COMPETITIONS[index].slug);
-      expect(competition.name).toBe(COMPETITIONS[index].label);
-      expect(competition.short).toBe(COMPETITIONS[index].short);
-    });
-  });
-
   it("matches what the database migration seeded", () => {
     // The same four rows are inserted by
     // 20261005170000_media_and_reference_data.sql and 20261005190000_super_cup.sql.

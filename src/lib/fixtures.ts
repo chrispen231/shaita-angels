@@ -89,40 +89,15 @@ export function monthLabel(key: string) {
 // rather than the tidier wrapped form.
 export const FIXTURE_COLUMNS = "id, opponent, competition, season, match_date, kickoff_time, venue, venue_type, status, shaita_goals, opponent_goals, notes, opponent_logo_url, opponent_logo_alt, went_live_at, formation, is_published, created_at, updated_at" as const;
 
-export const COMPETITIONS = [
-  { slug: "lfa-womens-first-division", label: "LFA Women’s First Division", short: "First Division" },
-  { slug: "womens-orange-cup", label: "Women’s Orange Cup", short: "Orange Cup" },
-  { slug: "lfa-super-cup", label: "LFA Super Cup", short: "Super Cup" },
-  { slug: "club-friendlies", label: "Club Friendlies", short: "Friendlies" },
-] as const;
-
-export type CompetitionSlug = (typeof COMPETITIONS)[number]["slug"];
-
-function normalise(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[’']/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 /**
- * Best-effort mapping from a free-text competition value to a known competition.
- * Returns null for anything unrecognised so the fixture is still shown rather
- * than silently hidden by a filter.
+ * "cup" or "league" for a competition name, or null when it is neither (a
+ * friendly). Read from the name itself, so a competition added in the admin is
+ * described correctly without a code change.
  */
-export function matchCompetition(competition: string): CompetitionSlug | null {
-  const flat = normalise(competition);
-
-  if (/first-division/.test(flat)) return "lfa-womens-first-division";
-  if (/orange-cup/.test(flat)) return "womens-orange-cup";
-  if (/super-cup/.test(flat)) return "lfa-super-cup";
-  if (/friendl/.test(flat)) return "club-friendlies";
+export function competitionKind(competition: string): "cup" | "league" | null {
+  if (/\bcup\b/i.test(competition)) return "cup";
+  if (/\b(division|league)\b/i.test(competition)) return "league";
   return null;
-}
-
-export function isCompetitionSlug(value: string): value is CompetitionSlug {
-  return COMPETITIONS.some((entry) => entry.slug === value);
 }
 
 /** Badge text for a fixture: "Women's Orange Cup · Final" -> "ORANGE CUP". */

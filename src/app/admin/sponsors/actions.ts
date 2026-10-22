@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAdminContext } from "@/lib/admin/roles";
-import { logAdminAction } from "@/lib/admin/audit";
 import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
@@ -109,16 +108,6 @@ export async function saveSponsor(
     }
     if (id && updateWasRejected(written)) return { status: "error", message: conflictMessage("sponsor") };
 
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "sponsor",
-      target_id: id || "new",
-      action: id ? "Updated sponsor" : "Created sponsor",
-      details: { name, tier, url: url || null, published },
-    });
-
     revalidatePath("/admin/sponsors");
     revalidatePath("/", "layout");
     return { status: "success", message: id ? "Sponsor updated." : "Sponsor added." };
@@ -145,16 +134,6 @@ export async function setSponsorPublished(
       return { status: "error", message: "We couldn't update that sponsor." };
     }
     if (updateWasRejected(written)) return { status: "error", message: "That sponsor no longer exists or you can't change it. Reload the page." };
-
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "sponsor",
-      target_id: id,
-      action: published ? "Published sponsor" : "Unpublished sponsor",
-      details: { name: field(formData, "name") || "unknown" },
-    });
 
     revalidatePath("/admin/sponsors");
     revalidatePath("/", "layout");
@@ -199,16 +178,6 @@ export async function deleteSponsor(
       return { status: "error", message: "We couldn't remove that sponsor." };
     }
     if (updateWasRejected(deleted)) return { status: "error", message: "That sponsor no longer exists or you can't change it. Reload the page." };
-
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "sponsor",
-      target_id: id,
-      action: "Deleted sponsor",
-      details: { name: sponsor.name },
-    });
 
     revalidatePath("/admin/sponsors");
     revalidatePath("/", "layout");
@@ -275,16 +244,6 @@ export async function saveSettings(
       console.error("Site settings save failed", error.message);
       return { status: "error", message: "We couldn't save the settings." };
     }
-
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "site_settings",
-      target_id: "singleton",
-      action: "Updated site settings",
-      details: { contact_email: contactEmail || null, phone_orders: phoneOrders || null, social_handles_count: handles.length },
-    });
 
     revalidatePath("/admin/settings");
     revalidatePath("/", "layout");

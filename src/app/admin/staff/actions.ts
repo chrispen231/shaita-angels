@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
-import { logAdminAction } from "@/lib/admin/audit";
 import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
@@ -78,16 +77,6 @@ export async function saveStaff(
       return { status: "error", message: "Could not add staff member." };
     }
 
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "staff",
-      target_id: input.full_name,
-      action: "Added staff member",
-      details: { full_name: input.full_name, role: input.role },
-    });
-
     revalidatePath("/admin/staff");
     revalidatePath("/team/staff");
     return { status: "success", message: "Staff member added." };
@@ -140,16 +129,6 @@ export async function updateStaff(
     }
     if (updateWasRejected(written)) return { status: "error", message: conflictMessage("staff profile") };
 
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "staff",
-      target_id: id,
-      action: "Updated staff member",
-      details: { full_name: input.full_name, role: input.role },
-    });
-
     revalidatePath("/admin/staff");
     revalidatePath("/team/staff");
     return { status: "success", message: "Changes saved." };
@@ -183,16 +162,6 @@ export async function toggleStaffPublished(
     }
     if (updateWasRejected(written)) return { status: "error", message: "That staff member no longer exists or you can't change it. Reload the page." };
 
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "staff",
-      target_id: id,
-      action: publish ? "Published staff member" : "Unpublished staff member",
-      details: {},
-    });
-
     revalidatePath("/admin/staff");
     revalidatePath("/team/staff");
     return { status: "success", message: publish ? "Published." : "Unpublished." };
@@ -220,16 +189,6 @@ export async function removeStaff(
       return { status: "error", message: "Could not remove staff member." };
     }
     if (updateWasRejected(deleted)) return { status: "error", message: "That staff member no longer exists or you can't change it. Reload the page." };
-
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "staff",
-      target_id: id,
-      action: "Removed staff member",
-      details: {},
-    });
 
     revalidatePath("/admin/staff");
     revalidatePath("/team/staff");

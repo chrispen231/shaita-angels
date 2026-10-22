@@ -5,7 +5,6 @@ import { getSiteUrl } from "@/lib/supabase/config";
 import { getAdminContext } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isRealIsoDate, validateFixture } from "@/lib/fixtures/validation";
-import { logAdminAction } from "@/lib/admin/audit";
 import { canAccess, type AdminContext } from "@/lib/admin/roles";
 import { getCompetitionsForAdmin } from "@/lib/reference-data.server";
 import { parseBulkFixtures, MAX_BULK_LINES } from "@/lib/fixtures/bulk-paste";
@@ -111,8 +110,8 @@ function duplicateLabel(fixture: DuplicateCandidate) {
 }
 
 export async function saveFixture(_previous: FixtureSaveState, formData: FormData): Promise<FixtureSaveState> {
-  const context = await getAdminContext();
-  if (!context) return { status: "error", message: "Your admin session is no longer valid. Sign in again." };
+  const context = await fixturesEditor();
+  if ("status" in context) return context;
 
   const id = field(formData, "id");
   const opponent = field(formData, "opponent");
@@ -257,16 +256,6 @@ export async function saveFixture(_previous: FixtureSaveState, formData: FormDat
   }
   if (id && updateWasRejected(written)) return { status: "error", message: conflictMessage("fixture") };
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "fixture",
-    target_id: id || "new",
-    action: id ? "Updated fixture" : "Created fixture",
-    details: { opponent, competition, season, status, venue_type: venueType },
-  });
-
   redirect("/admin?saved=1");
 }
 
@@ -276,12 +265,13 @@ export async function saveFixture(_previous: FixtureSaveState, formData: FormDat
  * Every row has already passed validateFixture. Nothing is saved while any entry
  * looks like a duplicate - of a saved fixture or of another entry in the batch -
  * until the admin confirms. The rows go in as one insert, so a batch is saved
- * whole or not at all, and each created fixture gets its own audit entry.
+ * whole or not at all, and the audit trigger gives each created fixture its own
+ * entry.
  */
 async function insertFixtureBatch(
   context: AdminContext,
   inputs: FixtureInput[],
-  { published, confirmed, source }: { published: boolean; confirmed: boolean; source: string },
+  { published, confirmed }: { published: boolean; confirmed: boolean },
 ): Promise<FixtureSaveState | null> {
   if (!confirmed) {
     const results = findBatchDuplicates(inputs, await nearbyFixtures(context, inputs.map((input) => input.match_date)));
@@ -321,31 +311,10 @@ async function insertFixtureBatch(
     created_by: context.user.id,
   }));
 
-  const { data, error } = await context.supabase
-    .from("fixtures")
-    .insert(rows)
-    .select("id, opponent, competition, season, status, venue_type");
+  const { error } = await context.supabase.from("fixtures").insert(rows);
   if (error) {
     console.error("Fixture batch save failed", error.message);
     return { status: "error", message: "We couldn’t save those fixtures. Nothing was saved. Check the details and try again." };
-  }
-
-  for (const created of data ?? []) {
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "fixture",
-      target_id: created.id,
-      action: "Created fixture",
-      details: {
-        opponent: created.opponent,
-        competition: created.competition,
-        season: created.season,
-        status: created.status,
-        venue_type: created.venue_type,
-        source,
-      },
-    });
   }
   return null;
 }
@@ -377,7 +346,6 @@ export async function saveFixtureBatch(_previous: FixtureSaveState, formData: Fo
   const failure = await insertFixtureBatch(context, lines.map((line) => line.input as FixtureInput), {
     published: formData.get("is_published") === "on",
     confirmed: formData.get("confirm_duplicate") === "1",
-    source: "bulk paste",
   });
   if (failure) return failure;
   redirect(`/admin/fixtures?created=${lines.length}`);
@@ -417,7 +385,6 @@ export async function saveFixtureSeries(_previous: FixtureSaveState, formData: F
   const failure = await insertFixtureBatch(context, inputs, {
     published: formData.get("is_published") === "on",
     confirmed: formData.get("confirm_duplicate") === "1",
-    source: "recurring series",
   });
   if (failure) return failure;
   redirect(`/admin/fixtures?created=${inputs.length}`);

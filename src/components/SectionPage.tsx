@@ -6,20 +6,27 @@ import SquadGrid from "@/components/SquadGrid";
 import MatchCentre from "@/components/MatchCentre";
 import TrophyShowcase from "@/components/TrophyShowcase";
 import NewsArchive from "@/components/NewsArchive";
-import { NEWS_FILTER_CATEGORIES } from "@/lib/reference-data";
+import { builtInCompetitions, competitionBySlug, NEWS_FILTER_CATEGORIES, type Competition } from "@/lib/reference-data";
+import { getCompetitions } from "@/lib/reference-data.server";
 import { getPublishedFixtures } from "@/lib/fixtures";
 import { getSupabaseConfig } from "@/lib/supabase/config";
-import { isCompetitionSlug } from "@/lib/fixtures";
 
 type SectionKey = keyof typeof sections;
 
 export type MatchFilters = { season: string | null; period: string | null; competition: string | null };
 
-/** Reads and validates the match centre filters from the URL. */
-export function parseMatchFilters(params: { season?: string; period?: string; competition?: string }): MatchFilters {
+/**
+ * Reads and validates the match centre filters from the URL. The competition
+ * must be one the club lists; anything else is dropped rather than filtering
+ * the page down to nothing.
+ */
+export function parseMatchFilters(
+  params: { season?: string; period?: string; competition?: string },
+  competitions: Competition[] = builtInCompetitions(),
+): MatchFilters {
   const season = params.season && /^\d{4}\/\d{2}$/.test(params.season) ? params.season : null;
   const period = params.period && /^\d{4}-\d{2}$/.test(params.period) ? params.period : null;
-  const competition = params.competition && isCompetitionSlug(params.competition) ? params.competition : null;
+  const competition = competitionBySlug(competitions, params.competition)?.slug ?? null;
   return { season, period, competition };
 }
 
@@ -31,8 +38,9 @@ export default async function SectionPage({
   searchParams?: { period?: string; competition?: string };
 }) {
   const content = sections[section];
-  const fixtures = section === "matches" ? await getPublishedFixtures() : null;
-  const matchFilters = parseMatchFilters(searchParams ?? {});
+  const [fixtures, competitions] =
+    section === "matches" ? await Promise.all([getPublishedFixtures(), getCompetitions()]) : [null, []];
+  const matchFilters = parseMatchFilters(searchParams ?? {}, competitions);
 
   // Content now lives in the database. Only the sections that show it are read, so
   // the club page does not pay for a squad query it never renders.
@@ -53,7 +61,7 @@ export default async function SectionPage({
         {section === "team" && <SquadGrid players={squad} positions={positionsInUse(squad)} />}
 
         {section === "matches" && <>
-                  <MatchCentre fixtures={fixtures} filters={matchFilters} configured={Boolean(getSupabaseConfig())} />
+                  <MatchCentre fixtures={fixtures} competitions={competitions} filters={matchFilters} configured={Boolean(getSupabaseConfig())} />
                   <div className="content-heading compact-heading"><div><p className="eyebrow">Recent milestones</p><h2>Seasons to remember</h2></div></div>
                   <div className="season-list"><article><span>2025–26</span><strong>LFA Women’s First Division</strong><em>Runners-up · 57 points</em></article><article><span>2025–26</span><strong>FA Orange Cup</strong><em>Champions · 2–1 vs World Girls</em></article><article><span>2024–25</span><strong>LFA Women’s Super Cup</strong><em>Champions · 4–3 on penalties</em></article><article><span>2026–27</span><strong>LFA Women’s Super Cup</strong><em>Champions</em></article></div>
                 </>}

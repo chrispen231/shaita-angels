@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { validateArticle, validateHonor, splitParagraphs } from "@/lib/content-validation";
-import { logAdminAction } from "@/lib/admin/audit";
 import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
@@ -132,16 +131,6 @@ export async function saveArticle(
   }
   if (id && updateWasRejected(written)) return { status: "error", message: conflictMessage("story") };
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "news",
-    target_id: id || input.slug,
-    action: id ? "Updated article" : "Created article",
-    details: { slug: input.slug, title: input.title, category: input.category, is_published: publish, is_featured: input.is_featured },
-  });
-
   revalidatePath("/admin/news");
   revalidatePath("/news");
   revalidatePath("/");
@@ -178,16 +167,6 @@ export async function toggleArticlePublished(
   if (updateWasRejected(written)) return { status: "error", message: missingMessage("story") };
   const slug = String(written[0].slug);
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "news",
-    target_id: id,
-    action: publish ? "Published article" : "Unpublished article",
-    details: { slug },
-  });
-
   revalidatePath("/admin/news");
   revalidatePath("/news");
   revalidatePath(`/news/${slug}`);
@@ -220,16 +199,6 @@ export async function retractArticle(
   if (updateWasRejected(written)) return { status: "error", message: missingMessage("story") };
   const slug = String(written[0].slug);
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "news",
-    target_id: id,
-    action: "Retracted article",
-    details: { slug },
-  });
-
   revalidatePath("/admin/news");
   revalidatePath("/news");
   revalidatePath(`/news/${slug}`);
@@ -261,16 +230,6 @@ export async function deleteArticle(
   }
   if (updateWasRejected(deleted)) return { status: "error", message: missingMessage("story") };
   const slug = String(deleted[0].slug);
-
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "news",
-    target_id: id,
-    action: "Deleted article",
-    details: { slug },
-  });
 
   revalidatePath("/admin/news");
   revalidatePath("/news");
@@ -318,16 +277,6 @@ export async function saveHonor(
   }
   if (updateWasRejected(written)) return { status: "error", message: missingMessage("honour") };
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "honour",
-    target_id: id || input.name,
-    action: id ? "Updated honour" : "Created honour",
-    details: { name: input.name, year_label: input.year_label },
-  });
-
   revalidatePath("/admin/honours");
   revalidatePath("/club");
   revalidatePath("/");
@@ -349,16 +298,6 @@ export async function removeHonor(
     return { status: "error", message: "We couldn't remove that honour." };
   }
   if (updateWasRejected(deleted)) return { status: "error", message: missingMessage("honour") };
-
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "honour",
-    target_id: id,
-    action: "Removed honour",
-    details: {},
-  });
 
   revalidatePath("/admin/honours");
   revalidatePath("/club");

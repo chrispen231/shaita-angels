@@ -4,8 +4,8 @@
  * Two sources, deliberately:
  *
  *   * competitions come from the database, because a super admin can add one at
- *     /admin/media without a deploy. The names are seeded identically to
- *     src/lib/fixtures.ts, which remains the fallback for an unconfigured build.
+ *     /admin/media without a deploy. The built-in list below is the fallback for
+ *     an unconfigured build or a failed read, for the admin and public site alike.
  *
  *   * positions, feet and venue types are constants in code. They are a closed set
  *     with no club-specific variation: "Goalkeeper, Defender, Midfielder, Forward"
@@ -28,13 +28,10 @@ export type Competition = {
 // =============================================================================
 
 /*
- * The built-in list, written out rather than imported from src/lib/fixtures.ts.
- *
- * That module reads fixtures from Supabase and so reaches next/headers, which a
- * client component cannot pull in. These same three competitions are seeded into
- * the competitions table by 20261005170000_media_and_reference_data.sql, and
- * tests/reference-data.test.ts asserts the two lists stay identical - so the
- * duplication is checked rather than merely noted.
+ * The built-in list. The same four competitions, with the same slugs, are seeded
+ * into the competitions table (20261005170000 and 20261005190000), so a filtered
+ * URL like /matches?competition=womens-orange-cup works whether or not the
+ * database is reachable.
  */
 const BUILT_IN: Competition[] = [
   { slug: "lfa-womens-first-division", name: "LFA Women\u2019s First Division", short: "First Division" },
@@ -58,12 +55,30 @@ export function builtInCompetitions(): Competition[] {
   return fromCode();
 }
 
+/** "LFA Women’s First Division" -> "lfa-womens-first-division": case, apostrophes and punctuation ignored. */
+function competitionKey(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[\u2018\u2019']/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 /**
- * Finds the competition whose name matches an existing fixture value.
+ * Finds the competition a free-text fixture value belongs to.
  *
- * Fixtures store the competition as free text, so a dropdown selection has to be
- * mapped back to a name. Matching is on the exact stored name first, then on the
- * short name, so a legacy row reading "Women's Orange Cup · Final" still resolves.
+ * The one matcher for the whole site: the admin dropdowns, bulk paste and the
+ * public /matches filter all resolve a stored value through here, so a fixture
+ * cannot land under one competition in the admin and another on the public page.
+ *
+ * In order, ignoring case, apostrophes and punctuation:
+ *   1. the whole value against each name, short name and slug
+ *   2. the value without a round suffix ("Women's Orange Cup · Final")
+ *   3. a value containing a short name ("LFA Women's Super Cup" -> Super Cup,
+ *      "Friendly" -> Friendlies), the longest short name winning
+ *
+ * Returns null for anything unrecognised, so callers show the fixture rather than
+ * hide it behind a filter.
  */
 export function matchCompetition(
   competitions: Competition[],
@@ -71,23 +86,44 @@ export function matchCompetition(
 ): Competition | null {
   if (!stored) return null;
 
-  // Normalise apostrophes so "Women's" and "Women's" match the same entry.
-  const normalise = (value: string) => value.replace(/[\u2018\u2019]/g, "'");
-  const target = normalise(stored);
+  const byKey = (key: string) =>
+    key
+      ? competitions.find(
+          (competition) =>
+            competitionKey(competition.name) === key ||
+            competitionKey(competition.short) === key ||
+            competition.slug === key,
+        ) ?? null
+      : null;
 
-  const exact = competitions.find((competition) => normalise(competition.name) === target);
+  const exact = byKey(competitionKey(stored));
   if (exact) return exact;
 
-  const short = competitions.find((competition) => normalise(competition.short) === target);
-  if (short) return short;
+  const base = competitionKey(stored.split(/\s*[·–—]\s*/)[0]);
+  const withoutRound = byKey(base);
+  if (withoutRound) return withoutRound;
 
-  // Fixtures may carry a round suffix, e.g. "Women's Orange Cup · Final".
-  const base = target.split("·")[0].trim();
-  return (
-    competitions.find((competition) => normalise(competition.name) === base) ??
-    competitions.find((competition) => normalise(competition.short) === base) ??
-    null
-  );
+  // Singular forms, so "Friendly" still finds "Friendlies".
+  const singular = (key: string) =>
+    key.split("-").map((word) => word.replace(/ies$/, "y").replace(/(?<!s)s$/, "")).join("-");
+  const haystack = `-${singular(base)}-`;
+
+  let best: Competition | null = null;
+  for (const competition of competitions) {
+    const short = singular(competitionKey(competition.short));
+    if (!short || !haystack.includes(`-${short}-`)) continue;
+    if (!best || short.length > singular(competitionKey(best.short)).length) best = competition;
+  }
+  return best;
+}
+
+/** The competition a ?competition= slug names, or null when it is not in the list. */
+export function competitionBySlug(
+  competitions: Competition[],
+  slug: string | null | undefined,
+): Competition | null {
+  if (!slug) return null;
+  return competitions.find((competition) => competition.slug === slug) ?? null;
 }
 
 // =============================================================================

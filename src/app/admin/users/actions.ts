@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { ROLES, type Role } from "@/lib/admin/roles";
 import { getSupabaseConfig } from "@/lib/supabase/config";
-import { logAdminAction } from "@/lib/admin/audit";
 import { updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
@@ -165,16 +164,6 @@ export async function addAdmin(
       return { status: "error", message: "We couldn't add that administrator." };
     }
 
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "user",
-      target_id: email,
-      action: "Added admin",
-      details: { email, role },
-    });
-
     revalidatePath("/admin/users");
     const authMessage =
       authResult === "created"
@@ -220,16 +209,6 @@ export async function changeAdminRole(
   }
   if (updateWasRejected(written)) return { status: "error", message: "That administrator no longer exists or you can't change it. Reload the page." };
 
-  // Log the admin action
-  await logAdminAction({
-    actor_email: context.user.email,
-    actor_role: context.role,
-    target_type: "user",
-    target_id: email,
-    action: "Changed admin role",
-    details: { email, new_role: role },
-  });
-
   revalidatePath("/admin/users");
   return { status: "success", message: `${email} is now ${role.replace("_", " ")}.` };
 }
@@ -269,16 +248,6 @@ export async function removeAdmin(
     // Without this check a blocked delete would fall through and still remove
     // their sign-in account below.
     if (updateWasRejected(deleted)) return { status: "error", message: "That administrator no longer exists or you can't change it. Reload the page." };
-
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "user",
-      target_id: email,
-      action: "Removed admin",
-      details: { email },
-    });
 
     await deleteAuthUser(email);
 

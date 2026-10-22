@@ -1,13 +1,8 @@
 import Link from "next/link";
 import type { Fixture } from "@/types/fixtures";
 import MatchCard from "@/components/MatchCard";
-import {
-  COMPETITIONS,
-  hasScore,
-  matchCompetition,
-  monthKey,
-  monthLabel,
-} from "@/lib/fixtures";
+import { hasScore, monthKey, monthLabel } from "@/lib/fixtures";
+import { matchCompetition, type Competition } from "@/lib/reference-data";
 import styles from "./MatchCentre.module.css";
 
 /**
@@ -25,10 +20,13 @@ type Filters = { season: string | null; period: string | null; competition: stri
 
 export default function MatchCentre({
   fixtures,
+  competitions,
   filters,
   configured,
 }: {
   fixtures: Fixture[] | null;
+  /** The club's competitions, from the database or the built-in fallback. */
+  competitions: Competition[];
   filters: Filters;
   configured: boolean;
 }) {
@@ -70,7 +68,7 @@ export default function MatchCentre({
   const bySeason = season ? fixtures.filter((f) => f.season === season) : fixtures;
   const byPeriod = period ? bySeason.filter((f) => monthKey(f.match_date) === period) : bySeason;
   const byCompetition = competition
-    ? byPeriod.filter((f) => matchCompetition(f.competition) === competition)
+    ? byPeriod.filter((f) => matchCompetition(competitions, f.competition)?.slug === competition)
     : byPeriod;
 
   // Group the survivors by month, oldest month first (chronological order).
@@ -154,14 +152,14 @@ export default function MatchCentre({
                 All competitions
               </Link>
             </li>
-            {COMPETITIONS.map((entry) => (
+            {competitions.map((entry) => (
               <li key={entry.slug}>
                 <Link
                   className={`${styles.chip} ${competition === entry.slug ? styles.chipActive : ""}`}
                   href={href({ competition: competition === entry.slug ? null : entry.slug })}
                   aria-current={competition === entry.slug ? "true" : undefined}
                 >
-                  {entry.label}
+                  {entry.name}
                 </Link>
               </li>
             ))}

@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Filter, Loader2 } from "lucide-react";
+import { AUDIT_TARGET_TYPES, type AuditActorRole } from "@/lib/admin/audit-types";
 import styles from "./AuditLog.module.css";
 
 export type AuditLogRow = {
   id: string;
   actor_email: string;
-  actor_role: "super_admin" | "fixtures" | "content";
+  actor_role: AuditActorRole;
   target_type: string;
   target_id: string;
   action: string;
@@ -81,18 +82,7 @@ export default function AuditLog() {
     setPage(1);
   };
 
-  const targetTypeOptions = [
-    "fixture",
-    "match_content",
-    "news",
-    "sponsor",
-    "site_settings",
-    "user",
-    "media",
-    "staff",
-    "honour",
-    "squad",
-  ];
+  const targetTypeOptions = AUDIT_TARGET_TYPES;
 
   const roleBadges: Record<string, string> = {
     super_admin: "role-super",

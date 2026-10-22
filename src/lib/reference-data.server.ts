@@ -4,7 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { builtInCompetitions, type Competition } from "@/lib/reference-data";
 
 /**
- * Server-only read of the competition list.
+ * Server-only read of the competition list, for the admin dropdowns and the
+ * public /matches filter alike. Inactive competitions are hidden by RLS for the
+ * public and filtered here for admins, so both see the same list.
  *
  * Split from src/lib/reference-data.ts because that module is imported by client
  * components (position dropdowns, filter controls) and therefore must not reach
@@ -13,7 +15,7 @@ import { builtInCompetitions, type Competition } from "@/lib/reference-data";
  * Cached per request: an admin page with several dropdowns should not run the same
  * query once per dropdown.
  */
-export const getCompetitionsForAdmin = cache(async (): Promise<Competition[]> => {
+export const getCompetitions = cache(async (): Promise<Competition[]> => {
   if (!getSupabaseConfig()) return builtInCompetitions();
 
   const supabase = await createClient();
@@ -37,3 +39,6 @@ export const getCompetitionsForAdmin = cache(async (): Promise<Competition[]> =>
     short: String(row.short_name),
   }));
 });
+
+/** The name the admin screens use for the same read. */
+export const getCompetitionsForAdmin = getCompetitions;

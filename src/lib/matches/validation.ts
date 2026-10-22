@@ -11,6 +11,8 @@
  * Every function returns an error message, or null when the input is valid.
  */
 
+import { isRealIsoDate } from "@/lib/fixtures/validation";
+
 export const SIDES = ["shaita", "opponent"] as const;
 export type Side = (typeof SIDES)[number];
 
@@ -202,8 +204,8 @@ export function validateSquad(input: SquadInput): string | null {
     if (!ISO_DATE.test(input.date_of_birth.trim())) {
       return "Enter the date of birth as YYYY-MM-DD.";
     }
+    if (!isRealIsoDate(input.date_of_birth.trim())) return "That date of birth is not a real date.";
     const parsed = Date.parse(`${input.date_of_birth.trim()}T00:00:00Z`);
-    if (Number.isNaN(parsed)) return "That date of birth is not a real date.";
 
     const age = wholeYearsSince(parsed, new Date());
 

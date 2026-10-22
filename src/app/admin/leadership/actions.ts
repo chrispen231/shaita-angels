@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { getAdminContext } from "@/lib/admin/roles";
 import { validateLeadership, type LeadershipInput } from "@/lib/leadership-validation";
-import { logAdminAction } from "@/lib/admin/audit";
 import { conflictMessage, readExpectedUpdatedAt, staleFormMessage, updateWasRejected } from "@/lib/admin/concurrency";
 import type { FixtureActionState } from "@/types/fixtures";
 
@@ -60,16 +59,6 @@ export async function addLeader(_previous: FixtureActionState, formData: FormDat
       return { status: "error", message: "Could not add this leadership profile. Check that the leadership database migration has been applied." };
     }
     
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "staff",
-      target_id: input.full_name,
-      action: "Added leadership profile",
-      details: { full_name: input.full_name, role: input.role },
-    });
-
     refresh();
     return { status: "success", message: "Leadership profile added as an unpublished draft." };
   } catch (error) {
@@ -103,16 +92,6 @@ export async function updateLeader(_previous: FixtureActionState, formData: Form
     }
     if (updateWasRejected(data)) return { status: "error", message: conflictMessage("leadership profile") };
     
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "staff",
-      target_id: id,
-      action: "Updated leadership profile",
-      details: { full_name: input.full_name, role: input.role },
-    });
-
     refresh();
     return { status: "success", message: "Leadership profile updated." };
   } catch (error) {
@@ -132,16 +111,6 @@ export async function setLeaderPublished(_previous: FixtureActionState, formData
       return { status: "error", message: "Could not change this profile's visibility." };
     }
     
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "staff",
-      target_id: id,
-      action: publish ? "Published leadership profile" : "Unpublished leadership profile",
-      details: {},
-    });
-
     refresh();
     return { status: "success", message: publish ? "Leadership profile published." : "Leadership profile unpublished." };
   } catch (error) {
@@ -160,16 +129,6 @@ export async function removeLeader(_previous: FixtureActionState, formData: Form
       return { status: "error", message: "Could not remove this leadership profile." };
     }
     
-    // Log the admin action
-    await logAdminAction({
-      actor_email: context.user.email,
-      actor_role: context.role,
-      target_type: "staff",
-      target_id: id,
-      action: "Removed leadership profile",
-      details: {},
-    });
-
     refresh();
     return { status: "success", message: "Leadership profile removed." };
   } catch (error) {

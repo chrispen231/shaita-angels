@@ -7,8 +7,8 @@ import {
   daysUntil,
   formatKickoff,
   formatMatchDateLong,
+  competitionKind,
   hasScoreline,
-  matchCompetition,
   opponentInitials,
   roundLabel,
 } from "@/lib/fixtures";
@@ -60,7 +60,6 @@ export default function MatchView({
   const kickoff = formatKickoff(fixture.kickoff_time);
   const countdown = fixture.status === "scheduled" ? daysUntil(fixture.match_date) : null;
   const round = roundLabel(fixture);
-  const slug = matchCompetition(fixture.competition);
 
   return <div className={styles.page}>
     <div className="wrap">
@@ -208,7 +207,7 @@ export default function MatchView({
       <div className={styles.panel} role="region" aria-label={`${MATCH_TABS.find((t) => t.id === tab)?.label} for this match`}>
         {tab === "lineups" && <Lineups fixture={fixture} content={content} />}
         {tab === "commentary" && <Commentary fixture={fixture} content={content} />}
-        {tab === "stats" && <Stats fixture={fixture} slug={slug} content={content} />}
+        {tab === "stats" && <Stats fixture={fixture} content={content} />}
       </div>
 
       {fixture.notes && !/round|matchweek|week/i.test(fixture.notes) && (
@@ -393,13 +392,12 @@ function Commentary({ fixture, content }: { fixture: Fixture; content: MatchCont
  */
 function Stats({
   fixture,
-  slug,
   content,
 }: {
   fixture: Fixture;
-  slug: string | null;
   content: MatchContent;
 }) {
+  const kind = competitionKind(fixture.competition);
   const counts = goalCounts(content.goals);
   const yellow = content.cards.filter((card) => card.card === "yellow").length;
   const secondYellow = content.cards.filter((card) => card.card === "second_yellow").length;
@@ -425,7 +423,7 @@ function Stats({
 
         {!hasRecorded ? (
           <p className={styles.emptyMeta}>
-            Detailed statistics for this {slug === "womens-orange-cup" ? "cup" : "league"} match are
+            Detailed statistics for this {kind ? `${kind} ` : ""}match are
             not available yet. They will be published here once the club records them.
           </p>
         ) : (
