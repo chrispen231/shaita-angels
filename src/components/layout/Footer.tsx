@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { navigation } from "@/data/site";
+import MatchAlerts from "@/components/MatchAlerts";
 
 export default function Footer() {
   return (
@@ -9,6 +10,7 @@ export default function Footer() {
         <div>
           <div className="footer-brand-lockup"><Image src="/shaita-angels-logo.png" alt="Shaita Angels FC crest" width={70} height={70} /><div className="footer-brand">SHAITA<br /><span>ANGELS</span></div></div>
           <p>Women’s football from Careysburg, Liberia.<br />Founded in 2019.</p>
+          <MatchAlerts />
         </div>
         <div className="footer-links">
           <p className="footer-label">Explore</p>

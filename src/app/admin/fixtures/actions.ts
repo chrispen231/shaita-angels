@@ -124,6 +124,7 @@ export async function saveFixture(_previous: FixtureSaveState, formData: FormDat
   const status = field(formData, "status");
   const notes = field(formData, "notes");
   const published = formData.get("is_published") === "on";
+  const alertsMuted = formData.get("alerts_muted") === "on";
   const rawFor = field(formData, "shaita_goals");
   const rawAgainst = field(formData, "opponent_goals");
 
@@ -167,6 +168,8 @@ export async function saveFixture(_previous: FixtureSaveState, formData: FormDat
     venue: venue || null, venue_type: venueType, status,
     shaita_goals: shaitaGoals, opponent_goals: opponentGoals, notes: notes || null,
     is_published: published, updated_at: new Date().toISOString(),
+    // Read by the push_notifications triggers: a muted fixture queues no alerts.
+    alerts_muted: alertsMuted,
   };
 
   /*

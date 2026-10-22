@@ -13,6 +13,8 @@
  *   the shield's corners need margin inside that.
  * - apple-touch-icon.png: 180px on ink. iOS fills transparency with black and
  *   rounds the corners itself, so the crest gets padding rather than bleeding.
+ * - badge-96.png: the shield as a white silhouette on transparent, for the small
+ *   monochrome icon Android shows in the status bar next to a match alert.
  */
 import sharp from "sharp";
 import { mkdir } from "node:fs/promises";
@@ -88,4 +90,21 @@ await plain(512);
 await onInk(512, 0.6, "maskable-512.png");
 await onInk(180, 0.78, "apple-touch-icon.png");
 
-console.log("Wrote icon-192.png, icon-512.png, maskable-512.png, apple-touch-icon.png to", OUT);
+// Android draws the badge from its alpha channel only, so the shield shape is
+// all that survives: white where the crest is, transparent everywhere else.
+const BADGE = 96;
+const BADGE_ART = 84;
+const shape = await sharp(SOURCE)
+  .resize(BADGE_ART, BADGE_ART, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+  .extractChannel("alpha")
+  .toBuffer();
+const silhouette = await sharp({ create: { width: BADGE_ART, height: BADGE_ART, channels: 3, background: "#ffffff" } })
+  .joinChannel(shape)
+  .png()
+  .toBuffer();
+await sharp({ create: { width: BADGE, height: BADGE, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+  .composite([{ input: silhouette, gravity: "center" }])
+  .png({ compressionLevel: 9 })
+  .toFile(`${OUT}/badge-96.png`);
+
+console.log("Wrote icon-192.png, icon-512.png, maskable-512.png, apple-touch-icon.png, badge-96.png to", OUT);

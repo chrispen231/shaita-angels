@@ -26,7 +26,7 @@ export type StorageCall = { bucket: string; op: "remove"; paths: string[] };
 type Match = { table?: string; op?: QueryCall["op"] };
 type Responder = { match: Match; result: DbResult | ((call: QueryCall) => DbResult) };
 
-const FILTERS = ["eq", "neq", "gt", "gte", "lt", "lte", "in", "is", "like", "ilike"] as const;
+const FILTERS = ["eq", "neq", "gt", "gte", "lt", "lte", "in", "is", "like", "ilike", "contains"] as const;
 const PASSTHROUGH = ["order", "limit", "range"] as const;
 
 export function createFakeSupabase() {

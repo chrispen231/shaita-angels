@@ -19,7 +19,7 @@ export default async function FixturesPage({
   const [{ data, error }, { saved, created }, competitions] = await Promise.all([
     context.supabase
       .from("fixtures")
-      .select(FIXTURE_COLUMNS)
+      .select(`${FIXTURE_COLUMNS}, alerts_muted`)
       .order("match_date", { ascending: false }),
     searchParams,
     getCompetitionsForAdmin(),

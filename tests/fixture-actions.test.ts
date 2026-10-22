@@ -128,3 +128,17 @@ describe("saveFixture live clock", () => {
     expect(await save({ status: "live", went_live_at: "2026-10-24T15:05:00.000Z" }, "played", played)).toBeNull();
   });
 });
+
+describe("saveFixture match alerts mute", () => {
+  const written = () => fake.writes("fixtures", "insert")[0].values as { alerts_muted: boolean };
+
+  it("writes alerts_muted when the box is ticked", async () => {
+    await expect(saveFixture(IDLE, fixtureForm({ alerts_muted: "on" }))).rejects.toThrow("NEXT_REDIRECT");
+    expect(written().alerts_muted).toBe(true);
+  });
+
+  it("leaves alerts on by default", async () => {
+    await expect(saveFixture(IDLE, fixtureForm())).rejects.toThrow("NEXT_REDIRECT");
+    expect(written().alerts_muted).toBe(false);
+  });
+});

@@ -20,6 +20,7 @@ import {
 } from "@/lib/matches/content";
 import { formatMinute, describeGoal } from "@/lib/matches/validation";
 import LiveClock from "@/components/LiveClock";
+import MatchAlerts from "@/components/MatchAlerts";
 import Pitch from "@/components/Pitch";
 import styles from "./MatchPage.module.css";
 
@@ -188,6 +189,10 @@ export default function MatchView({
           )}
           <span className={`${styles.status} ${styles[fixture.status]}`}>{STATUS_LABEL[fixture.status]}</span>
         </p>
+        {/* Alerts only matter for a match that is still to come or under way. */}
+        {["scheduled", "live", "halftime", "postponed"].includes(fixture.status) && (
+          <div className={styles.alerts}><MatchAlerts tone="light" /></div>
+        )}
       </header>
 
       <nav className={styles.tabs} aria-label="Match information">

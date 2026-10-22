@@ -16,7 +16,7 @@
  *
  * Bump VERSION to drop every cache on the next visit.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = `sa-shell-${VERSION}`;
 const PAGES = `sa-pages-${VERSION}`;
 const ASSETS = `sa-assets-${VERSION}`;
@@ -125,6 +125,54 @@ async function staleWhileRevalidate(event, request, cacheName, max) {
     return cached;
   }
   return refresh.then((response) => response ?? Response.error());
+}
+
+/*
+ * Match alerts. The server sends { title, body, url, tag }. The tag is per match
+ * (or per story), so a goal replaces the kick-off alert on the lock screen
+ * instead of stacking, and renotify makes the replacement still buzz.
+ */
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  const title = data.title || "Shaita Angels FC";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || "",
+      tag: data.tag,
+      renotify: Boolean(data.tag),
+      icon: "/icons/icon-192.png",
+      badge: "/icons/badge-96.png",
+      data: { url: safeUrl(data.url) },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = safeUrl(event.notification.data && event.notification.data.url);
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((client) => new URL(client.url).origin === self.location.origin);
+      // navigate() rejects for a window this worker does not control yet.
+      if (open) return open.focus().then(() => open.navigate(url)).catch(() => self.clients.openWindow(url));
+      return self.clients.openWindow(url);
+    }),
+  );
+});
+
+// Only ever open a page on this site, whatever a payload says.
+function safeUrl(value) {
+  try {
+    const url = new URL(value || "/", self.location.origin);
+    return url.origin === self.location.origin ? url.pathname + url.search : "/";
+  } catch {
+    return "/";
+  }
 }
 
 // Oldest entries first: Cache.keys() returns them in insertion order.

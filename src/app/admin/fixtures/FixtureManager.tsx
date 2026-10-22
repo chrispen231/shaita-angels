@@ -103,6 +103,7 @@ function FixtureForm({
       </div>
       <label className={styles.fullWidth}>Notes<textarea name="notes" rows={3} maxLength={2000} defaultValue={fixture?.notes ?? ""} /></label>
       <label className={styles.checkbox}><input name="is_published" type="checkbox" defaultChecked={fixture?.is_published ?? true} /> Published on the public website</label>
+      <label className={styles.checkbox}><input name="alerts_muted" type="checkbox" defaultChecked={fixture?.alerts_muted ?? false} /> Mute match alerts for this fixture (no kick-off, goal or result notifications)</label>
     </div>
     <button type="submit" disabled={pending}>{pending ? "Saving…" : "Save fixture"}</button>
     {warning && <DuplicateWarning warning={warning} pending={pending} onCancel={cancel} />}

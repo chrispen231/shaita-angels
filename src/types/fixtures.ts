@@ -29,6 +29,8 @@ export type Fixture = {
    */
   formation: string | null;
   is_published: boolean;
+  /** Admin-only: no push alerts for this fixture. Not selected on public pages. */
+  alerts_muted?: boolean;
   created_at: string;
   updated_at: string;
 };
