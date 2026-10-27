@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import styles from "./NewsArchive.module.css";
 
+import { ArrowUpRight } from "lucide-react";
 export type ArchiveArticle = {
   slug: string;
   category: string;
@@ -200,7 +201,7 @@ export default function NewsArchive({
                 <h2>{lead.title}</h2>
                 <p>{lead.excerpt}</p>
                 <span className="text-link">
-                  Read the story <span aria-hidden="true">↗</span>
+                  Read the story <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span>
                 </span>
               </div>
             </Link>
@@ -233,7 +234,7 @@ export default function NewsArchive({
                       <h3>{article.title}</h3>
                       <p>{article.excerpt}</p>
                       <span className="text-link">
-                        Read story <span aria-hidden="true">↗</span>
+                        Read story <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span>
                       </span>
                     </div>
                   </Link>

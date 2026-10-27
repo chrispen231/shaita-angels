@@ -6,6 +6,7 @@ import { getSquadPlayer } from "@/lib/content";
 import { pad, singular } from "@/lib/format";
 import { photosForPlayer } from "@/lib/player-photos";
 
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 /**
@@ -47,7 +48,7 @@ export default async function PlayerProfilePage({
   return (
     <div className="player-profile-page">
       <div className="wrap player-profile-back">
-        <Link href="/team">← Back to the squad</Link>
+        <Link href="/team"><ArrowLeft className="inline-icon" /> Back to the squad</Link>
       </div>
 
       <section className="player-profile-hero wrap">
@@ -92,7 +93,7 @@ export default async function PlayerProfilePage({
           </>
         )}
         <Link className="text-link" href="/team">
-          Meet the full squad <span aria-hidden="true">↗</span>
+          Meet the full squad <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span>
         </Link>
       </section>
     </div>

@@ -7,6 +7,7 @@ import { pad, singular } from "@/lib/format";
 import type { SquadPlayer } from "@/lib/content";
 import { photosForPlayer } from "@/lib/player-photos";
 
+import { ArrowUpRight } from "lucide-react";
 /**
  * Squad grid with position filters.
  *
@@ -102,7 +103,7 @@ export default function SquadGrid({
                         <span>{pad(player.number)}</span>
                       </span>
                       <strong className="player-art-number">{pad(player.number)}</strong>
-                      <span className="player-art-mark">VIEW PLAYER PROFILE ↗</span>
+                      <span className="player-art-mark">VIEW PLAYER PROFILE <ArrowUpRight className="inline-icon" /></span>
                     </span>
                   </>
                 )}

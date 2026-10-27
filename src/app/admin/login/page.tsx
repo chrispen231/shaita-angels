@@ -7,6 +7,7 @@ import AdminLoginForm from "./AdminLoginForm";
 import LoginBackdrop from "./LoginBackdrop";
 import styles from "./login.module.css";
 
+import { ArrowLeft } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -30,7 +31,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
         <h1 className={styles.title}>Welcome back</h1>
         <p className={styles.subtitle}>Sign in to your admin account</p>
         {!config ? <div className={styles.notice} role="status">Supabase is not configured. Add the required environment variables to enable admin sign-in.</div> : <AdminLoginForm callbackError={error === "callback"} />}
-        <Link className={styles.backLink} href="/matches">← Back to matches</Link>
+        <Link className={styles.backLink} href="/matches"><ArrowLeft className="inline-icon" /> Back to matches</Link>
       </section>
     </main>
   </>;

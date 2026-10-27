@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { ArrowUpRight, Trophy } from "lucide-react";
 import type { Honor } from "@/lib/content";
 import styles from "./TrophyShowcase.module.css";
 
@@ -64,7 +64,7 @@ export default function TrophyShowcase({
           <p className={styles.eyebrow}>Shaita Angels FC · Honours</p>
           <h2 id="trophy-showcase-title">{title}</h2>
           <p>{subtitle}</p>
-          {linkHref && <Link className={styles.link} href={linkHref}>{linkLabel}<span aria-hidden="true">↗</span></Link>}
+          {linkHref && <Link className={styles.link} href={linkHref}>{linkLabel}<span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span></Link>}
         </header>
 
         {awards.length > 0 ? (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getArticleBySlug, formatArticleDate } from "@/lib/content";
 
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 /**
@@ -33,7 +34,7 @@ export default async function NewsArticle({ params }: { params: Promise<{ slug: 
     <article className="article-page">
       <div className="article-header wrap">
         <Link className="back-link" href="/news">
-          ← All news
+          <ArrowLeft className="inline-icon" /> All news
         </Link>
         <div className="news-meta">
           <span>{article.category}</span>
@@ -68,7 +69,7 @@ export default async function NewsArticle({ params }: { params: Promise<{ slug: 
         <div className="article-signoff">
           <span>SHAITA ANGELS FC</span>
           <Link className="text-link" href="/news">
-            More stories <span aria-hidden="true">↗</span>
+            More stories <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span>
           </Link>
         </div>
       </div>

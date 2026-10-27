@@ -13,6 +13,7 @@ import {
 import LiveClock from "@/components/LiveClock";
 import styles from "./MatchCard.module.css";
 
+import { ArrowUpRight } from "lucide-react";
 /**
  * A single fixture, linking to its match page.
  *
@@ -164,7 +165,7 @@ export default function MatchCard({
         </div>
 
         <span className={styles.cta} aria-hidden="true">
-          Match details <span>↗</span>
+          Match details <span><ArrowUpRight className="inline-icon" /></span>
         </span>
       </Link>
     </article>

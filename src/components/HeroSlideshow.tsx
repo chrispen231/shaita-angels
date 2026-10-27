@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./HeroSlideshow.module.css";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 export type HeroSlide = {
   slug: string;
   title: string;
@@ -107,7 +108,7 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
               onClick={() => goTo(index - 1)}
               aria-label="Previous featured story"
             >
-              ‹
+              <ChevronLeft size={28} />
             </button>
             <ul className={styles.dots}>
               {slides.map((slide, dotIndex) => (
@@ -128,7 +129,7 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
               onClick={() => goTo(index + 1)}
               aria-label="Next featured story"
             >
-              ›
+              <ChevronRight size={28} />
             </button>
           </div>
 

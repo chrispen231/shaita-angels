@@ -5,6 +5,7 @@ import { saveHonor, removeHonor, moveHonor } from "@/app/admin/news/actions";
 import type { FixtureActionState } from "@/types/fixtures";
 import styles from "./HonorsManager.module.css";
 
+import { ArrowDown, ArrowUp } from "lucide-react";
 const initial: FixtureActionState = { status: "idle", message: "" };
 
 export type HonorRow = {
@@ -62,7 +63,7 @@ export default function HonorsManager({ honors }: { honors: HonorRow[] }) {
                       disabled={index === 0}
                       aria-label={`Move ${honor.name} up`}
                     >
-                      ↑
+                      <ArrowUp size={16} />
                     </button>
                   </form>
                   <form action={moveAction}>
@@ -74,7 +75,7 @@ export default function HonorsManager({ honors }: { honors: HonorRow[] }) {
                       disabled={index === honors.length - 1}
                       aria-label={`Move ${honor.name} down`}
                     >
-                      ↓
+                      <ArrowDown size={16} />
                     </button>
                   </form>
                 </div>

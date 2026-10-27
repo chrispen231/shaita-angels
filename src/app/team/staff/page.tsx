@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getStaff } from "@/lib/content";
 import StaffGrid from "@/components/StaffGrid";
 
+import { ArrowUpRight } from "lucide-react";
 export const metadata: Metadata = { title: "Staff" };
 
 export default async function StaffPage() {
@@ -28,7 +29,7 @@ export default async function StaffPage() {
       </section>
       <main className="wrap page-content staff-page-content">
         <StaffGrid staff={staff} />
-        <Link className="text-link" href="/team">Back to the squad <span aria-hidden="true">↗</span></Link>
+        <Link className="text-link" href="/team">Back to the squad <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span></Link>
       </main>
     </>
   );

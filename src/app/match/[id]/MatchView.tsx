@@ -24,6 +24,7 @@ import MatchAlerts from "@/components/MatchAlerts";
 import Pitch from "@/components/Pitch";
 import styles from "./MatchPage.module.css";
 
+import { ArrowLeft } from "lucide-react";
 export type MatchTab = "lineups" | "commentary" | "stats";
 
 export const MATCH_TABS: { id: MatchTab; label: string }[] = [
@@ -65,7 +66,7 @@ export default function MatchView({
   return <div className={styles.page}>
     <div className="wrap">
       <nav className={styles.crumbs} aria-label="Breadcrumb">
-        <Link href="/matches">← Match centre</Link>
+        <Link href="/matches"><ArrowLeft className="inline-icon" /> Match centre</Link>
       </nav>
 
       <header className={styles.header}>

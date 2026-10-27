@@ -4,6 +4,7 @@ import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { DEFAULT_TOPICS, PUSH_TOPICS, type PushTopic } from "@/lib/push/endpoint";
 import styles from "./MatchAlerts.module.css";
 
+import { Bell } from "lucide-react";
 /**
  * "Get match alerts": the opt-in for Web Push.
  *
@@ -208,7 +209,7 @@ export default function MatchAlerts({ tone = "dark" }: { tone?: "dark" | "light"
         aria-controls={panelId}
         onClick={() => (open ? closePanel() : openPanel())}
       >
-        <BellIcon />
+        <Bell className={styles.icon} aria-hidden="true" />
         {isOn ? "Match alerts on" : "Get match alerts"}
       </button>
 
@@ -271,16 +272,5 @@ export default function MatchAlerts({ tone = "dark" }: { tone?: "dark" | "light"
         </div>
       )}
     </div>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path
-        d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3a1.5 1.5 0 0 0-3 0v1.16A7 7 0 0 0 5 11v5l-2 2v1h18v-1Z"
-        fill="currentColor"
-      />
-    </svg>
   );
 }

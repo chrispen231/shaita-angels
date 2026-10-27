@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { StaffMember } from "@/lib/content";
 
+import { ArrowUpRight } from "lucide-react";
 /**
  * Staff grid, mirroring the squad card layout.
  *
@@ -66,7 +67,7 @@ export default function StaffGrid({ staff }: { staff: StaffMember[] }) {
                     <span>{member.name.split(" ").map(n => n[0]).join("")}</span>
                   </span>
                   <strong className="player-art-number">{member.role}</strong>
-                  <span className="player-art-mark">STAFF ↗</span>
+                  <span className="player-art-mark">STAFF <ArrowUpRight className="inline-icon" /></span>
                 </span>
               </>
             )}

@@ -20,6 +20,7 @@
     "next": "16.4.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "simple-icons": "^16.36.0",
     "web-push": "^3.6.7"
   },
   "devDependencies": {

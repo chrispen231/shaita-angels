@@ -3,6 +3,7 @@ import Image from "next/image";
 import { navigation } from "@/data/site";
 import MobileNavigation from "./MobileNavigation";
 
+import { ArrowUpRight } from "lucide-react";
 function Crest() {
   return (
     <span className="crest" style={{ width: 50, height: 50, padding: 4, borderRadius: "50%", clipPath: "none", background: "#fff" }}>
@@ -25,7 +26,7 @@ export default function Navbar() {
         <MobileNavigation />
         <nav className="desktop-nav" aria-label="Main navigation">
           {navigation.map((item) => <Link href={item.href} key={item.href}>{item.label}</Link>)}
-          <Link className="nav-cta" href="/shop">Shop <span aria-hidden="true">↗</span></Link>
+          <Link className="nav-cta" href="/shop">Shop <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span></Link>
         </nav>
       </div>
     </header>

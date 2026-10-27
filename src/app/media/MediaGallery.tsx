@@ -5,6 +5,7 @@ import { type CSSProperties, useCallback, useEffect, useRef, useState } from "re
 import { canOptimizeImage, type GalleryCategory, type GalleryPhoto } from "@/lib/gallery";
 import styles from "./media.module.css";
 
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 const FILTERS: { value: GalleryCategory | "all"; label: string }[] = [
   { value: "all", label: "All photos" },
   { value: "stories", label: "News" },
@@ -187,7 +188,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                     onClick={() => setCarouselIndex((index) => (index - 1 + visiblePhotos.length) % visiblePhotos.length)}
                     aria-label="Previous featured photo"
                   >
-                    ←
+                    <ArrowLeft size={20} />
                   </button>
                   <button
                     type="button"
@@ -195,7 +196,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                     onClick={() => setCarouselIndex((index) => (index + 1) % visiblePhotos.length)}
                     aria-label="Next featured photo"
                   >
-                    →
+                    <ArrowRight size={20} />
                   </button>
                 </div>
               )}
@@ -251,7 +252,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                 onClick={close}
                 aria-label="Close"
               >
-                ×
+                <X size={22} />
               </button>
 
               {visiblePhotos.length > 1 && (
@@ -265,7 +266,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                     }}
                     aria-label="Previous photo"
                   >
-                    ‹
+                    <ChevronLeft size={28} />
                   </button>
                   <button
                     type="button"
@@ -276,7 +277,7 @@ export function MediaGallery({ photos }: { photos: GalleryPhoto[] }) {
                     }}
                     aria-label="Next photo"
                   >
-                    ›
+                    <ChevronRight size={28} />
                   </button>
                 </>
               )}

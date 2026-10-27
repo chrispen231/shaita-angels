@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, Circle, Images, Newspaper, Shield, ShoppingBag, UsersRound, type LucideIcon } from "lucide-react";
+import { CalendarDays, Circle, Images, Newspaper, Shield, ShoppingBag, UsersRound, X, type LucideIcon } from "lucide-react";
 import { navigation } from "@/data/site";
 import styles from "./MobileNavigation.module.css";
 
@@ -83,7 +83,7 @@ export default function MobileNavigation() {
           >
             <div className={styles.panelHeading}>
               <div><span>SHAITA ANGELS FC</span><strong>Where to?</strong></div>
-              <button ref={closeRef} className={styles.close} type="button" onClick={() => setOpen(false)} aria-label="Close menu">×</button>
+              <button ref={closeRef} className={styles.close} type="button" onClick={() => setOpen(false)} aria-label="Close menu"><X size={22} /></button>
             </div>
             <div className={styles.links}>
               {navigation.map((item, index) => {

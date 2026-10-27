@@ -3,6 +3,7 @@ import MatchCard from "@/components/MatchCard";
 import type { Fixture } from "@/types/fixtures";
 import styles from "./FixtureCarousel.module.css";
 
+import { ArrowUpRight } from "lucide-react";
 /**
  * Homepage fixture carousel.
  *
@@ -26,7 +27,7 @@ export default function FixtureCarousel({ fixtures }: { fixtures: Fixture[] }) {
           <h2 id="fixture-rail-heading">Fixtures &amp; results</h2>
         </div>
         <Link className={styles.allLink} href="/matches">
-          Match centre <span aria-hidden="true">↗</span>
+          Match centre <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span>
         </Link>
       </div>
 

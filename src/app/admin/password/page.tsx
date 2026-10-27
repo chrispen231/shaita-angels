@@ -5,6 +5,7 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 import PasswordForm from "./PasswordForm";
 import styles from "../login/login.module.css";
 
+import { ArrowLeft } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPasswordPage() {
@@ -18,7 +19,7 @@ export default async function AdminPasswordPage() {
       <h1>Choose a password.</h1>
       <p className={styles.muted}>Set a password for {user.email}. Use at least 12 characters.</p>
       <PasswordForm />
-      <Link className={styles.backLink} href="/admin/login">← Back to sign in</Link>
+      <Link className={styles.backLink} href="/admin/login"><ArrowLeft className="inline-icon" /> Back to sign in</Link>
     </section>
   </main>;
 }

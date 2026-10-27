@@ -9,6 +9,7 @@ import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
 import SocialIcon from "@/components/SocialIcon";
 import styles from "./SettingsForm.module.css";
 
+import { ArrowDown, ArrowUp } from "lucide-react";
 const initial: FixtureActionState = { status: "idle", message: "" };
 
 /**
@@ -117,7 +118,7 @@ export default function SettingsForm({
                 disabled={index === 0}
                 aria-label={`Move ${handle.label} earlier`}
               >
-                ↑
+                <ArrowUp size={16} />
               </button>
               <button
                 type="button"
@@ -125,7 +126,7 @@ export default function SettingsForm({
                 disabled={index === handles.length - 1}
                 aria-label={`Move ${handle.label} later`}
               >
-                ↓
+                <ArrowDown size={16} />
               </button>
               <button
                 type="button"

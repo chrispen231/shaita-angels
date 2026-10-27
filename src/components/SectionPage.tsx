@@ -11,6 +11,7 @@ import { getCompetitions } from "@/lib/reference-data.server";
 import { getPublishedFixtures } from "@/lib/fixtures";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 
+import { ArrowUpRight } from "lucide-react";
 type SectionKey = keyof typeof sections;
 
 export type MatchFilters = { season: string | null; period: string | null; competition: string | null };
@@ -67,7 +68,7 @@ export default async function SectionPage({
                 </>}
 
         {section === "club" && <>
-          <div className="story-layout"><div className="story-image"><Image src="/gallery-1.jpg" alt="Shaita Angels players together in their green away kit in Careysburg" fill sizes="(max-width: 800px) 100vw, 50vw" /></div><div className="story-copy"><p className="eyebrow">Our beginning</p><h2>A different kind of first step.</h2><p>In 2019, a group of women in Careysburg made the move from kickball to football. That decision became Shaita Angels FC: a club rooted in its community and built around the ambition of women players.</p><p>The Angels won the Women’s Lower League in 2022–23 and were promoted to the LFA Women’s First Division, finishing second in 2023–24, then claiming the FA Orange Cup and the Super Cup. In 2026 they added a second FA Orange Cup, and a second Super Cup followed to take the total to two.</p><Link className="text-link" href="/news">Read the latest stories <span aria-hidden="true">↗</span></Link></div></div>
+          <div className="story-layout"><div className="story-image"><Image src="/gallery-1.jpg" alt="Shaita Angels players together in their green away kit in Careysburg" fill sizes="(max-width: 800px) 100vw, 50vw" /></div><div className="story-copy"><p className="eyebrow">Our beginning</p><h2>A different kind of first step.</h2><p>In 2019, a group of women in Careysburg made the move from kickball to football. That decision became Shaita Angels FC: a club rooted in its community and built around the ambition of women players.</p><p>The Angels won the Women’s Lower League in 2022–23 and were promoted to the LFA Women’s First Division, finishing second in 2023–24, then claiming the FA Orange Cup and the Super Cup. In 2026 they added a second FA Orange Cup, and a second Super Cup followed to take the total to two.</p><Link className="text-link" href="/news">Read the latest stories <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span></Link></div></div>
           <div id="honours">
             <TrophyShowcase
               honors={honors}
@@ -97,7 +98,7 @@ export default async function SectionPage({
           <div className="content-heading"><div><p className="eyebrow">From the archive</p><h2>Moments in red.</h2></div></div>
           <div className="gallery-grid">{gallery.map((photo, index) => <figure className={`gallery-item gallery-item-${index + 1}`} key={photo.src}><div><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 720px) 100vw, 50vw" /></div><figcaption>{photo.label}<span>SHAITA ANGELS FC</span></figcaption></figure>)}</div>
           <p className="data-note gallery-note">Photos supplied with the project. Dates and match captions will be added when confirmed by the club.</p>
-          <p style={{textAlign:"center",marginTop:"24px"}}><Link className="text-link" href="/media">View all photos <span aria-hidden="true">↗</span></Link></p>
+          <p style={{textAlign:"center",marginTop:"24px"}}><Link className="text-link" href="/media">View all photos <span aria-hidden="true"><ArrowUpRight className="inline-icon" /></span></Link></p>
         </>}
 
         {section === "community" && <>
