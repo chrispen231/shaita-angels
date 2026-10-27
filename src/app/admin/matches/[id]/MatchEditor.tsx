@@ -13,6 +13,8 @@ import {
   type Side,
 } from "@/lib/matches/validation";
 import { EXPECTED_UPDATED_AT_FIELD } from "@/lib/admin/concurrency";
+import { placeStarters } from "@/lib/matches/formation-layout";
+import Pitch from "@/components/Pitch";
 import styles from "./MatchEditor.module.css";
 
 /**
@@ -119,6 +121,16 @@ export default function MatchEditor({
     setLineupRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
 
   const [formationState, formationAction, formationPending] = useActionState(saveFormation, initial);
+  const [formationValue, setFormationValue] = useState(formation ?? "");
+  const [placedFor, setPlacedFor] = useState<string | null>(null);
+
+  // Choosing a formation places the starters straight away, so nobody has to
+  // work out pitch coordinates. The X and Y boxes stay for fine-tuning.
+  const placeFromFormation = (value: string) => {
+    if (value === "") return;
+    setLineupRows((rows) => placeStarters(rows, value));
+    setPlacedFor(value);
+  };
 
   const updateGoal = (index: number, patch: Partial<(typeof goalRows)[number]>) =>
     setGoalRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -156,7 +168,11 @@ export default function MatchEditor({
           <select
             id="formation-input"
             name="formation"
-            defaultValue={formation ?? ""}
+            value={formationValue}
+            onChange={(event) => {
+              setFormationValue(event.target.value);
+              placeFromFormation(event.target.value);
+            }}
           >
             <option value="">No formation set</option>
             {FORMATIONS.map((f) => (
@@ -181,6 +197,11 @@ export default function MatchEditor({
           Shirt numbers must be unique within this match. Leave a number blank if the player has
           none. Names that match the squad list are linked automatically, so player statistics
           accumulate across matches.
+        </p>
+        <p className={styles.hint}>
+          List the starters in pitch order: goalkeeper first, then defenders from left to right,
+          then midfielders, then forwards. Choosing a formation puts them on the pitch for you,
+          so the X and Y boxes are only for fine-tuning.
         </p>
 
         <form action={lineupAction} className={styles.form}>
@@ -297,7 +318,27 @@ export default function MatchEditor({
             ))}
           </ul>
 
+          {placedFor && (
+            <p className={styles.hint} role="status">
+              Starters placed for {placedFor}. Save the formation and the lineup to publish them.
+            </p>
+          )}
+
+          {/* Live preview of the public pitch, from the unsaved rows. */}
+          <Pitch
+            players={lineupRows.filter((row) => row.is_starter && row.player_name.trim() !== "")}
+            formation={formationValue || null}
+          />
+
           <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.secondary}
+              onClick={() => placeFromFormation(formationValue)}
+              disabled={formationValue === ""}
+            >
+              {formationValue ? `Place starters in ${formationValue}` : "Choose a formation to place starters"}
+            </button>
             <button
               type="button"
               className={styles.secondary}
