@@ -151,7 +151,7 @@ export function buildMatchMessage(kind: MatchAlertKind, fixture: AlertFixture): 
         title: "Full time",
         body: scoreline(fixture),
         ttl: 3600,
-        urgency: "normal",
+        urgency: "high",
       });
     }
   }
